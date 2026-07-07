@@ -47,76 +47,97 @@ export function OnboardingScreen({ onComplete }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.appName}>YeZZ</Text>
-
       {step === 0 && (
         <View style={styles.step}>
-          <Text style={styles.title}>Choose your unit</Text>
-          <Text style={styles.subtitle}>
-            All readings will be displayed in this unit.
-          </Text>
-          <View style={styles.unitRow}>
-            <TouchableOpacity
-              style={[styles.unitOption, unit === "mg/dL" && styles.unitSelected]}
-              onPress={() => setUnit("mg/dL")}
-            >
-              <Text style={[styles.unitText, unit === "mg/dL" && styles.unitTextSelected]}>mg/dL</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.unitOption, unit === "mmol/L" && styles.unitSelected]}
-              onPress={() => setUnit("mmol/L")}
-            >
-              <Text style={[styles.unitText, unit === "mmol/L" && styles.unitTextSelected]}>mmol/L</Text>
-            </TouchableOpacity>
+          <View style={styles.logoArea}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>Y</Text>
+            </View>
+            <Text style={styles.appName}>YeZZ</Text>
+            <Text style={styles.tagline}>Your diabetes companion</Text>
           </View>
-          <Button title="Continue" onPress={() => setStep(1)} />
+
+          <View style={styles.card}>
+            <Text style={styles.title}>Choose your unit</Text>
+            <Text style={styles.subtitle}>
+              All readings will be displayed in this unit.
+            </Text>
+            <View style={styles.unitRow}>
+              <TouchableOpacity
+                style={[styles.unitOption, unit === "mg/dL" && styles.unitSelected]}
+                onPress={() => setUnit("mg/dL")}
+              >
+                <Text style={[styles.unitValue, unit === "mg/dL" && styles.unitValueSelected]}>mg/dL</Text>
+                <Text style={styles.unitDesc}>Standard</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.unitOption, unit === "mmol/L" && styles.unitSelected]}
+                onPress={() => setUnit("mmol/L")}
+              >
+                <Text style={[styles.unitValue, unit === "mmol/L" && styles.unitValueSelected]}>mmol/L</Text>
+                <Text style={styles.unitDesc}>International</Text>
+              </TouchableOpacity>
+            </View>
+            <Button title="Continue" onPress={() => setStep(1)} />
+          </View>
         </View>
       )}
 
       {step === 1 && (
         <View style={styles.step}>
-          <Text style={styles.title}>Set your target ranges</Text>
-          <Text style={styles.subtitle}>
-            Optional. Pre-filled with IDF-recommended ranges.
-          </Text>
+          <View style={styles.logoArea}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>Y</Text>
+            </View>
+            <Text style={styles.appName}>YeZZ</Text>
+          </View>
 
-          <Text style={styles.fieldLabel}>Fasting — Low (mg/dL)</Text>
-          <TextInput
-            style={styles.input}
-            value={fastingLow}
-            onChangeText={setFastingLow}
-            keyboardType="numeric"
-          />
-          <Text style={styles.fieldLabel}>Fasting — High (mg/dL)</Text>
-          <TextInput
-            style={styles.input}
-            value={fastingHigh}
-            onChangeText={setFastingHigh}
-            keyboardType="numeric"
-          />
-          <Text style={styles.fieldLabel}>Post-meal — Low (mg/dL)</Text>
-          <TextInput
-            style={styles.input}
-            value={postmealLow}
-            onChangeText={setPostmealLow}
-            keyboardType="numeric"
-          />
-          <Text style={styles.fieldLabel}>Post-meal — High (mg/dL)</Text>
-          <TextInput
-            style={styles.input}
-            value={postmealHigh}
-            onChangeText={setPostmealHigh}
-            keyboardType="numeric"
-          />
+          <View style={styles.card}>
+            <Text style={styles.title}>Set target ranges</Text>
+            <Text style={styles.subtitle}>
+              Pre-filled with IDF-recommended ranges. You can adjust these later.
+            </Text>
 
-          <Button
-            title={saving ? "Saving..." : "Get Started"}
-            onPress={() => handleFinish(false)}
-            disabled={saving}
-          />
-          <TouchableOpacity onPress={() => handleFinish(true)} disabled={saving}>
-            <Text style={styles.skip}>Skip — use defaults</Text>
-          </TouchableOpacity>
+            <Text style={styles.fieldLabel}>Fasting — Low (mg/dL)</Text>
+            <TextInput
+              style={styles.input}
+              value={fastingLow}
+              onChangeText={setFastingLow}
+              keyboardType="numeric"
+            />
+            <Text style={styles.fieldLabel}>Fasting — High (mg/dL)</Text>
+            <TextInput
+              style={styles.input}
+              value={fastingHigh}
+              onChangeText={setFastingHigh}
+              keyboardType="numeric"
+            />
+            <Text style={styles.fieldLabel}>Post-meal — Low (mg/dL)</Text>
+            <TextInput
+              style={styles.input}
+              value={postmealLow}
+              onChangeText={setPostmealLow}
+              keyboardType="numeric"
+            />
+            <Text style={styles.fieldLabel}>Post-meal — High (mg/dL)</Text>
+            <TextInput
+              style={styles.input}
+              value={postmealHigh}
+              onChangeText={setPostmealHigh}
+              keyboardType="numeric"
+            />
+
+            <View style={styles.targetActions}>
+              <Button
+                title={saving ? "Saving..." : "Get Started"}
+                onPress={() => handleFinish(false)}
+                disabled={saving}
+              />
+              <TouchableOpacity onPress={() => handleFinish(true)} disabled={saving}>
+                <Text style={styles.skip}>Skip — use defaults</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
     </ScrollView>
@@ -132,28 +153,55 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
     justifyContent: "center",
     flexGrow: 1,
-  },
-  appName: {
-    fontSize: 30,
-    fontWeight: "700",
-    color: colors.accent,
-    textAlign: "center",
-    marginBottom: spacing.xxl,
+    gap: spacing.xxxl,
   },
   step: {
+    gap: spacing.xxxl,
+  },
+  logoArea: {
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  tagline: {
+    fontSize: 16,
+    fontWeight: "400",
+    color: colors.textMuted,
+    marginTop: -spacing.sm,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.xl,
     gap: spacing.lg,
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
     color: colors.textPrimary,
-    textAlign: "center",
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "400",
     color: colors.textSecondary,
-    textAlign: "center",
+    lineHeight: 22,
   },
   unitRow: {
     flexDirection: "row",
@@ -162,23 +210,29 @@ const styles = StyleSheet.create({
   unitOption: {
     flex: 1,
     paddingVertical: spacing.lg,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     backgroundColor: colors.surface,
+    gap: spacing.xs,
   },
   unitSelected: {
     borderColor: colors.accent,
-    backgroundColor: "#F0EDFF",
+    backgroundColor: colors.accentLight,
   },
-  unitText: {
-    fontSize: 16,
+  unitValue: {
+    fontSize: 18,
     fontWeight: "600",
     color: colors.textSecondary,
   },
-  unitTextSelected: {
+  unitValueSelected: {
     color: colors.accent,
+  },
+  unitDesc: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: colors.textMuted,
   },
   fieldLabel: {
     fontSize: 14,
@@ -190,14 +244,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.xl,
+    fontSize: 15,
     color: colors.textPrimary,
   },
+  targetActions: {
+    gap: spacing.lg,
+    marginTop: spacing.md,
+  },
   skip: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
     color: colors.textMuted,
     textAlign: "center",

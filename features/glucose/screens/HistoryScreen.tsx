@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { format, subDays } from "date-fns";
-import { colors, spacing } from "@/theme/tokens";
+import { colors, spacing, shadows } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -24,9 +24,9 @@ const READING_TYPES: { key: string; label: string }[] = [
 ];
 
 const DATE_RANGES: { key: string; label: string; days: number | null }[] = [
-  { key: "7d", label: "7 days", days: 7 },
-  { key: "14d", label: "14 days", days: 14 },
-  { key: "30d", label: "30 days", days: 30 },
+  { key: "7d", label: "7d", days: 7 },
+  { key: "14d", label: "14d", days: 14 },
+  { key: "30d", label: "30d", days: 30 },
   { key: "all", label: "All", days: null },
 ];
 
@@ -76,7 +76,7 @@ export function HistoryScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.filterRow}>
+      <View style={styles.filterSection}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.chipRow}>
             {READING_TYPES.map((t) => (
@@ -94,7 +94,7 @@ export function HistoryScreen() {
         </ScrollView>
       </View>
 
-      <View style={styles.filterRow}>
+      <View style={styles.filterSection}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.chipRow}>
             {DATE_RANGES.map((r) => (
@@ -113,20 +113,29 @@ export function HistoryScreen() {
       </View>
 
       {average !== null && (
-        <Card style={styles.averageCard}>
+        <View style={[styles.averageCard, shadows.sm]}>
           <Text style={styles.averageLabel}>Average</Text>
-          <Text style={styles.averageValue}>{Math.round(average)} mg/dL</Text>
-        </Card>
+          <Text style={styles.averageValue}>{Math.round(average)}</Text>
+          <Text style={styles.averageUnit}>mg/dL</Text>
+        </View>
       )}
 
       {alerts.map((alert, i) => (
         <DecisionCard key={i} alert={alert} />
       ))}
 
+      <View style={styles.divider} />
+
+      <Text style={styles.sectionTitle}>
+        {filterType === "all" ? "All Readings" : `${READING_TYPES.find(t => t.key === filterType)?.label} Readings`}
+      </Text>
+
       {loading ? (
         <LoadingSpinner />
       ) : readings.length === 0 ? (
-        <EmptyState message="No readings match your filters." />
+        <Card>
+          <EmptyState message="No readings match your filters." />
+        </Card>
       ) : (
         readings.map((r) => <ReadingCard key={r.id} reading={r} />)
       )}
@@ -140,27 +149,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    padding: spacing.xl,
+    gap: spacing.xxl,
   },
-  filterRow: {
-    marginBottom: -spacing.sm,
+  filterSection: {
+    marginBottom: spacing.xs,
   },
   chipRow: {
     flexDirection: "row",
     gap: spacing.sm,
   },
   chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
   chipSelected: {
     borderColor: colors.accent,
-    backgroundColor: "#F0EDFF",
+    backgroundColor: colors.accentLight,
   },
   chipText: {
     fontSize: 14,
@@ -169,19 +178,41 @@ const styles = StyleSheet.create({
   },
   chipTextSelected: {
     color: colors.accent,
+    fontWeight: "600",
   },
   averageCard: {
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    padding: spacing.xl,
     alignItems: "center",
+    gap: spacing.xs,
   },
   averageLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
-    color: colors.textSecondary,
+    color: "rgba(255,255,255,0.7)",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   averageValue: {
-    fontSize: 30,
+    fontSize: 42,
     fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  averageUnit: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.6)",
+    marginTop: -spacing.xs,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginVertical: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
     color: colors.textPrimary,
-    marginTop: spacing.xs,
   },
 });

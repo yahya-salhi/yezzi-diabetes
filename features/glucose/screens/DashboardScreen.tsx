@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { format } from "date-fns";
-import { colors, spacing } from "@/theme/tokens";
+import { colors, spacing, shadows } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -38,18 +38,43 @@ export function DashboardScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>{getGreeting()}</Text>
-        <Text style={styles.date}>{displayDate}</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>{getGreeting()}</Text>
+          <Text style={styles.date}>{displayDate}</Text>
+        </View>
+        <View style={[styles.avatarCircle, shadows.sm]}>
+          <Text style={styles.avatarLetter}>Y</Text>
+        </View>
+      </View>
+
+      <View style={[styles.todayOverview, shadows.md]}>
+        <Text style={styles.overviewLabel}>Today's Average</Text>
+        <Text style={styles.overviewValue}>
+          {averagesLoading ? "—" : dailyAverage ? Math.round(dailyAverage).toString() : "—"}
+        </Text>
+        <Text style={styles.overviewUnit}>mg/dL</Text>
+        {!readingsLoading && readings.length > 0 && (
+          <View style={styles.readingCountBadge}>
+            <Text style={styles.readingCountText}>{readings.length} reading{readings.length !== 1 ? "s" : ""} today</Text>
+          </View>
+        )}
       </View>
 
       {alerts.map((alert, i) => (
         <DecisionCard key={i} alert={alert} actionLabel="View History" onAction={() => navigation.navigate("History")} />
       ))}
 
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Today's Readings</Text>
+        {readings.length > 0 && (
+          <Text style={styles.sectionAction}>See all</Text>
+        )}
+      </View>
+
       {readings.length === 0 ? (
         <Card>
           <EmptyState
-            message="No readings today. Tap Add Reading to start."
+            message="No readings today. Tap below to log your first one."
             actionLabel="Add Reading"
             onAction={() => navigation.navigate("AddReading")}
           />
@@ -58,19 +83,22 @@ export function DashboardScreen() {
         readings.map((r) => <ReadingCard key={r.id} reading={r} />)
       )}
 
+      <View style={styles.divider} />
+
+      <Text style={styles.sectionTitle}>Averages</Text>
       <View style={styles.averagesRow}>
-        <Card style={styles.averageCard}>
+        <View style={[styles.averageCard, shadows.sm]}>
           <Text style={styles.averageLabel}>Today</Text>
-          <Text style={styles.averageValue}>
+          <Text style={[styles.averageValue, { color: colors.accent }]}>
             {averagesLoading ? "—" : dailyAverage ? Math.round(dailyAverage).toString() : "—"}
           </Text>
-        </Card>
-        <Card style={styles.averageCard}>
+        </View>
+        <View style={[styles.averageCard, shadows.sm]}>
           <Text style={styles.averageLabel}>7-day</Text>
-          <Text style={styles.averageValue}>
+          <Text style={[styles.averageValue, { color: colors.accent }]}>
             {averagesLoading ? "—" : rolling7Day ? Math.round(rolling7Day).toString() : "—"}
           </Text>
-        </Card>
+        </View>
       </View>
 
       <TrendChart fastingData={fastingData} postMealData={postMealData} />
@@ -93,21 +121,98 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.xl,
+    padding: spacing.xl,
+    gap: spacing.xxl,
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingTop: spacing.md,
+  },
+  headerLeft: {
     gap: spacing.xs,
   },
   greeting: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: 24,
+    fontWeight: "700",
     color: colors.textPrimary,
   },
   date: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "400",
     color: colors.textMuted,
+  },
+  avatarCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.accentLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarLetter: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.accent,
+  },
+  todayOverview: {
+    backgroundColor: colors.accent,
+    borderRadius: 16,
+    padding: spacing.xxl,
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  overviewLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.7)",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  overviewValue: {
+    fontSize: 52,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    lineHeight: 60,
+  },
+  overviewUnit: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.6)",
+    marginTop: -spacing.xs,
+  },
+  readingCountBadge: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    marginTop: spacing.md,
+  },
+  readingCountText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.85)",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  sectionAction: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.accent,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginVertical: spacing.sm,
   },
   averagesRow: {
     flexDirection: "row",
@@ -115,7 +220,11 @@ const styles = StyleSheet.create({
   },
   averageCard: {
     flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: spacing.xl,
     alignItems: "center",
+    gap: spacing.xs,
   },
   averageLabel: {
     fontSize: 14,
@@ -123,12 +232,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   averageValue: {
-    fontSize: 30,
+    fontSize: 34,
     fontWeight: "700",
-    color: colors.textPrimary,
-    marginTop: spacing.xs,
   },
   actions: {
     gap: spacing.md,
+    paddingBottom: spacing.xxl,
   },
 });

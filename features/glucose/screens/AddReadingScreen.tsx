@@ -78,75 +78,85 @@ export function AddReadingScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sectionTitle}>Reading Type</Text>
-      <View style={styles.typeRow}>
-        {READING_TYPES.map((t) => (
-          <TouchableOpacity
-            key={t.key}
-            style={[styles.typeChip, type === t.key && styles.typeChipSelected]}
-            onPress={() => setType(t.key)}
-          >
-            <Text style={[styles.typeChipText, type === t.key && styles.typeChipTextSelected]}>
-              {t.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Reading Type</Text>
+        <View style={styles.typeRow}>
+          {READING_TYPES.map((t) => (
+            <TouchableOpacity
+              key={t.key}
+              style={[styles.typeChip, type === t.key && styles.typeChipSelected]}
+              onPress={() => setType(t.key)}
+            >
+              <Text style={[styles.typeChipText, type === t.key && styles.typeChipTextSelected]}>
+                {t.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Value</Text>
-      <View style={styles.valueRow}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Blood Glucose Value</Text>
+        <View style={styles.valueRow}>
+          <TextInput
+            style={styles.valueInput}
+            value={value}
+            onChangeText={setValue}
+            keyboardType="numeric"
+            placeholder="e.g. 128"
+            placeholderTextColor={colors.textMuted}
+          />
+          <TouchableOpacity
+            style={styles.unitToggle}
+            onPress={() => setUnit(unit === "mg/dL" ? "mmol/L" : "mg/dL")}
+          >
+            <Text style={styles.unitToggleText}>{unit}</Text>
+          </TouchableOpacity>
+        </View>
+        {value !== "" && !valid && (
+          <Text style={styles.validationError}>
+            Must be between {unit === "mg/dL" ? `${MIN_MGDL}–${MAX_MGDL}` : `${toMmol(MIN_MGDL).toFixed(1)}–${toMmol(MAX_MGDL).toFixed(1)}`} {unit}
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Date</Text>
         <TextInput
-          style={styles.valueInput}
-          value={value}
-          onChangeText={setValue}
-          keyboardType="numeric"
-          placeholder="e.g. 128"
+          style={styles.input}
+          value={date}
+          onChangeText={setDate}
+          placeholder="YYYY-MM-DD"
           placeholderTextColor={colors.textMuted}
         />
-        <TouchableOpacity
-          style={styles.unitToggle}
-          onPress={() => setUnit(unit === "mg/dL" ? "mmol/L" : "mg/dL")}
-        >
-          <Text style={styles.unitToggleText}>{unit}</Text>
-        </TouchableOpacity>
       </View>
-      {value !== "" && !valid && (
-        <Text style={styles.validationError}>
-          Value must be between {unit === "mg/dL" ? `${MIN_MGDL}-${MAX_MGDL}` : `${toMmol(MIN_MGDL).toFixed(1)}-${toMmol(MAX_MGDL).toFixed(1)}`} {unit}
-        </Text>
-      )}
 
-      <Text style={styles.sectionTitle}>Date</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-        placeholderTextColor={colors.textMuted}
-      />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Time</Text>
+        <TextInput
+          style={styles.input}
+          value={time}
+          onChangeText={setTime}
+          placeholder="HH:mm"
+          placeholderTextColor={colors.textMuted}
+        />
+      </View>
 
-      <Text style={styles.sectionTitle}>Time</Text>
-      <TextInput
-        style={styles.input}
-        value={time}
-        onChangeText={setTime}
-        placeholder="HH:mm"
-        placeholderTextColor={colors.textMuted}
-      />
-
-      <Text style={styles.sectionTitle}>Notes</Text>
-      <TextInput
-        style={[styles.input, styles.textarea]}
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="Optional notes"
-        placeholderTextColor={colors.textMuted}
-        multiline
-        numberOfLines={3}
-      />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Notes</Text>
+        <TextInput
+          style={[styles.input, styles.textarea]}
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Optional notes"
+          placeholderTextColor={colors.textMuted}
+          multiline
+          numberOfLines={3}
+        />
+      </View>
 
       <View style={styles.actions}>
-        <Button title={saving ? "Saving..." : "Save"} disabled={!valid || saving} onPress={handleSave} />
+        <Button title={saving ? "Saving..." : "Save Reading"} disabled={!valid || saving} onPress={handleSave} />
         <Button title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
       </View>
     </ScrollView>
@@ -159,11 +169,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    padding: spacing.xl,
+    gap: spacing.xxl,
+  },
+  section: {
+    gap: spacing.md,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: colors.textPrimary,
   },
@@ -173,16 +186,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   typeChip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
   typeChipSelected: {
     borderColor: colors.accent,
-    backgroundColor: "#F0EDFF",
+    backgroundColor: colors.accentLight,
   },
   typeChipText: {
     fontSize: 14,
@@ -191,6 +204,7 @@ const styles = StyleSheet.create({
   },
   typeChipTextSelected: {
     color: colors.accent,
+    fontWeight: "600",
   },
   valueRow: {
     flexDirection: "row",
@@ -202,28 +216,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    fontSize: 24,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.xl,
+    fontSize: 28,
     fontWeight: "700",
     color: colors.textPrimary,
   },
   unitToggle: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
   unitToggleText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: colors.accent,
   },
   validationError: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "400",
     color: colors.error,
   },
@@ -231,18 +245,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.xl,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   textarea: {
-    minHeight: 80,
+    minHeight: 90,
     textAlignVertical: "top",
   },
   actions: {
     gap: spacing.md,
-    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxxl,
   },
 });
