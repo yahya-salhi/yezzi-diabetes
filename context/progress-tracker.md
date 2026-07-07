@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Food Tracking
-**Last completed:** 11 Food Dashboard — Full UI
-**Next:** 12 Snap Meal — Camera + Review UI (Phase 2)
+**Last completed:** 12 Snap Meal — Camera + Review UI
+**Next:** 13 GPT-4o Vision Integration (Phase 2)
 
 ---
 
@@ -34,7 +34,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - [X] 10 Food Database Migration
 - [X] 11 Food Dashboard — Full UI
-- [ ] 12 Snap Meal — Camera + Review UI
+- [X] 12 Snap Meal — Camera + Review UI
 - [ ] 13 GPT-4o Vision Integration
 - [ ] 14 Save Food Log + Manual Entry
 - [ ] 15 Meal-to-Reading Linking

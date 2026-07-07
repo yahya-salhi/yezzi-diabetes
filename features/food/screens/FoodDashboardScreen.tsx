@@ -1,5 +1,7 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { format } from "date-fns";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors, spacing, shadows } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -7,11 +9,14 @@ import { MealCard } from "@/features/food/components/MealCard";
 import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
 import type { FoodLog } from "@/features/food/types";
 
+type Nav = NativeStackNavigationProp<any>;
+
 const MOCK_MEALS: FoodLog[] = [];
 
 const MOCK_RECENT: FoodLog[] = [];
 
 export function FoodDashboardScreen() {
+  const navigation = useNavigation<Nav>();
   const today = format(new Date(), "EEEE, MMM d");
   const hasMeals = MOCK_MEALS.length > 0;
   const hasRecent = MOCK_RECENT.length > 0;
@@ -82,7 +87,7 @@ export function FoodDashboardScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={() => navigation.navigate("SnapMeal")}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </View>

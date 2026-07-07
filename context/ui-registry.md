@@ -323,3 +323,67 @@ Last updated: 2026-07-07
 | Accent usage    | info color accent bar + title    |
 
 **Pattern notes:** Same row layout + accent bar structure as ReadingCard and DecisionCard — 4px left accent bar, surface background, 14px radius with overflow hidden for clean bar corners. Actions row right-aligned with ghost + primary Button pair. Use this exact structure for any future suggestion/prompt card.
+
+---
+
+### CameraView
+
+File: `features/food/components/CameraView.tsx`
+Last updated: 2026-07-07
+
+| Property            | Value                              |
+| ------------------- | ---------------------------------- |
+| Background          | `#000` (full-screen camera)        |
+| Permission bg       | `colors.background`                |
+| Permission title    | 20px, 600, `colors.textPrimary`    |
+| Permission msg      | 15px, 400, `colors.textSecondary`  |
+| Permission button   | `colors.accent`, 10px radius       |
+| Top button          | 44px circle, `rgba(0,0,0,0.4)` bg |
+| Overlay bg          | `rgba(0,0,0,0.3)`                 |
+| Crop corners        | 24px, 3px white border             |
+| Capture button      | 72px circle, 4px white border      |
+| Capture inner       | 60px circle, `#FFFFFF`             |
+| Hint text           | 14px, 500, `rgba(255,255,255,0.8)` |
+| Button radius       | 10                                 |
+
+**Pattern notes:** Full-screen camera with semi-transparent overlays for the crop guide. Permission denied state uses brand tokens (background, accent button). All interactive elements are circular with semi-transparent backgrounds over the camera feed. Capture button is the primary action — large circle with inner circle.
+
+---
+
+### NutritionBreakdown
+
+File: `features/food/components/NutritionBreakdown.tsx`
+Last updated: 2026-07-07
+
+| Property        | Value                              |
+| --------------- | ---------------------------------- |
+| Background      | inherited (transparent)            |
+| Section title   | 15px, 600, `colors.textPrimary`    |
+| Field label     | 13px, 500, `colors.textSecondary`  |
+| Input           | `colors.surface`, 1px `colors.border`, 10px radius |
+| Input text      | 16px, 600, `colors.textPrimary`    |
+| Input padding   | 12px vertical, `spacing.md` horizontal |
+| Grid layout     | 2-col (`width: 47%`), `spacing.sm` gap |
+| Spacing         | `spacing.md` (12px) container gap  |
+
+**Pattern notes:** 2-column grid of numeric inputs for nutrition values. Each input follows the standard Input pattern (surface bg, border, 10px radius) with 16px/600 bold for the numeric value. Used inside the Snap Meal review screen for editable nutrition fields.
+
+---
+
+### EstimatedImpactBadge
+
+File: `features/food/components/EstimatedImpactBadge.tsx`
+Last updated: 2026-07-07
+
+| Property       | Value                                |
+| -------------- | ------------------------------------ |
+| Background     | dynamic: `colors.success` / `warning` / `error` based on impact value (<20/20-40/40+) |
+| Border         | none                                 |
+| Border radius  | 12                                   |
+| Label          | 12px, 500, `rgba(255,255,255,0.8)`, uppercase |
+| Value          | 20px, 700, `#FFFFFF`                 |
+| Spacing        | `spacing.md` (12px) vertical, `spacing.lg` (16px) horizontal, 4px gap |
+| Shadow         | none                                 |
+| Accent usage   | background color drives severity (green/yellow/red) |
+
+**Pattern notes:** Color-coded badge that communicates estimated glucose impact severity. Follows the same three-tier color system as ReadingCard (success/warning/error thresholds). Always shows the value prominently. Used inside the Snap Meal review screen below the nutrition fields.

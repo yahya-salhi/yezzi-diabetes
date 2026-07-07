@@ -7,6 +7,7 @@ import { DashboardScreen } from "@/features/glucose/screens/DashboardScreen";
 import { AddReadingScreen } from "@/features/glucose/screens/AddReadingScreen";
 import { HistoryScreen } from "@/features/glucose/screens/HistoryScreen";
 import { FoodDashboardScreen } from "@/features/food/screens/FoodDashboardScreen";
+import { SnapMealScreen } from "@/features/food/screens/SnapMealScreen";
 import { WorkoutDashboardScreen } from "@/features/exercise/screens/WorkoutDashboardScreen";
 import { SettingsScreen } from "@/features/settings/screens/SettingsScreen";
 
@@ -23,8 +24,14 @@ type GlucoseStackParamList = {
   History: undefined;
 };
 
+type FoodStackParamList = {
+  FoodHome: undefined;
+  SnapMeal: undefined;
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const GlucoseStack = createNativeStackNavigator<GlucoseStackParamList>();
+const FoodStack = createNativeStackNavigator<FoodStackParamList>();
 
 const TAB_ICONS: Record<string, { active: string; inactive: string }> = {
   Dashboard: { active: "◆", inactive: "◇" },
@@ -55,6 +62,23 @@ const tabStyles = StyleSheet.create({
     fontSize: 20,
   },
 });
+
+function FoodStackNavigator() {
+  return (
+    <FoodStack.Navigator>
+      <FoodStack.Screen
+        name="FoodHome"
+        component={FoodDashboardScreen}
+        options={{ title: "Food" }}
+      />
+      <FoodStack.Screen
+        name="SnapMeal"
+        component={SnapMealScreen}
+        options={{ title: "Snap Meal", presentation: "modal" }}
+      />
+    </FoodStack.Navigator>
+  );
+}
 
 function DashboardStack() {
   return (
@@ -104,7 +128,7 @@ export function AppNavigator() {
         })}
       >
         <Tab.Screen name="Dashboard" component={DashboardStack} />
-        <Tab.Screen name="Food" component={FoodDashboardScreen} />
+        <Tab.Screen name="Food" component={FoodStackNavigator} />
         <Tab.Screen name="Workout" component={WorkoutDashboardScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
