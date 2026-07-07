@@ -30,7 +30,7 @@ Three screens in a stack navigator:
 
 ## Decision Support Engine
 
-Runs after each save and on app open.
+Runs after each save and on dashboard mount (via `useFocusEffect`).
 
 **Per-reading threshold check (IDF):**
 - Fasting >= 126 mg/dL (7.0 mmol/L) → high warning

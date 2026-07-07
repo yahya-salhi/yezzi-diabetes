@@ -48,7 +48,7 @@ Bottom tab bar with four tabs: Dashboard, Food, Workout, Settings. Stack navigat
 
 ### Blood Glucose Tracking
 
-- Manual entry with date, time, type (fasting/post_lunch), value, unit toggle, optional notes
+- Manual entry with date, time, type (fasting / pre_meal / post_meal / bedtime / other), value, unit toggle, optional notes
 - Dashboard shows today's readings, daily/weekly/14/30/90 day averages
 - Color-coded decision cards per reading based on IDF thresholds
 - Pattern detection: 3+ high readings of same type triggers pattern alert
@@ -87,7 +87,7 @@ All data lives on-device. No cloud sync, no account required. The database holds
 
 ## Features In Scope
 
-- Manual blood glucose entry (fasting + post-lunch)
+- Manual blood glucose entry (fasting, pre_meal, post_meal, bedtime, other)
 - Support for mg/dL and mmol/L with conversion
 - IDF threshold-based reading assessment
 - Rolling averages: daily, 7, 14, 30, 90 days
@@ -111,6 +111,7 @@ All data lives on-device. No cloud sync, no account required. The database holds
 ## Features Out of Scope
 
 - Cloud sync or backup
+- Data export (CSV) — **high priority for a follow-up**, simple to add but deferred from initial builds
 - User accounts or authentication
 - Medication/insulin logging
 - Bluetooth glucometer integration

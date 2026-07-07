@@ -25,7 +25,30 @@ Initialize Expo project, install dependencies, configure navigation shell.
 
 ---
 
-### 02 Dashboard Screen — Full UI
+### 02 Onboarding — First-Run Setup
+
+Build the onboarding flow that runs on first launch. Persists unit preference and optional target ranges.
+
+**UI:**
+- Step 1: Unit picker — mg/dL or mmol/L, with a visual toggle, brief explanation of each
+- Step 2: Target ranges — optional step with sliders/inputs for fasting and post-meal lower/upper bounds (pre-filled with IDF defaults)
+- "Get Started" button → saves to `user_preferences` and marks onboarding as complete
+- Skip link on Step 2 to accept defaults and finish
+- Slide-based or step-indicator layout, app-branded (logo + YeZZ heading)
+
+**Logic:**
+- `features/onboarding/services/preferences.ts` — getPreferences(), upsertPreferences()
+- `features/onboarding/hooks/usePreferences.ts` — returns { unit, targets, loading, save }
+- `user_preferences` table: single-row (`id='default'`), unit + 4 target columns
+- On save: upsert into `user_preferences` → `AsyncStorage.setItem('onboarding_done', 'true')`
+- `App.tsx` checks `onboarding_done` flag → shows onboarding stack or main tab navigator
+- Default IDF thresholds: fasting 70-100 mg/dL, post-meal <140 mg/dL
+
+**Verification:** First launch shows onboarding. After completing, main app loads. Second launch skips straight to app. Changing units in Settings updates the saved preference.
+
+---
+
+### 03 Dashboard Screen — Full UI
 
 Build the complete dashboard UI with mock data. No real data yet.
 
@@ -42,7 +65,7 @@ Build the complete dashboard UI with mock data. No real data yet.
 
 ---
 
-### 03 Add Reading Screen — Full UI
+### 04 Add Reading Screen — Full UI
 
 Build the complete Add Reading form with validation. No save logic yet.
 
@@ -65,7 +88,7 @@ Build the complete Add Reading form with validation. No save logic yet.
 
 ---
 
-### 04 Add Reading — Save Logic
+### 05 Add Reading — Save Logic
 
 Wire Add Reading form to SQLite. Real data persists.
 
@@ -79,7 +102,7 @@ Wire Add Reading form to SQLite. Real data persists.
 
 ---
 
-### 05 Dashboard Screen — Real Data
+### 06 Dashboard Screen — Real Data
 
 Wire dashboard to SQLite.
 
@@ -94,7 +117,7 @@ Wire dashboard to SQLite.
 
 ---
 
-### 06 Averages Engine
+### 07 Averages Engine
 
 Build the averages calculation service.
 
@@ -103,7 +126,7 @@ Build the averages calculation service.
 - `getDailyAverage(date)` — average of all readings for given date
 - `getRollingAverage(days, type?)` — average over last N days, optionally filtered by type
 - Windows: daily, 7, 14, 30, 90 days
-- Calculated per-type (fasting avg, post-lunch avg) and combined
+- Calculated per-type (fasting, pre_meal, post_meal, bedtime) and combined
 
 **SQL patterns:**
 
@@ -120,14 +143,14 @@ WHERE date >= date('now', '-7 days') AND type = 'fasting';
 
 ---
 
-### 07 Trend Chart
+### 08 Trend Chart
 
 Wire 14-day trend chart.
 
 **Logic:**
 - `features/glucose/components/TrendChart.tsx`
 - Fetches last 14 days of readings
-- Two lines: fasting (accent color) and post-lunch (info color)
+- Lines per type: fasting (accent color), post-meal (info color), optional others
 - X-axis: dates, Y-axis: glucose values
 - Normal range reference band (70-140 mg/dL)
 
@@ -135,33 +158,34 @@ Wire 14-day trend chart.
 
 ---
 
-### 08 IDF Threshold + Decision Cards
+### 09 IDF Threshold + Decision Cards
 
 Build the threshold checking and decision card system.
 
 **Logic:**
 - `features/glucose/services/thresholds.ts`
   - IDF ranges: fasting <100 normal, 100-125 pre-diabetic, >=126 high
-  - Post-lunch: <140 normal, >=140 high
+  - Post-meal (post_meal): <140 normal, >=140 high
+  - Pre_meal shares fasting thresholds; bedtime and other use post-meal thresholds
   - Color mapping: normal → green, borderline → orange, high → red
 - `features/glucose/services/patterns.ts`
-  - `detectPatterns(type)` — checks last 4 readings of same type
+  - `detectPatterns(type)` — checks last N readings of same type (4 for fasting, post_meal)
   - If 3+ above threshold → returns PatternAlert
   - Checks rolling 3-day average trend direction
 - `features/glucose/components/DecisionCard.tsx`
   - Color-coded card with icon, title, message, optional action button
-- Dashboard shows DecisionCards after each reading type section
+- Dashboard shows DecisionCards grouped by reading type section
 
 **Verification:** Enter a high reading → red card appears with warning. Enter 3 high readings in a row → pattern alert triggers.
 
 ---
 
-### 09 History Screen — Full UI + Logic
+### 10 History Screen — Full UI + Logic
 
 Build the History screen with filters and real data.
 
 **UI:**
-- Filter bar: type picker (All / Fasting / Post-Lunch), date range (Last 7 days / 14 days / 30 days / All)
+- Filter bar: type picker (All / Fasting / Pre-Meal / Post-Meal / Bedtime / Other), date range (Last 7 days / 14 days / 30 days / All)
 - Average display per filter — shows average for current filter
 - Scrollable list of ReadingCards
 - Pattern alert cards at top (if any active)
@@ -177,7 +201,7 @@ Build the History screen with filters and real data.
 
 ## Phase 2 — Food Tracking
 
-### 10 Food Database Migration
+### 11 Food Database Migration
 
 Add `food_log` table and `food_log_id` column to `glucose_readings`.
 
@@ -188,14 +212,14 @@ Add `food_log` table and `food_log_id` column to `glucose_readings`.
 
 ---
 
-### 11 Food Dashboard — Full UI
+### 12 Food Dashboard — Full UI
 
 Build FoodDashboardScreen with mock data. Empty states for no meals logged.
 
 **UI:**
 - Today's date header
 - Meals list area — "No meals logged today" empty state
-- Today's totals card — carbs, estimated impact with "—" placeholders
+- Today's totals card — calories, carbs, estimated impact with "—" placeholders
 - Quick snap FAB button (bottom-right, floating)
 - Recent meals horizontal strip (placeholder empty state)
 - MealLinkSuggestion component preview
@@ -204,20 +228,20 @@ Build FoodDashboardScreen with mock data. Empty states for no meals logged.
 
 ---
 
-### 12 Snap Meal — Camera + Review UI
+### 13 Snap Meal — Camera + Review UI
 
 Build the camera screen and the review/edit screen.
 
 **UI:**
 - CameraScreen: full-screen camera preview, square crop overlay, capture button, flash toggle, close button
-- ReviewScreen: captured photo thumbnail, food name input (pre-filled by AI), nutrition fields (carbs, protein, fat) with edit capability, meal_type picker, estimated impact badge, notes textarea, save button
+- ReviewScreen: captured photo thumbnail, food name input (pre-filled by AI), nutrition fields (calories, carbs, protein, fat) with edit capability, meal_type picker, estimated impact badge, notes textarea, save button
 - Loading state during AI processing: skeleton card with spinner
 
 **Verification:** Camera opens, captures photo, navigates to review screen. All UI elements present.
 
 ---
 
-### 13 GPT-4o Vision Integration
+### 14 GPT-4o Vision Integration
 
 Wire the camera to GPT-4o for food recognition.
 
@@ -225,7 +249,7 @@ Wire the camera to GPT-4o for food recognition.
 - `features/food/services/mealAnalysis.ts`
 - Capture photo → save to app documents directory via expo-file-system
 - Convert to base64 → POST to OpenAI GPT-4o Vision
-- Parse JSON response: `{ food_name, carbs_g, protein_g, fat_g, estimated_impact_mgdl }`
+- Parse JSON response: `{ food_name, calories, carbs_g, protein_g, fat_g, estimated_impact_mgdl }`
 - On parse failure: 2 retries, then fallback to ManualEntryScreen
 - `openai` package added as dependency
 
@@ -233,7 +257,7 @@ Wire the camera to GPT-4o for food recognition.
 
 ---
 
-### 14 Save Food Log + Manual Entry
+### 15 Save Food Log + Manual Entry
 
 Wire save logic and build manual entry fallback.
 
@@ -247,12 +271,12 @@ Wire save logic and build manual entry fallback.
 
 ---
 
-### 15 Meal-to-Reading Linking
+### 16 Meal-to-Reading Linking
 
 Wire the linking flow between food logs and glucose readings.
 
 **Logic:**
-- When user logs a post-lunch reading → query today's food_log entries with meal_type='lunch'
+- When user logs a post-meal reading → query today's food_log entries with matching meal_type
 - If found → show MealLinkSuggestion dialog
 - On accept: update glucose_readings.food_log_id
 - `features/food/services/impactEstimator.ts`:
@@ -265,7 +289,7 @@ Wire the linking flow between food logs and glucose readings.
 
 ---
 
-### 16 Meal Insights Dashboard
+### 17 Meal Insights Dashboard
 
 Surface food pattern insights on the dashboard.
 
@@ -276,7 +300,7 @@ Surface food pattern insights on the dashboard.
 
 **Logic:**
 - Query last 7 days of linked meals where glucose_readings.food_log_id IS NOT NULL
-- Calculate actual rise = post-lunch value - pre-meal fasting baseline
+- Calculate actual rise = post-meal value - pre-meal fasting baseline
 - Sort descending, take top 3
 
 **Verification:** Insights card appears after linked data exists. Shows correct sorting.
@@ -285,7 +309,7 @@ Surface food pattern insights on the dashboard.
 
 ## Phase 3 — Exercise Tracking
 
-### 17 Exercise Database Migration
+### 18 Exercise Database Migration
 
 Add 4 new tables and `workout_session_id` column to `glucose_readings`.
 
@@ -296,7 +320,7 @@ Add 4 new tables and `workout_session_id` column to `glucose_readings`.
 
 ---
 
-### 18 Template Setup — Full UI
+### 19 Template Setup — Full UI
 
 Build the first-run template selection flow.
 
@@ -311,7 +335,7 @@ Build the first-run template selection flow.
 
 ---
 
-### 19 Workout Dashboard — Full UI
+### 20 Workout Dashboard — Full UI
 
 Build the weekly workout dashboard.
 
@@ -326,7 +350,7 @@ Build the weekly workout dashboard.
 
 ---
 
-### 20 Active Workout Logger — Full UI + Logic
+### 21 Active Workout Logger — Full UI + Logic
 
 Build the real-time workout logger.
 
@@ -347,7 +371,7 @@ Build the real-time workout logger.
 
 ---
 
-### 21 Progressive Overload Engine
+### 22 Progressive Overload Engine
 
 Build auto-suggestion logic for weight increases.
 
@@ -361,12 +385,12 @@ Build auto-suggestion logic for weight increases.
 
 ---
 
-### 22 Workout History + Progress Highlights
+### 23 Workout History + Progress Highlights
 
 Build history screen and motivation system.
 
 **UI:**
-- WorkoutHistoryScreen: scrollable list of past sessions with date, name, type, key stats
+- WorkoutHistoryScreen: scrollable list of past sessions with date, name, derived type (derived from exercises — strength / cardio / mixed), key stats
 - Session detail: all exercises logged with sets/reps/weights
 - Progress highlight card per exercise: "Bench Press: 45kg → 55kg (+22% in 6 weeks)"
 - Post-workout comparison: "This is 200kg more than last Push Day!"
@@ -380,7 +404,7 @@ Build history screen and motivation system.
 
 ---
 
-### 23 Workout-to-Glucose Linking + Insights
+### 24 Workout-to-Glucose Linking + Insights
 
 Wire linking flow and exercise-glucose insights.
 
@@ -399,7 +423,7 @@ Wire linking flow and exercise-glucose insights.
 
 | Phase                | Features |
 | -------------------- | -------- |
-| Phase 1 — Foundation | 9        |
+| Phase 1 — Foundation | 10       |
 | Phase 2 — Food       | 7        |
 | Phase 3 — Exercise   | 7        |
-| **Total**            | **23**   |
+| **Total**            | **24**   |

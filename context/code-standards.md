@@ -45,7 +45,7 @@ The AI agent on this project operates as a senior engineer. This means:
 
 ## File and Folder Naming
 
-- Folders: kebab-case — `glucose-log`, `food-diary`
+- Folders: kebab-case for multi-word names — `glucose-log`, `food-diary` (single words like `glucose/`, `food/` are fine)
 - Component files: PascalCase — `ReadingCard.tsx`, `AddReadingForm.tsx`
 - Screen files: PascalCase — `DashboardScreen.tsx`, `HistoryScreen.tsx`
 - Service files: camelCase — `readings.ts`, `averages.ts`
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- Never use default exports for components — always named exports
+- Never use default exports for components — always named exports (exception: root `App.tsx` where Expo requires `export default`)
 - Props type defined directly above the component — not in a separate types file unless shared
 - No inline styles — all styling via StyleSheet
 - Styles always at the bottom of the file, after the component
@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
 Every data operation goes through a custom hook. Hooks return loading, error, and data:
 
 ```typescript
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { getReadings } from "@/features/glucose/services/readings";
 
 type UseReadingsResult = {
@@ -118,7 +119,7 @@ export function useReadings(date?: string): UseReadingsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -129,11 +130,13 @@ export function useReadings(date?: string): UseReadingsResult {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    load();
   }, [date]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   return { readings, loading, error, refresh: load };
 }

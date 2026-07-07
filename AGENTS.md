@@ -16,8 +16,9 @@ Read the exact versioned Expo docs at https://docs.expo.dev/versions/v57.0.0/ be
 
 ## Available Skills
 
-- **brainstorming** — Turn ideas into designs through collaborative dialogue. Use before starting a new feature.
-- **imprint** — After building any UI component, extract visual patterns and save to ui-registry.md.
-- **review** — After building a feature, verify it matches the spec and project standards.
-- **git-senior-workflow** — Maintain clean git history with structured commits.
-- **recover** — Diagnose and fix build failures.
+- `/architect` — before any complex feature. Think before building.
+- `/imprint` — after any new UI component. Capture patterns.
+- `/review` — before demo or when something feels off.
+- `/recover` — when something breaks after one failed correction.
+- `/remember save` — when a feature spans multiple sessions.
+- `/remember restore` — when returning after a multi-session feature.

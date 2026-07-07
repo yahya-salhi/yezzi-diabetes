@@ -182,7 +182,7 @@ Dashboard renders DecisionCard with alert
 | id          | text     | UUID, primary key                        |
 | value       | real     | Stored in mg/dL internally               |
 | unit        | text     | 'mg/dL' or 'mmol/L' — user's input unit  |
-| type        | text     | 'fasting' or 'post_lunch'                |
+| type        | text     | 'fasting', 'pre_meal', 'post_meal', 'bedtime', 'other' |
 | date        | text     | ISO YYYY-MM-DD                           |
 | time        | text     | HH:mm                                    |
 | food_log_id        | text     | Nullable FK to food_log.id               |
@@ -195,7 +195,6 @@ Dashboard renders DecisionCard with alert
 | Column           | Type     | Notes                                          |
 | ---------------- | -------- | ---------------------------------------------- |
 | id               | text     | UUID, primary key                              |
-| reading_id       | text     | Nullable FK to glucose_readings.id             |
 | meal_type        | text     | 'breakfast', 'lunch', 'dinner', 'snack'        |
 | date             | text     | ISO YYYY-MM-DD                                 |
 | time             | text     | HH:mm                                          |
@@ -204,6 +203,7 @@ Dashboard renders DecisionCard with alert
 | carbs_g          | real     | Estimated carbs in grams                       |
 | protein_g        | real     | Estimated protein, nullable                    |
 | fat_g            | real     | Estimated fat, nullable                        |
+| calories         | real     | Computed: (carbs * 4) + (protein * 4) + (fat * 9) |
 | estimated_impact | real     | GPT-4o's estimated glucose rise (mg/dL)        |
 | notes            | text     | Optional user notes                            |
 | created_at       | text     | ISO timestamp                                  |
@@ -216,7 +216,6 @@ Dashboard renders DecisionCard with alert
 | date       | text     | ISO YYYY-MM-DD                             |
 | start_time | text     | HH:mm                                      |
 | end_time   | text     | HH:mm, nullable                            |
-| type       | text     | 'strength' or 'cardio'                     |
 | name       | text     | User-facing name                           |
 | notes      | text     | Optional                                   |
 | feeling    | integer  | 1-5 energy level                           |
@@ -263,9 +262,18 @@ Dashboard renders DecisionCard with alert
 | last_weight_kg | real     | For progressive overload tracking              |
 | sort_order     | integer  |                                                |
 
-### Future Tables
+### `user_preferences`
 
-- `user_preferences` — unit preference, target ranges
+| Column              | Type     | Notes                                      |
+| ------------------- | -------- | ------------------------------------------ |
+| id                  | text     | `'default'` — single-row table             |
+| unit                | text     | `'mg/dL'` or `'mmol/L'`                   |
+| fasting_target_low  | real     | Lower bound for fasting (mg/dL)            |
+| fasting_target_high | real     | Upper bound for fasting (mg/dL)            |
+| postmeal_target_low | real     | Lower bound for post-meal (mg/dL)          |
+| postmeal_target_high| real     | Upper bound for post-meal (mg/dL)          |
+| created_at          | text     | ISO timestamp                              |
+| updated_at          | text     | ISO timestamp                              |
 
 ---
 
@@ -278,7 +286,7 @@ Rules the AI agent must never violate:
 - Every custom hook follows the `{ data, loading, error, refresh }` pattern.
 - Never hardcode hex values in components — use tokens from `theme/tokens.ts`.
 - All glucose values stored internally as mg/dL. Conversion happens at display time.
-- Pattern detection runs after every insert, not on a timer.
+- Pattern detection runs after every insert AND on dashboard mount (via `useFocusEffect`) — not on a timer.
 - Averages are calculated from SQLite queries, not from in-memory arrays.
 - Every screen has an empty state and an error state.
 - DB migrations are additive only — never drop or alter existing columns.

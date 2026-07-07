@@ -82,7 +82,7 @@ export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       id TEXT PRIMARY KEY,
       value REAL NOT NULL,
       unit TEXT NOT NULL CHECK(unit IN ('mg/dL', 'mmol/L')),
-      type TEXT NOT NULL CHECK(type IN ('fasting', 'post_lunch')),
+      type TEXT NOT NULL CHECK(type IN ('fasting', 'pre_meal', 'post_meal', 'bedtime', 'other')),
       date TEXT NOT NULL,
       time TEXT NOT NULL,
       notes TEXT,
@@ -196,13 +196,15 @@ function DashboardScreen() {
 
 **Check first:** Read the Victory Native docs at https://docs.page/FormidableLabs/victory-native before using.
 
+> **⚠ Performance risk:** Victory Native uses SVG rendering which can lag with many data points. Fine for 14-day charts (~280 pts max). For 90-day or longer windows, consider swapping to `react-native-gifted-charts` if performance degrades.
+
 ### Trend Chart (14-day Glucose)
 
 ```tsx
 import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme } from "victory-native";
 
 // Data points: { x: date string, y: value }
-// Separate lines for fasting and post_lunch
+// Separate lines per reading type (fasting, pre_meal, post_meal, etc.)
 
 <VictoryChart theme={VictoryTheme.material} domainPadding={10}>
   <VictoryLine
@@ -226,9 +228,9 @@ import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme } from "victory-na
 
 **Rules:**
 
-- Always include both fasting and post-lunch lines on trend charts
+- Show at least fasting line on trend charts; add per-type lines as data allows
 - Fasting line color: `colors.accent` (#7C5CFC)
-- Post-lunch line color: `colors.info` (#61A8FF)
+- Post-meal line color: `colors.info` (#61A8FF)
 - Normal range shown as a shaded band (optional, 70-140 mg/dL)
 - X-axis always shows dates, Y-axis shows glucose values
 - Never show more than 30 data points on a single chart — slice to 14 days
@@ -273,15 +275,20 @@ export function formatReadingTime(timeStr: string): string {
 
 **Check first:** Read the OpenAI Vision docs at https://platform.openai.com/docs/guides/vision before using.
 
+> **API Key Strategy — decide before Phase 2:**
+> `process.env` is **not available** in React Native. Never ship an API key in a mobile binary.
+> Options: (1) User provides their own key stored locally via `expo-secure-store` — simplest, zero infra.
+> (2) Backend proxy that holds the key — most secure, adds infra.
+> (3) `expo-constants` with env config — works for dev, but key ships with the app.
+
 ### Food Recognition + Nutrition Estimation
 
 ```typescript
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
 // From photo (base64)
-export async function analyzeMealFromPhoto(base64Image: string) {
+export async function analyzeMealFromPhoto(base64Image: string, apiKey: string) {
+  const openai = new OpenAI({ apiKey });
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     temperature: 0.3,
@@ -291,7 +298,7 @@ export async function analyzeMealFromPhoto(base64Image: string) {
         content: [
           {
             type: "text",
-            text: `Identify this meal. Estimate: food name, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return ONLY valid JSON: { "food_name": string, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
+            text: `Identify this meal. Estimate: food name, total calories, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return ONLY valid JSON: { "food_name": string, "calories": number, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
           },
           {
             type: "image_url",
@@ -307,7 +314,8 @@ export async function analyzeMealFromPhoto(base64Image: string) {
 }
 
 // From text description (fallback)
-export async function analyzeMealFromText(description: string) {
+export async function analyzeMealFromText(description: string, apiKey: string) {
+  const openai = new OpenAI({ apiKey });
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     temperature: 0.3,
@@ -315,7 +323,7 @@ export async function analyzeMealFromText(description: string) {
     messages: [
       {
         role: "user",
-        content: `Given this meal description: "${description}", estimate the food name, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return: { "food_name": string, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
+        content: `Given this meal description: "${description}", estimate the food name, total calories, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return: { "food_name": string, "calories": number, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
       },
     ],
   });
@@ -333,6 +341,7 @@ export async function analyzeMealFromText(description: string) {
 - Photo sent as base64 data URL — never upload to any other server
 - Prompt must explicitly request ONLY valid JSON — prevents markdown-wrapped responses
 - Nullable fields (protein_g, fat_g) set to null when GPT-4o cannot estimate
+- `calories` fallback: if GPT-4o returns null, compute via `(carbs_g * 4) + (protein_g * 4) + (fat_g * 9)`
 
 ---
 

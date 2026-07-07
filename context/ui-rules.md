@@ -28,8 +28,8 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 ## Navigation
 
 - Bottom tab bar: Dashboard, Food, Workout, Settings
-- Active tab: accent color (#7C5CFC), icon filled
-- Inactive tab: muted color (#99A1AF), icon outlined
+- Active tab: `colors.accent`, icon filled
+- Inactive tab: `colors.textMuted`, icon outlined
 - Stack screens push from right, no tab bar shown
 - Modal screens slide from bottom for forms
 
@@ -40,9 +40,9 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 Every content section lives in a card.
 
 ```
-backgroundColor: #FFFFFF
+backgroundColor: colors.surface
 borderWidth: 1
-borderColor: #E7EAF3
+borderColor: colors.border
 borderRadius: 16
 padding: 24
 ```
@@ -58,7 +58,7 @@ Never use colored card backgrounds — always white. Color goes inside cards via
 ```
 fontSize: 20
 fontWeight: 600
-color: #101828
+color: colors.textPrimary
 ```
 
 **Section headings** — card titles, section headers
@@ -66,7 +66,7 @@ color: #101828
 ```
 fontSize: 16
 fontWeight: 600
-color: #101828
+color: colors.textPrimary
 ```
 
 **Body / primary content text**
@@ -74,7 +74,7 @@ color: #101828
 ```
 fontSize: 14
 fontWeight: 400
-color: #101828
+color: colors.textPrimary
 ```
 
 **Secondary / muted text** — labels, timestamps, subtitles
@@ -82,10 +82,10 @@ color: #101828
 ```
 fontSize: 12
 fontWeight: 400
-color: #99A1AF
+color: colors.textMuted
 ```
 
-Stat numbers (glucose values, averages) use 30px / weight 700 / color #101828.
+Stat numbers (glucose values, averages) use 30px / weight 700 / color `colors.textPrimary`.
 
 ---
 
@@ -107,8 +107,8 @@ fontWeight: 500
 **Primary button:**
 
 ```
-backgroundColor: #7C5CFC
-color: #FFFFFF
+backgroundColor: colors.accent
+color: colors.surface
 borderRadius: 8
 paddingVertical: 8
 paddingHorizontal: 16
@@ -119,10 +119,10 @@ fontWeight: 500
 **Secondary button:**
 
 ```
-backgroundColor: #FFFFFF
+backgroundColor: colors.surface
 borderWidth: 1
-borderColor: #E7EAF3
-color: #101828
+borderColor: colors.border
+color: colors.textPrimary
 borderRadius: 8
 paddingVertical: 8
 paddingHorizontal: 16
@@ -133,15 +133,15 @@ paddingHorizontal: 16
 ## Form Inputs
 
 ```
-backgroundColor: #FFFFFF
+backgroundColor: colors.surface
 borderWidth: 1
-borderColor: #E7EAF3
+borderColor: colors.border
 borderRadius: 8
 paddingVertical: 8
 paddingHorizontal: 12
 fontSize: 14
-color: #101828
-placeholder color: #99A1AF
+color: colors.textPrimary
+placeholder color: colors.textMuted
 ```
 
 ---
@@ -191,7 +191,7 @@ Color-coded card that appears below readings or on dashboard:
 
 Every section that can be empty must have an empty state. Keep it minimal:
 
-- Short descriptive text in muted color (#99A1AF)
+- Short descriptive text in `colors.textMuted`
 - Optional icon above text
 - CTA button if there's a logical next action
 
@@ -205,4 +205,4 @@ Every section that can be empty must have an empty state. Keep it minimal:
 - Never show raw error messages to users — always show human readable text
 - Never use `position: absolute` for layout — use flexbox
 - Never nest ScrollViews
-- Never use `KeyBoardAvoidingView` without testing on both platforms
+- Never use `KeyboardAvoidingView` without testing on both platforms
