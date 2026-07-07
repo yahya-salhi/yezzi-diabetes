@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet } from "react-native";
+﻿import { View, Text, StyleSheet } from "react-native";
 import { colors, spacing, shadows } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
+import { getThresholdColor, getThresholdStatus } from "@/features/glucose/services/thresholds";
 
 const READING_TYPE_LABELS: Record<string, string> = {
   fasting: "Fasting",
@@ -11,23 +12,13 @@ const READING_TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-function getStatusColor(value: number, type: string): string {
-  const isFasting = type === "fasting" || type === "pre_meal";
-  if (isFasting) {
-    if (value < 100) return colors.success;
-    if (value < 126) return colors.warning;
-    return colors.error;
-  }
-  if (value < 140) return colors.success;
-  return colors.error;
-}
-
 type Props = {
   reading: GlucoseReading;
 };
 
 export function ReadingCard({ reading }: Props) {
-  const statusColor = getStatusColor(reading.value, reading.type);
+  const status = getThresholdStatus(reading.value, reading.type as any);
+  const statusColor = getThresholdColor(status);
 
   return (
     <View style={[styles.card, shadows.sm]}>

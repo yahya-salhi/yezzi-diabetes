@@ -1,7 +1,16 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import type { GlucoseReading } from "@/features/glucose/types";
-import { getReadings } from "@/features/glucose/services/readings";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
+
+const readingsRepo = createSqliteGlucoseReadings();
+
+type UseReadingsFilter = {
+  date?: string;
+  type?: ReadingType;
+  startDate?: string;
+  endDate?: string;
+};
 
 type UseReadingsResult = {
   readings: GlucoseReading[];
@@ -10,23 +19,25 @@ type UseReadingsResult = {
   refresh: () => Promise<void>;
 };
 
-export function useReadings(date?: string): UseReadingsResult {
+export function useReadings(filter?: string | UseReadingsFilter): UseReadingsResult {
   const [readings, setReadings] = useState<GlucoseReading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const filterArg = typeof filter === "string" ? { date: filter } : filter;
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getReadings(date);
+      const data = await readingsRepo.query(filterArg);
       setReadings(data);
     } catch (err) {
       setError(String(err));
     } finally {
       setLoading(false);
     }
-  }, [date]);
+  }, [filterArg?.date, filterArg?.type, filterArg?.startDate, filterArg?.endDate]);
 
   useFocusEffect(
     useCallback(() => {

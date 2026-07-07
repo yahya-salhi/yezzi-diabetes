@@ -1,6 +1,5 @@
-import { getDb } from "@/db/database";
 import { getThresholdStatus } from "@/features/glucose/services/thresholds";
-import type { ReadingType } from "@/features/glucose/types";
+import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
 
 export type PatternAlert = {
   type: ReadingType;
@@ -9,57 +8,58 @@ export type PatternAlert = {
   count: number;
 };
 
-export async function detectPatterns(
+export function detectPatterns(
+  readings: GlucoseReading[],
   readingType: ReadingType,
-): Promise<PatternAlert[]> {
+): PatternAlert[] {
   const alerts: PatternAlert[] = [];
 
-  try {
-    const db = await getDb();
-    const recent = await db.getAllAsync<{ value: number }>(
-      `SELECT value FROM glucose_readings
-       WHERE type = ? ORDER BY date DESC, time DESC LIMIT 4`,
-      [readingType],
-    );
+  const recent = readings
+    .filter((r) => r.type === readingType)
+    .sort((a, b) => {
+      const dateCmp = b.date.localeCompare(a.date);
+      if (dateCmp !== 0) return dateCmp;
+      return b.time.localeCompare(a.time);
+    })
+    .slice(0, 4)
+    .map((r) => r.value);
 
-    if (recent.length < 3) return alerts;
+  if (recent.length < 3) return alerts;
 
-    const highCount = recent.filter((r) => {
-      const status = getThresholdStatus(r.value, readingType);
-      return status === "high";
-    }).length;
+  const highCount = recent.filter((v) => {
+    const status = getThresholdStatus(v, readingType);
+    return status === "high";
+  }).length;
 
-    if (highCount >= 3) {
-      alerts.push({
-        type: readingType,
-        message: `3+ high ${readingType.replace("_", " ")} readings detected. Consider reviewing your management plan.`,
-        severity: "alert",
-        count: highCount,
-      });
-    }
+  if (highCount >= 3) {
+    alerts.push({
+      type: readingType,
+      message: `3+ high ${readingType.replace("_", " ")} readings detected. Consider reviewing your management plan.`,
+      severity: "alert",
+      count: highCount,
+    });
+  }
 
-    const borderlineCount = recent.filter((r) => {
-      const status = getThresholdStatus(r.value, readingType);
-      return status === "borderline" || status === "high";
-    }).length;
+  const borderlineCount = recent.filter((v) => {
+    const status = getThresholdStatus(v, readingType);
+    return status === "borderline" || status === "high";
+  }).length;
 
-    if (borderlineCount >= 3 && highCount < 3) {
-      alerts.push({
-        type: readingType,
-        message: `${readingType.replace("_", " ")} readings are trending high. Monitor closely.`,
-        severity: "warning",
-        count: borderlineCount,
-      });
-    }
-  } catch (err) {
-    console.error("[patterns] detectPatterns failed", err);
+  if (borderlineCount >= 3 && highCount < 3) {
+    alerts.push({
+      type: readingType,
+      message: `${readingType.replace("_", " ")} readings are trending high. Monitor closely.`,
+      severity: "warning",
+      count: borderlineCount,
+    });
   }
 
   return alerts;
 }
 
-export async function detectAllPatterns(): Promise<PatternAlert[]> {
+export function detectAllPatterns(
+  readings: GlucoseReading[],
+): PatternAlert[] {
   const types: ReadingType[] = ["fasting", "pre_meal", "post_meal", "bedtime", "other"];
-  const results = await Promise.all(types.map((t) => detectPatterns(t)));
-  return results.flat();
+  return types.flatMap((t) => detectPatterns(readings, t));
 }
