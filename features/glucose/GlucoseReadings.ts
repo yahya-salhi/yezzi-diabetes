@@ -1,4 +1,4 @@
-import { getDb } from "@/db/database";
+import type { DatabasePort } from "@/db/port";
 import type { GlucoseReading, InsertReading, ReadingType } from "@/features/glucose/types";
 
 export type ReadingFilter = {
@@ -18,11 +18,10 @@ export interface GlucoseReadings {
   getRollingAverage(days: number, type?: ReadingType): Promise<number | null>;
 }
 
-export function createSqliteGlucoseReadings(): GlucoseReadings {
+export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
   return {
     async query(filter) {
       try {
-        const db = await getDb();
         const conditions: string[] = [];
         const params: string[] = [];
 
@@ -61,7 +60,6 @@ export function createSqliteGlucoseReadings(): GlucoseReadings {
 
     async getById(id) {
       try {
-        const db = await getDb();
         return await db.getFirstAsync<GlucoseReading>(
           "SELECT * FROM glucose_readings WHERE id = ?",
           [id],
@@ -74,7 +72,6 @@ export function createSqliteGlucoseReadings(): GlucoseReadings {
 
     async insert(reading) {
       try {
-        const db = await getDb();
         await db.runAsync(
           `INSERT INTO glucose_readings (id, value, unit, type, date, time, notes)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -96,7 +93,6 @@ export function createSqliteGlucoseReadings(): GlucoseReadings {
 
     async getDailyAverage(date) {
       try {
-        const db = await getDb();
         const row = await db.getFirstAsync<{ avg: number | null }>(
           "SELECT AVG(value) as avg FROM glucose_readings WHERE date = ?",
           [date],
@@ -110,7 +106,6 @@ export function createSqliteGlucoseReadings(): GlucoseReadings {
 
     async getRollingAverage(days, type) {
       try {
-        const db = await getDb();
         const params: string[] = [String(days)];
         let typeFilter = "";
         if (type) {

@@ -17,7 +17,7 @@ type Props = {
 };
 
 export function ReadingCard({ reading }: Props) {
-  const status = getThresholdStatus(reading.value, reading.type as any);
+  const status = getThresholdStatus(reading.value, reading.type);
   const statusColor = getThresholdColor(status);
 
   return (

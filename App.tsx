@@ -5,7 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { View, StyleSheet } from "react-native";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { OnboardingScreen } from "@/features/onboarding/screens/OnboardingScreen";
-import { getDb } from "@/db/database";
+import { getDbAdapter } from "@/db/instance";
 import { getPreferences } from "@/features/onboarding/services/preferences";
 
 SplashScreen.preventAutoHideAsync();
@@ -24,8 +24,7 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
-        await getDb();
-        const prefs = await getPreferences();
+        const prefs = await getPreferences(getDbAdapter());
         setShowOnboarding(!prefs);
       } catch (err) {
         console.error("[app] init failed", err);

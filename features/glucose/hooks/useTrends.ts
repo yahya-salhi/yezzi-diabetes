@@ -1,10 +1,11 @@
 ﻿import { useState, useCallback, useMemo } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { format } from "date-fns";
+import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { GlucoseReading } from "@/features/glucose/types";
 
-const readingsRepo = createSqliteGlucoseReadings();
+const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
 const TREND_DAYS = 14;
 
 type ChartData = { value: number; label: string }[];
