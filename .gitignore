@@ -36,6 +36,12 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Claude
+.claude/
+
 # generated native folders
 /ios
 /android
+
+# old project context files (kept for reference, not committed)
+context/**/*.md
