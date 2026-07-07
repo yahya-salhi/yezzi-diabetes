@@ -7,7 +7,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Foundation
-**Last completed:** Feature 2 spec written and committed
+**Last completed:** Feature 3 spec written and committed
 **Next:** 01 Project Setup
 
 ---
@@ -18,6 +18,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - [X] Spec: Blood Glucose Tracking Design Doc
 - [X] Spec: Food Tracking Design Doc
+- [X] Spec: Exercise Tracking Design Doc
 - [ ] 01 Project Setup
 - [ ] 02 Dashboard Screen — Full UI
 - [ ] 03 Add Reading Screen — Full UI
@@ -40,8 +41,13 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 3 — Exercise Tracking
 
-- [ ] Spec: Exercise Tracking Design Doc
-- [ ] _Implementation features_
+- [ ] 17 Exercise Database Migration
+- [ ] 18 Template Setup — Full UI
+- [ ] 19 Workout Dashboard — Full UI
+- [ ] 20 Active Workout Logger — Full UI + Logic
+- [ ] 21 Progressive Overload Engine
+- [ ] 22 Workout History + Progress Highlights
+- [ ] 23 Workout-to-Glucose Linking + Insights
 
 ---
 
@@ -55,6 +61,11 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-07** — GPT-4o Vision for food recognition + nutrition estimation
 - **2026-07-07** — Photo saved locally, only base64 sent to OpenAI API
 - **2026-07-07** — Meals linked to glucose readings for actual vs estimated impact comparison
+- **2026-07-07** — Progressive overload with +2.5kg suggestions when rep targets hit for 2+ consecutive sessions
+- **2026-07-07** — Exercise templates: Push/Pull/Legs, Upper/Lower, Full Body 3x, Custom
+- **2026-07-07** — Workout linked to glucose readings (same pattern as meals)
+- **2026-07-07** — Cardio tracking: duration, distance, intensity, optional heart rate
+- **2026-07-07** — Motivation via post-workout comparisons, streak tracking, milestone badges
 
 ---
 

@@ -285,12 +285,113 @@ Surface food pattern insights on the dashboard.
 
 ## Phase 3 — Exercise Tracking
 
-_Planned after Feature 2 completion._
+### 17 Exercise Database Migration
 
-- Workout logging screen
-- Weekly plan builder
-- Exercise library with suggestions
-- Motivation and progress tracking
+Add 4 new tables and `workout_session_id` column to `glucose_readings`.
+
+**Files:**
+- `db/migrations.ts` — Add workout_sessions, workout_exercises, workout_templates, workout_template_exercises tables + alter glucose_readings
+
+**Verification:** Migration runs without errors. All 4 tables queryable.
+
+---
+
+### 18 Template Setup — Full UI
+
+Build the first-run template selection flow.
+
+**UI:**
+- Template selection screen: 4 options (Push/Pull/Legs, Upper/Lower, Full Body 3x, Custom) with description cards and days/week label
+- Exercise editor per day: list of exercises with target sets/reps, add/remove/reorder, save
+- "Start with selected template" button
+
+**Logic:** None yet — mock data and static UI.
+
+**Verification:** Template selection renders, day editor works with mock exercises.
+
+---
+
+### 19 Workout Dashboard — Full UI
+
+Build the weekly workout dashboard.
+
+**UI:**
+- Weekly calendar (Mon-Sun) — planned days highlighted, completed days with checkmark, today emphasized
+- Today's workout card — planned template exercises listed, "Start Workout" button
+- Weekly stats row — sessions completed / total, total weight lifted, total cardio min (all "—" placeholder)
+- Streak badge — "0-day streak" empty state
+- Quick "Log Workout" button
+
+**Verification:** Dashboard renders with empty states. Weekly calendar visual works.
+
+---
+
+### 20 Active Workout Logger — Full UI + Logic
+
+Build the real-time workout logger.
+
+**UI:**
+- Top bar: workout name, elapsed timer
+- Exercise list with expandable SetRows
+- Strength: sets number, reps input, weight input, checkbox per set when completed
+- Cardio: duration input, distance input, intensity picker, heart rate optional
+- Add exercise button at bottom
+- Finish Workout button → summary modal with total stats
+
+**Logic:**
+- `features/exercise/services/workouts.ts` — createSession(), addExercise(), finishSession()
+- `features/exercise/types.ts` — WorkoutSession, WorkoutExercise types
+- On finish: calculate total weight, duration, save to SQLite
+
+**Verification:** Full workout can be logged and saved. Summary modal shows correct totals.
+
+---
+
+### 21 Progressive Overload Engine
+
+Build auto-suggestion logic for weight increases.
+
+**Logic:**
+- `features/exercise/services/progressiveOverload.ts`
+- After each logged strength set → query last 2 sessions for same exercise
+- If target reps hit in 2 consecutive sessions → suggest +2.5kg
+- Next session preview on dashboard: "Bench press: last 50kg x 8 — try 52.5kg if you hit all reps"
+
+**Verification:** After logging 2 sessions with same exercise hitting target reps, overload suggestion appears on dashboard.
+
+---
+
+### 22 Workout History + Progress Highlights
+
+Build history screen and motivation system.
+
+**UI:**
+- WorkoutHistoryScreen: scrollable list of past sessions with date, name, type, key stats
+- Session detail: all exercises logged with sets/reps/weights
+- Progress highlight card per exercise: "Bench Press: 45kg → 55kg (+22% in 6 weeks)"
+- Post-workout comparison: "This is 200kg more than last Push Day!"
+
+**Logic:**
+- `features/exercise/services/workouts.ts` — getSessions(), getSessionDetail()
+- `features/exercise/services/streaks.ts` — getStreak(), getMilestones()
+- Progress highlights: query same exercise over time, calculate min/max trend
+
+**Verification:** History shows past sessions. Progress highlights render with correct comparisons.
+
+---
+
+### 23 Workout-to-Glucose Linking + Insights
+
+Wire linking flow and exercise-glucose insights.
+
+**Logic:**
+- After finishing a workout → check glucose_readings within 2h window → suggest link
+- `features/exercise/services/insights.ts`:
+  - getGlucoseOnWorkoutDays() vs getGlucoseOnRestDays()
+  - getBestWorkoutTypeForFasting() — which exercise type correlates with best morning readings
+- Dashboard insight card when 3+ linked pairs exist
+
+**Verification:** Linking suggestion appears after workout. Insights card shows comparison when enough data.
 
 ---
 
@@ -300,5 +401,5 @@ _Planned after Feature 2 completion._
 | -------------------- | -------- |
 | Phase 1 — Foundation | 9        |
 | Phase 2 — Food       | 7        |
-| Phase 3 — Exercise   | TBD      |
-| **Total**            | **16+**  |
+| Phase 3 — Exercise   | 7        |
+| **Total**            | **23**   |

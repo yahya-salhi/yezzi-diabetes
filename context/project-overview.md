@@ -61,12 +61,14 @@ Bottom tab bar with four tabs: Dashboard, Food, Workout, Settings. Stack navigat
 - Meal insights dashboard: "Highest Spikes This Week" shows meals with biggest actual impact
 - Per-meal feedback on estimated glucose rise
 
-### Exercise Tracking (Feature 3 — planned)
+### Exercise Tracking (Feature 3 — active)
 
-- Log workouts by type (cardio, strength)
-- Track sets, reps, weights
-- Weekly plan builder
-- Exercise suggestions and motivation
+- Log strength (sets, reps, weight) and cardio (duration, distance, intensity) workouts
+- Weekly exercise templates (PPL, Upper/Lower, Full Body 3x, Custom)
+- Progressive overload suggestions (+2.5kg when rep targets hit)
+- Link workouts to glucose readings for exercise-vs-glucose insights
+- Post-workout summaries, streak tracking, milestone badges
+- Periodic progress highlights
 
 ---
 
@@ -98,7 +100,10 @@ All data lives on-device. No cloud sync, no account required. The database holds
 - Estimated blood glucose impact per meal
 - Meal-to-reading linking for actual vs estimated comparison
 - Meal insights dashboard (highest spike meals)
-- Exercise log and weekly planner (Phase 3)
+- Workout logging (strength + cardio)
+- Weekly exercise templates with progressive overload
+- Workout-to-glucose linking and insights
+- Streak tracking and milestone badges
 - On-device storage — no sign-up required
 
 ---

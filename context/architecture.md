@@ -75,7 +75,31 @@
 │   │   │   ├── useFoodLog.ts
 │   │   │   └── useMealAnalysis.ts
 │   │   └── types.ts
-│   └── exercise/          → Phase 3
+│   ├── exercise/
+│   │   ├── screens/
+│   │   │   ├── WorkoutDashboardScreen.tsx
+│   │   │   ├── ActiveWorkoutScreen.tsx
+│   │   │   ├── WorkoutHistoryScreen.tsx
+│   │   │   └── TemplateSetupScreen.tsx
+│   │   ├── components/
+│   │   │   ├── WeeklyCalendar.tsx
+│   │   │   ├── ExerciseCard.tsx
+│   │   │   ├── SetRow.tsx
+│   │   │   ├── ProgressHighlight.tsx
+│   │   │   ├── StreakBadge.tsx
+│   │   │   └── WorkoutSummaryModal.tsx
+│   │   ├── services/
+│   │   │   ├── workouts.ts
+│   │   │   ├── templates.ts
+│   │   │   ├── progressiveOverload.ts
+│   │   │   ├── streaks.ts
+│   │   │   └── insights.ts
+│   │   ├── hooks/
+│   │   │   ├── useWorkoutSession.ts
+│   │   │   ├── useTemplates.ts
+│   │   │   └── useProgress.ts
+│   │   └── types.ts
+│   └── ...
 ├── db/
 │   ├── database.ts        → SQLite init
 │   └── migrations.ts      → Table creation
@@ -161,9 +185,10 @@ Dashboard renders DecisionCard with alert
 | type        | text     | 'fasting' or 'post_lunch'                |
 | date        | text     | ISO YYYY-MM-DD                           |
 | time        | text     | HH:mm                                    |
-| food_log_id | text     | Nullable FK to food_log.id               |
-| notes       | text     | Optional user notes                      |
-| created_at  | text     | ISO timestamp, default current datetime  |
+| food_log_id        | text     | Nullable FK to food_log.id               |
+| workout_session_id | text     | Nullable FK to workout_sessions.id        |
+| notes              | text     | Optional user notes                      |
+| created_at         | text     | ISO timestamp, default current datetime  |
 
 ### `food_log`
 
@@ -183,9 +208,63 @@ Dashboard renders DecisionCard with alert
 | notes            | text     | Optional user notes                            |
 | created_at       | text     | ISO timestamp                                  |
 
+### `workout_sessions`
+
+| Column     | Type     | Notes                                      |
+| ---------- | -------- | ------------------------------------------ |
+| id         | text     | UUID, primary key                          |
+| date       | text     | ISO YYYY-MM-DD                             |
+| start_time | text     | HH:mm                                      |
+| end_time   | text     | HH:mm, nullable                            |
+| type       | text     | 'strength' or 'cardio'                     |
+| name       | text     | User-facing name                           |
+| notes      | text     | Optional                                   |
+| feeling    | integer  | 1-5 energy level                           |
+| created_at | text     | ISO timestamp                              |
+
+### `workout_exercises`
+
+| Column         | Type     | Notes                                      |
+| -------------- | -------- | ------------------------------------------ |
+| id             | text     | UUID, primary key                          |
+| session_id     | text     | FK to workout_sessions.id                  |
+| name           | text     | Exercise name                              |
+| exercise_type  | text     | 'strength' or 'cardio'                     |
+| sets           | integer  | Nullable for cardio                        |
+| reps           | integer  | Nullable for cardio                        |
+| weight_kg      | real     | Nullable for cardio                        |
+| duration_min   | integer  | Nullable for strength                      |
+| distance_km    | real     | Nullable                                   |
+| heart_rate_avg | integer  | Nullable                                   |
+| intensity      | text     | 'easy', 'moderate', 'hard', nullable       |
+| sort_order     | integer  | Exercise order within session              |
+
+### `workout_templates`
+
+| Column        | Type     | Notes                             |
+| ------------- | -------- | --------------------------------- |
+| id            | text     | UUID, primary key                 |
+| name          | text     | "Push/Pull/Legs"                  |
+| days_per_week | integer  | 3, 4, 5, 6                       |
+| is_active     | boolean  | Currently active                  |
+| created_at    | text     | ISO timestamp                     |
+
+### `workout_template_exercises`
+
+| Column         | Type     | Notes                                          |
+| -------------- | -------- | ---------------------------------------------- |
+| id             | text     | UUID, primary key                              |
+| template_id    | text     | FK to workout_templates.id                     |
+| day_of_week    | integer  | 0=Monday..6=Sunday                             |
+| name           | text     | Exercise name                                  |
+| exercise_type  | text     | 'strength' or 'cardio'                         |
+| target_sets    | integer  |                                                |
+| target_reps    | integer  |                                                |
+| last_weight_kg | real     | For progressive overload tracking              |
+| sort_order     | integer  |                                                |
+
 ### Future Tables
 
-- `exercise_log` — workouts, sets, reps, weights (Phase 3)
 - `user_preferences` — unit preference, target ranges
 
 ---
