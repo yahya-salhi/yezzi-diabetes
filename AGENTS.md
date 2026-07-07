@@ -13,3 +13,11 @@ Read these context files in order before writing any code:
 
 Check docs/superpowers/specs/ for design specs before implementing any feature.
 Read the exact versioned Expo docs at https://docs.expo.dev/versions/v57.0.0/ before writing any Expo-specific code.
+
+## Available Skills
+
+- **brainstorming** — Turn ideas into designs through collaborative dialogue. Use before starting a new feature.
+- **imprint** — After building any UI component, extract visual patterns and save to ui-registry.md.
+- **review** — After building a feature, verify it matches the spec and project standards.
+- **git-senior-workflow** — Maintain clean git history with structured commits.
+- **recover** — Diagnose and fix build failures.
