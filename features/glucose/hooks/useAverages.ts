@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { getDailyAverage, getRollingAverage } from "@/features/glucose/services/averages";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import { format } from "date-fns";
+
+const readingsRepo = createSqliteGlucoseReadings();
 
 type UseAveragesResult = {
   dailyAverage: number | null;
@@ -20,8 +22,8 @@ export function useAverages(): UseAveragesResult {
       setLoading(true);
       const today = format(new Date(), "yyyy-MM-dd");
       const [daily, rolling] = await Promise.all([
-        getDailyAverage(today),
-        getRollingAverage(7),
+        readingsRepo.getDailyAverage(today),
+        readingsRepo.getRollingAverage(7),
       ]);
       setDailyAverage(daily);
       setRolling7Day(rolling);

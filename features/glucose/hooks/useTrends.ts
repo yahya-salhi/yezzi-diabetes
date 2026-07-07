@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo } from "react";
+﻿import { useState, useCallback, useMemo } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { format } from "date-fns";
-import { getReadingsForRange } from "@/features/glucose/services/trends";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { GlucoseReading } from "@/features/glucose/types";
 
+const readingsRepo = createSqliteGlucoseReadings();
 const TREND_DAYS = 14;
 
 type ChartData = { value: number; label: string }[];
@@ -21,7 +22,7 @@ export function useTrends(): UseTrendsResult {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getReadingsForRange(TREND_DAYS);
+      const data = await readingsRepo.query({ limit: TREND_DAYS, orderBy: "date_asc" });
       setReadings(data);
     } catch {
       // silently fail

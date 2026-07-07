@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+﻿import { useState, useCallback } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { format, subDays } from "date-fns";
 import { colors, spacing, shadows } from "@/theme/tokens";
@@ -8,11 +8,12 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReadingCard } from "@/features/glucose/components/ReadingCard";
 import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useFocusEffect } from "@react-navigation/native";
-import { getReadingsFiltered } from "@/features/glucose/services/readings";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import { detectPatterns } from "@/features/glucose/services/patterns";
-import { getDailyAverage } from "@/features/glucose/services/averages";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
+
+const readingsRepo = createSqliteGlucoseReadings();
 
 const READING_TYPES: { key: string; label: string }[] = [
   { key: "all", label: "All" },
@@ -44,19 +45,20 @@ export function HistoryScreen() {
       const range = DATE_RANGES.find((r) => r.key === dateRange)!;
       const startDate = range.days ? format(subDays(new Date(), range.days), "yyyy-MM-dd") : undefined;
 
-      const data = await getReadingsFiltered(
-        filterType === "all" ? undefined : filterType,
+      const data = await readingsRepo.query({
+        type: filterType === "all" ? undefined : (filterType as ReadingType),
         startDate,
-      );
+      });
       setReadings(data);
 
       const avg = data.length > 0
-        ? data.reduce((sum, r) => sum + r.value, 0) / data.length
+        ? data.reduce((sum: number, r: GlucoseReading) => sum + r.value, 0) / data.length
         : null;
       setAverage(avg);
 
       if (filterType !== "all") {
-        const patternAlerts = await detectPatterns(filterType as ReadingType);
+        const allRecent = await readingsRepo.query({ limit: 20, orderBy: "date_desc" });
+        const patternAlerts = detectPatterns(allRecent, filterType as ReadingType);
         setAlerts(patternAlerts);
       } else {
         setAlerts([]);
@@ -127,7 +129,7 @@ export function HistoryScreen() {
       <View style={styles.divider} />
 
       <Text style={styles.sectionTitle}>
-        {filterType === "all" ? "All Readings" : `${READING_TYPES.find(t => t.key === filterType)?.label} Readings`}
+        {filterType === "all" ? "All Readings" : ((READING_TYPES.find(t => t.key === filterType)?.label) + " Readings")}
       </Text>
 
       {loading ? (

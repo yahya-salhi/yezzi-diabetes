@@ -1,7 +1,10 @@
-import { useState, useCallback } from "react";
+﻿import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import { detectAllPatterns } from "@/features/glucose/services/patterns";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
+
+const readingsRepo = createSqliteGlucoseReadings();
 
 type UsePatternsResult = {
   alerts: PatternAlert[];
@@ -16,7 +19,8 @@ export function usePatterns(): UsePatternsResult {
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await detectAllPatterns();
+      const all = await readingsRepo.query({ limit: 20, orderBy: "date_desc" });
+      const data = detectAllPatterns(all);
       setAlerts(data);
     } catch {
       // silently fail

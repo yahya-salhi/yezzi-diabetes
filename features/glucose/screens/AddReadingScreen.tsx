@@ -1,12 +1,14 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import { randomUUID } from "expo-crypto";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
+import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { ReadingType, InsertReading } from "@/features/glucose/types";
-import { insertReading } from "@/features/glucose/services/readings";
+
+const readingsRepo = createSqliteGlucoseReadings();
 
 const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "fasting", label: "Fasting" },
@@ -65,12 +67,12 @@ export function AddReadingScreen() {
         workout_session_id: null,
       };
 
-      await insertReading(reading);
+      await readingsRepo.insert(reading);
       navigation.goBack();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error("[AddReadingScreen] save failed", err);
-      Alert.alert("Error", `Failed to save reading: ${message}`);
+      Alert.alert("Error", "Failed to save reading: " + message);
     } finally {
       setSaving(false);
     }
@@ -115,7 +117,7 @@ export function AddReadingScreen() {
         </View>
         {value !== "" && !valid && (
           <Text style={styles.validationError}>
-            Must be between {unit === "mg/dL" ? `${MIN_MGDL}–${MAX_MGDL}` : `${toMmol(MIN_MGDL).toFixed(1)}–${toMmol(MAX_MGDL).toFixed(1)}`} {unit}
+            Must be between {unit === "mg/dL" ? MIN_MGDL + "\u2013" + MAX_MGDL : toMmol(MIN_MGDL).toFixed(1) + "\u2013" + toMmol(MAX_MGDL).toFixed(1)} {unit}
           </Text>
         )}
       </View>
