@@ -1,3 +1,4 @@
+import { colors } from "@/theme/tokens";
 import type { ReadingType } from "@/features/glucose/types";
 
 export type ThresholdStatus = "normal" | "borderline" | "high";
@@ -21,11 +22,11 @@ export function getThresholdStatus(
 export function getThresholdColor(status: ThresholdStatus): string {
   switch (status) {
     case "normal":
-      return "#10B981";
+      return colors.success;
     case "borderline":
-      return "#FF8904";
+      return colors.warning;
     case "high":
-      return "#EF4444";
+      return colors.error;
   }
 }
 
