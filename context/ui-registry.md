@@ -244,3 +244,34 @@ Last updated: 2026-07-07
 | Icon shape       | Geometric Unicode symbols (◆◇●○■□▲△) |
 
 **Pattern notes:** Tab bar uses geometric symbols instead of text labels. Active state uses filled symbol, inactive uses outlined. Four tabs: Dashboard, Food, Workout, Settings. Min height 64px with 8px top/bottom padding.
+
+---
+
+### TrendChart
+
+File: `features/glucose/components/TrendChart.tsx`
+Last updated: 2026-07-07
+
+| Property            | Value                           |
+| ------------------- | ------------------------------- |
+| Background          | `colors.surface`                |
+| Border              | none                            |
+| Border radius       | 14                              |
+| Shadow              | `shadows.sm`                    |
+| Section title       | 17px, 600, `colors.textPrimary` |
+| Legend dot          | 8px circle                      |
+| Legend label        | 12px, 500, `colors.textSecondary` |
+| X/Y axis labels     | 10px, `colors.textMuted`        |
+| Reference line 1    | 70 mg/dL, dashed, green         |
+| Reference line 2    | 140 mg/dL, dashed, red          |
+| Line thickness      | 2.5px                           |
+| Data point shape    | circle, 6px                     |
+| Gradient fill       | line color, 12% → 4% opacity   |
+| Tooltip bg          | `colors.textPrimary`, 6px radius |
+| Tooltip text        | 13px, 600, #FFFFFF              |
+| Range legend text   | 11px, 400, `colors.textMuted`   |
+| Empty state text    | 14px, 400, `colors.textMuted`   |
+| Chart height        | 220px                           |
+| Spacing             | dynamic 40–80px based on data count |
+
+**Pattern notes:** Wrapper includes section title + interactive legend row above the chart card. Two reference lines indicate normal glucose range (70–140 mg/dL) with dashed styling. Touch interaction shows tooltip with value. Empty state is a simple card without nested Card component.
