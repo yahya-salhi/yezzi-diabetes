@@ -1,55 +1,48 @@
-# Memory — Premium Design Overhaul
+# Memory — Database Port / Adapter Seam
 
 Last updated: 2026-07-07
 
 ## What was built
 
-- **Updated design specs** — `context/ui-tokens.md`, `context/ui-rules.md`, `context/ui-registry.md` all rewritten with premium direction
-- **New color system** — `theme/tokens.ts` updated: deep teal accent (#1B5E5A), warm off-white background (#F4F2EE), refined semantic colors (emerald/amber/rose/slate), accentLight for chips, warm borders
-- **Typography scale** — bumped up: 22px screen titles, 17px section headings, 15px body, 34px stat numbers, 32px reading values
-- **Spacing** — more generous: added xxxl (36px), adjusted xl/xxl
-- **Shadow tokens** — `sm`, `md`, `lg` shadow presets in tokens
-- **Card component** — no border, 14px radius, shadowMd
-- **Button component** — 10px radius, 12px vertical padding, 15px font, added ghost variant
-- **Input component** — 10px radius, 14px vertical padding, 15px font
-- **Badge component** — 3px/10px padding, 13px font
-- **ReadingCard** — no border, accent bar design (4px left bar), color-coded value, shadowSm
-- **DecisionCard** — same accent bar pattern as ReadingCard
-- **DashboardScreen** — hero overview card (solid teal with white text), avatar circle, section headers, better layout flow
-- **AddReadingScreen** — grouped form sections, premium chip styling, larger value input (28px)
-- **HistoryScreen** — teal average card, compact range chips, cleaner filter + list layout
-- **OnboardingScreen** — logo circle, white card steps, premium unit picker cards
-- **AppNavigator** — proper tab symbols (◆◇●○■□▲△) instead of text labels, styled tab bar
-- **thresholds.ts** — replaced hardcoded hex with `colors.*` tokens
+- **Created `db/port.ts`** — `DatabasePort` interface (`getAllAsync`, `getFirstAsync`, `runAsync`, `execAsync`)
+- **Created `db/sqlite-adapter.ts`** — SQLite adapter wrapping `getDb()`, implements `DatabasePort`
+- **Created `db/memory-adapter.ts`** — In-memory adapter implementing `DatabasePort` for tests (basic SQL parsing: WHERE, ORDER BY, LIMIT, INSERT)
+- **Created `db/instance.ts`** — Singleton holder with `initDb(adapter)` / `getDbAdapter()`; lazily creates SQLite adapter by default
+- **Refactored `features/glucose/GlucoseReadings.ts`** — `createSqliteGlucoseReadings(db: DatabasePort)` instead of calling `getDb()` internally
+- **Refactored `features/onboarding/services/preferences.ts`** — `getPreferences(db)`, `upsertPreferences(db, prefs)` take `DatabasePort` parameter
+- **Updated all 4 glucose hooks** (`useReadings`, `useAverages`, `useTrends`, `usePatterns`) — pass `getDbAdapter()` to repo factory
+- **Updated `features/glucose/screens/AddReadingScreen.tsx`** — uses `getDbAdapter()`
+- **Updated `features/onboarding/hooks/usePreferences.ts`** — passes `getDbAdapter()` to service functions
+- **Updated `App.tsx`** — uses `getDbAdapter()` instead of `getDb()`
+- **Cleaned `features/glucose/components/ReadingCard.tsx`** — removed unnecessary `as any` cast on `reading.type`
 
 ## Decisions made
 
-- **Deep teal over purple** — moved from generic health purple (#7C5CFC) to distinctive deep teal (#1B5E5A) for a more premium, medical-but-warm identity
-- **Cards use shadows, not borders** — removes box-in-box framing for a cleaner, more modern look
-- **No borders on ReadingCard/DecisionCard** — accent bar + subtle shadow creates cleaner hierarchy
-- **Reading value color-coded by status** — value text matches the status color (not just the accent bar), improving glanceability
-- **Background is warm off-white** (#F4F2EE) — moves away from sterile grey, adds subtle texture without noise
-- **Geometric tab icons** — used Unicode symbols (◆◇●○) for a custom feel without adding icon library dependency
+- `DatabasePort` interface mirrors `expo-sqlite` API methods rather than introducing a different abstraction — minimal port surface, trivial to implement
+- Singleton holder at `db/instance.ts` with lazy init — no DI framework needed; `initDb(adapter)` allows test injection, by default lazily creates SQLite adapter
+- Memory adapter uses basic SQL pattern matching (not a full parser) — sufficient for the existing query patterns in `GlucoseReadings` and `preferences.ts`
+- `getPreferences()` and `upsertPreferences()` now take `db` as first parameter instead of calling `getDb()` internally — explicit dependency injection at the function level
+- `runAsync` return type set to `void` in the port — existing code doesn't use `lastInsertRowId` or `changes`
 
 ## Problems solved
 
-- Removed all `"#F0EDFF"` hardcoded references across the codebase — replaced with `colors.accentLight` token
-- Removed all hardcoded hex in `thresholds.ts` — now references `colors.success/warning/error` tokens
-- Tab bar no longer shows plain text labels — uses visual icons with active/inactive states
+- Every service was calling `getDb()` directly — no seam between business logic and the database
+- `GlucoseReadings` and `preferences.ts` had hard compile-time dependency on `expo-sqlite` — tests required real SQLite
+- `ReadingCard.tsx` had `as any` cast on `reading.type` — unnecessary since `GlucoseReading.type` is already `ReadingType`
+- `App.tsx` called `await getDb()` explicitly at startup — adapter now opens DB lazily on first query
 
 ## Current state
 
-- All 7 screens redesigned with premium tokens
-- All UI components updated
+- All services depend on `DatabasePort` interface — `getDb()` call isolated to `db/sqlite-adapter.ts`
+- `createFakeGlucoseReadings()` in `GlucoseReadings.ts` still exists as a higher-level test helper (feature-specific mock)
 - TypeScript compiles clean (`tsc --noEmit` passes)
-- Color palette, spacing, and typography are consistent across all files
-- Dark mode not implemented (all tokens assume light mode)
+- `getDb()` in `db/database.ts` still exists — only imported by `db/sqlite-adapter.ts`
+- No tests written yet — seam is ready for test injection
 
 ## Next session starts with
 
-Review the design in a running app instance (iOS Simulator or device) to verify the visual changes render correctly. Then implement any of the previously planned features: Food Dashboard, Workout Dashboard, or Settings screen content.
+Write tests using `initDb(createMemoryDb())` to verify service behavior — start with `GlucoseReadings` query/insert, then `preferences.ts` get/upsert.
 
 ## Open questions
 
-- Add `expo-vector-icons` or similar for proper tab icon library instead of Unicode symbols?
-- Consider adding subtle background texture/grain for the warm background?
+None.

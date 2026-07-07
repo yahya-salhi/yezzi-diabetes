@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import { format } from "date-fns";
 
-const readingsRepo = createSqliteGlucoseReadings();
+const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
 
 type UseAveragesResult = {
   dailyAverage: number | null;

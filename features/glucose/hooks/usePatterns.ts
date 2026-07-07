@@ -1,10 +1,12 @@
 ﻿import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
-import { detectAllPatterns } from "@/features/glucose/services/patterns";
+import { detectPatterns, detectAllPatterns } from "@/features/glucose/services/patterns";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
+import type { ReadingType } from "@/features/glucose/types";
 
-const readingsRepo = createSqliteGlucoseReadings();
+const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
 
 type UsePatternsResult = {
   alerts: PatternAlert[];
@@ -12,7 +14,7 @@ type UsePatternsResult = {
   refresh: () => Promise<void>;
 };
 
-export function usePatterns(): UsePatternsResult {
+export function usePatterns(type?: ReadingType): UsePatternsResult {
   const [alerts, setAlerts] = useState<PatternAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,14 +22,14 @@ export function usePatterns(): UsePatternsResult {
     try {
       setLoading(true);
       const all = await readingsRepo.query({ limit: 20, orderBy: "date_desc" });
-      const data = detectAllPatterns(all);
+      const data = type ? detectPatterns(all, type) : detectAllPatterns(all);
       setAlerts(data);
     } catch {
       // silently fail
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [type]);
 
   useFocusEffect(
     useCallback(() => {

@@ -1,4 +1,4 @@
-﻿import { useState, useCallback } from "react";
+﻿import { useState, useMemo } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { format, subDays } from "date-fns";
 import { colors, spacing, shadows } from "@/theme/tokens";
@@ -7,13 +7,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReadingCard } from "@/features/glucose/components/ReadingCard";
 import { DecisionCard } from "@/features/glucose/components/DecisionCard";
-import { useFocusEffect } from "@react-navigation/native";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
-import { detectPatterns } from "@/features/glucose/services/patterns";
-import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
-import type { PatternAlert } from "@/features/glucose/services/patterns";
-
-const readingsRepo = createSqliteGlucoseReadings();
+import { useReadings } from "@/features/glucose/hooks/useReadings";
+import { usePatterns } from "@/features/glucose/hooks/usePatterns";
+import { computeAverage } from "@/features/glucose/services/averages";
+import type { ReadingType } from "@/features/glucose/types";
 
 const READING_TYPES: { key: string; label: string }[] = [
   { key: "all", label: "All" },
@@ -32,49 +29,27 @@ const DATE_RANGES: { key: string; label: string; days: number | null }[] = [
 ];
 
 export function HistoryScreen() {
-  const [readings, setReadings] = useState<GlucoseReading[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState("all");
   const [dateRange, setDateRange] = useState("14d");
-  const [average, setAverage] = useState<number | null>(null);
-  const [alerts, setAlerts] = useState<PatternAlert[]>([]);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      const range = DATE_RANGES.find((r) => r.key === dateRange)!;
-      const startDate = range.days ? format(subDays(new Date(), range.days), "yyyy-MM-dd") : undefined;
+  const range = DATE_RANGES.find((r) => r.key === dateRange)!;
 
-      const data = await readingsRepo.query({
-        type: filterType === "all" ? undefined : (filterType as ReadingType),
-        startDate,
-      });
-      setReadings(data);
-
-      const avg = data.length > 0
-        ? data.reduce((sum: number, r: GlucoseReading) => sum + r.value, 0) / data.length
-        : null;
-      setAverage(avg);
-
-      if (filterType !== "all") {
-        const allRecent = await readingsRepo.query({ limit: 20, orderBy: "date_desc" });
-        const patternAlerts = detectPatterns(allRecent, filterType as ReadingType);
-        setAlerts(patternAlerts);
-      } else {
-        setAlerts([]);
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false);
-    }
-  }, [filterType, dateRange]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
+  const filter = useMemo(
+    () => ({
+      type: filterType === "all" ? undefined : (filterType as ReadingType),
+      startDate: range.days
+        ? format(subDays(new Date(), range.days), "yyyy-MM-dd")
+        : undefined,
+    }),
+    [filterType, dateRange],
   );
+
+  const currentType = filterType === "all" ? undefined : (filterType as ReadingType);
+
+  const { readings, loading } = useReadings(filter);
+  const { alerts } = usePatterns(currentType);
+
+  const average = useMemo(() => computeAverage(readings), [readings]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -122,14 +97,16 @@ export function HistoryScreen() {
         </View>
       )}
 
-      {alerts.map((alert, i) => (
+      {currentType !== undefined && alerts.map((alert, i) => (
         <DecisionCard key={i} alert={alert} />
       ))}
 
       <View style={styles.divider} />
 
       <Text style={styles.sectionTitle}>
-        {filterType === "all" ? "All Readings" : ((READING_TYPES.find(t => t.key === filterType)?.label) + " Readings")}
+        {filterType === "all"
+          ? "All Readings"
+          : `${READING_TYPES.find((t) => t.key === filterType)?.label} Readings`}
       </Text>
 
       {loading ? (

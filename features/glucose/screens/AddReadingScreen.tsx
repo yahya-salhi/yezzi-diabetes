@@ -5,10 +5,11 @@ import { format } from "date-fns";
 import { randomUUID } from "expo-crypto";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
+import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { ReadingType, InsertReading } from "@/features/glucose/types";
 
-const readingsRepo = createSqliteGlucoseReadings();
+const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
 
 const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "fasting", label: "Fasting" },

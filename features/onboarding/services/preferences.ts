@@ -1,4 +1,4 @@
-import { getDb } from "@/db/database";
+import type { DatabasePort } from "@/db/port";
 
 export type UserPreferences = {
   unit: "mg/dL" | "mmol/L";
@@ -16,9 +16,8 @@ const DEFAULTS: UserPreferences = {
   postmeal_target_high: 140,
 };
 
-export async function getPreferences(): Promise<UserPreferences | null> {
+export async function getPreferences(db: DatabasePort): Promise<UserPreferences | null> {
   try {
-    const db = await getDb();
     const row = await db.getFirstAsync<{
       id: string;
       unit: string;
@@ -44,11 +43,11 @@ export async function getPreferences(): Promise<UserPreferences | null> {
 }
 
 export async function upsertPreferences(
-  prefs: Partial<UserPreferences>
+  db: DatabasePort,
+  prefs: Partial<UserPreferences>,
 ): Promise<void> {
   try {
-    const db = await getDb();
-    const existing = await getPreferences();
+    const existing = await getPreferences(db);
     const merged = { ...DEFAULTS, ...existing, ...prefs };
 
     await db.runAsync(
@@ -61,7 +60,7 @@ export async function upsertPreferences(
         merged.fasting_target_high,
         merged.postmeal_target_low,
         merged.postmeal_target_high,
-      ]
+      ],
     );
   } catch (err) {
     console.error("[preferences] upsertPreferences failed", err);

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { getDbAdapter } from "@/db/instance";
 import type { UserPreferences } from "../services/preferences";
 import { getPreferences, upsertPreferences } from "../services/preferences";
 
@@ -19,7 +20,7 @@ export function usePreferences(): UsePreferencesResult {
     try {
       setLoading(true);
       setError(null);
-      const data = await getPreferences();
+      const data = await getPreferences(getDbAdapter());
       setPreferences(data);
     } catch (err) {
       setError(String(err));
@@ -32,7 +33,7 @@ export function usePreferences(): UsePreferencesResult {
     try {
       setLoading(true);
       setError(null);
-      await upsertPreferences(prefs);
+      await upsertPreferences(getDbAdapter(), prefs);
       await refresh();
     } catch (err) {
       setError(String(err));
