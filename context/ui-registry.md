@@ -275,3 +275,51 @@ Last updated: 2026-07-07
 | Spacing             | dynamic 40–80px based on data count |
 
 **Pattern notes:** Wrapper includes section title + interactive legend row above the chart card. Two reference lines indicate normal glucose range (70–140 mg/dL) with dashed styling. Touch interaction shows tooltip with value. Empty state is a simple card without nested Card component.
+
+---
+
+### MealCard
+
+File: `features/food/components/MealCard.tsx`
+Last updated: 2026-07-07
+
+| Property         | Value                           |
+| ---------------- | ------------------------------- |
+| Background       | `colors.surface`                |
+| Border           | none                            |
+| Border radius    | 14                              |
+| Food name        | 16px, 600, `colors.textPrimary` |
+| Nutrition bg     | `colors.surfaceSecondary`       |
+| Nutrition radius | 10                              |
+| Nutrition value  | 18px, 700, `colors.textPrimary` |
+| Nutrition label  | 12px, 500, `colors.textMuted`   |
+| Nutrition divider| 1px `colors.borderLight`        |
+| Timestamp        | 13px, `colors.textMuted`        |
+| Spacing          | `spacing.xl` (20px) padding, `spacing.md` (12px) gap |
+| Interactive      | none (static)                   |
+| Shadow           | `shadows.sm`                    |
+| Accent usage     | badge (via Badge component)     |
+
+**Pattern notes:** Follows same card pattern as ReadingCard/DecisionCard — surface background, 14px radius, subtle shadow. Inner nutrition row uses surfaceSecondary background with 10px radius (shared with Button radius). Nutrition items separated by 1px borderLight dividers. Uses Badge component for meal type label.
+
+---
+
+### MealLinkSuggestion
+
+File: `features/food/components/MealLinkSuggestion.tsx`
+Last updated: 2026-07-07
+
+| Property        | Value                            |
+| --------------- | -------------------------------- |
+| Background      | `colors.surface`                 |
+| Border          | none                             |
+| Border radius   | 14 (overflow hidden)             |
+| Left accent bar | 4px, `colors.info`               |
+| Title           | 15px, 600, `colors.info`         |
+| Message         | 14px, 400, `colors.textSecondary`, lineHeight 20 |
+| Spacing         | `spacing.xl` (20px) body padding, `spacing.sm` (8px) gap |
+| Interactive     | action buttons (primary + ghost) |
+| Shadow          | `shadows.sm`                     |
+| Accent usage    | info color accent bar + title    |
+
+**Pattern notes:** Same row layout + accent bar structure as ReadingCard and DecisionCard — 4px left accent bar, surface background, 14px radius with overflow hidden for clean bar corners. Actions row right-aligned with ghost + primary Button pair. Use this exact structure for any future suggestion/prompt card.
