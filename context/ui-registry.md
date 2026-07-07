@@ -16,59 +16,87 @@ After building any component — update this file with the component name, file 
 
 ---
 
-## Components
+## Baseline — Established 2026-07-07
 
-### Button
+[Note: This baseline was established via /imprint audit after the premium design overhaul]
 
-File: `components/ui/Button.tsx`
-Last updated: 2026-07-07
-
-| Property         | Value                  |
-| ---------------- | ---------------------- |
-| Background (primary) | `colors.accent`    |
-| Background (secondary) | `colors.surface` |
-| Border (secondary) | 1px `colors.border` |
-| Border radius    | 8                     |
-| Text (primary)   | `colors.surface`, 14px, 500 |
-| Text (secondary) | `colors.textPrimary`, 14px, 500 |
-| Padding Y        | `spacing.sm` (8px)    |
-| Padding X        | `spacing.lg` (16px)   |
-
-**Pattern notes:** Two variants — primary and secondary. Primary uses accent background with white text. Secondary uses white background with border. No hover states in RN.
+| Property            | Correct token value                |
+| ------------------- | ---------------------------------- |
+| Page background     | `colors.background` (#F4F2EE)      |
+| Card/surface        | `colors.surface` (#FFFFFF)          |
+| Secondary surface   | `colors.surfaceSecondary` (#FAF9F7) |
+| Text primary        | `colors.textPrimary` (#1A1D1C)     |
+| Text secondary      | `colors.textSecondary` (#6B6E6D)   |
+| Text muted          | `colors.textMuted` (#A1A4A3)       |
+| Accent              | `colors.accent` (#1B5E5A)          |
+| Accent light        | `colors.accentLight` (#E8F0EF)     |
+| Success             | `colors.success` (#1B8A5A)         |
+| Warning             | `colors.warning` (#B8860B)         |
+| Error               | `colors.error` (#C5304B)           |
+| Info                | `colors.info` (#4E7FA7)            |
+| Border              | `colors.border` (#E3DFD8)          |
+| Border light        | `colors.borderLight` (#EDEAE4)     |
+| Card radius         | 14px                                |
+| Button/Input radius | 10px                                |
+| Badge radius        | 999px (pill)                        |
+| Card padding        | `spacing.xl` (20px)                 |
+| Screen padding      | `spacing.xl` (20px)                 |
+| Section gap         | `spacing.xxl` (28px)                |
+| Shadow default      | `shadows.md` (2/8/0.04)             |
+| Shadow subtle       | `shadows.sm` (1/4/0.03)             |
+| Shadow elevated     | `shadows.lg` (4/12/0.06)            |
+| Screen title        | 22px / 600                          |
+| Section heading     | 17px / 600                          |
+| Body text           | 15px / 400                          |
+| Stat number         | 34px / 700                          |
+| Reading value       | 32px / 700                          |
+| Button label        | 15px / 600                          |
+| Tab icon size       | 20px                                |
+| Tab bar height      | 64px                                |
 
 ---
+
+## Components
 
 ### Card
 
 File: `components/ui/Card.tsx`
 Last updated: 2026-07-07
 
-| Property      | Value                |
-| ------------- | -------------------- |
-| Background    | `colors.surface`     |
-| Border        | 1px `colors.border`  |
-| Border radius | 16                   |
-| Padding       | `spacing.xl` (24px)  |
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | `colors.surface`                   |
+| Border           | none                               |
+| Border radius    | 14                                 |
+| Text — primary   | inherited from parent              |
+| Text — secondary | inherited from parent              |
+| Spacing          | `spacing.xl` (20px) padding        |
+| Interactive      | none (static container)            |
+| Shadow           | `shadows.md` (default)             |
+| Accent usage     | none (color goes inside via children) |
 
-**Pattern notes:** Universal card container used everywhere. Never override background color — cards are always white. Color goes inside via badges, borders, and text.
+**Pattern notes:** Universal card container. No border — uses subtle shadow for depth. Never override background — always white. Never stack cards inside cards (no box-in-box).
 
 ---
 
-### Badge
+### Button
 
-File: `components/ui/Badge.tsx`
+File: `components/ui/Button.tsx`
 Last updated: 2026-07-07
 
-| Property        | Value                    |
-| --------------- | ------------------------ |
-| Background      | `colors.surfaceSecondary` (default, overridable) |
-| Border radius   | 999 (pill shape)         |
-| Padding Y       | 2px                      |
-| Padding X       | `spacing.sm` (8px)       |
-| Text            | 12px, 500                |
-| Text color      | `colors.textPrimary` (default, overridable) |
+| Property         | Primary            | Secondary                  | Ghost                |
+| ---------------- | ------------------ | -------------------------- | -------------------- |
+| Background       | `colors.accent`    | `colors.surface`           | transparent          |
+| Border           | none               | 1px `colors.border`        | none                 |
+| Border radius    | 10                 | 10                         | 10                   |
+| Text             | #FFFFFF            | `colors.textPrimary`       | `colors.accent`      |
+| Font             | `typography.buttonLabel` (15px/600) | same           | same                 |
+| Spacing          | 12px vertical, `spacing.xl` horizontal | same       | 12px vertical, `spacing.lg` horizontal |
+| Min height       | 44px               | 44px                       | 44px                 |
+| Interactive      | none in RN         | none                       | none                 |
+| Shadow           | none               | none                       | none                 |
 
-**Pattern notes:** Pill-shaped badge with configurable background and text color. Used for status labels, reading type indicators, and filter chips.
+**Pattern notes:** Three variants — primary (filled accent), secondary (outlined), ghost (text-only). All share 10px radius, 12px vertical padding, 44px min height for touch targets.
 
 ---
 
@@ -77,17 +105,39 @@ Last updated: 2026-07-07
 File: `components/ui/Input.tsx`
 Last updated: 2026-07-07
 
-| Property         | Value                |
-| ---------------- | -------------------- |
-| Background       | `colors.surface`     |
-| Border           | 1px `colors.border`  |
-| Border radius    | 8                    |
-| Padding Y        | `spacing.sm` (8px)   |
-| Padding X        | `spacing.md` (12px)  |
-| Text             | 14px, `colors.textPrimary` |
-| Placeholder      | `colors.textMuted`   |
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Background       | `colors.surface`         |
+| Border           | 1px `colors.border`      |
+| Border radius    | 10                       |
+| Text             | 15px, `colors.textPrimary` |
+| Placeholder      | 15px, `colors.textMuted` |
+| Spacing          | 14px vertical, `spacing.xl` horizontal |
+| Interactive      | focus: `colors.accent` border |
+| Shadow           | none                     |
+| Accent usage     | focus border color       |
 
-**Pattern notes:** Standard text input. Placeholder color always set to `colors.textMuted`. For numeric inputs use `keyboardType="numeric"`.
+**Pattern notes:** Standard text input. Always set placeholderTextColor. Focus state changes border to accent. For numeric inputs use keyboardType="numeric".
+
+---
+
+### Badge
+
+File: `components/ui/Badge.tsx`
+Last updated: 2026-07-07
+
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Background       | `colors.surfaceSecondary` (default, overridable) |
+| Border           | none                     |
+| Border radius    | 999 (pill)               |
+| Text             | 13px, 500, `colors.textPrimary` (default, overridable) |
+| Spacing          | 3px vertical, 10px horizontal |
+| Interactive      | none (static)            |
+| Shadow           | none                     |
+| Accent usage     | overridable color/text props |
+
+**Pattern notes:** Pill-shaped badge. Background and text color are overridable for status usage. Used for reading type indicators and filter chips.
 
 ---
 
@@ -96,15 +146,18 @@ Last updated: 2026-07-07
 File: `components/ui/EmptyState.tsx`
 Last updated: 2026-07-07
 
-| Property      | Value                     |
-| ------------- | ------------------------- |
-| Padding Y     | `spacing.xxl` (32px)      |
-| Gap           | `spacing.lg` (16px)       |
-| Text          | 14px, 400, `colors.textMuted` |
-| Alignment     | Center                    |
-| Action button | Secondary Button variant  |
+| Property         | Value                     |
+| ---------------- | ------------------------- |
+| Background       | inherited                 |
+| Border           | none                      |
+| Border radius    | none                      |
+| Text             | 15px, 400, `colors.textMuted` |
+| Spacing          | `spacing.xxl` (28px) vertical padding, `spacing.lg` (16px) gap |
+| Interactive      | optional secondary Button |
+| Shadow           | none                      |
+| Accent usage     | none                      |
 
-**Pattern notes:** Used in every section that can be empty. Action button is optional — shown only when both `actionLabel` and `onAction` are provided.
+**Pattern notes:** Used in every section that can be empty. Centered layout. Action button is optional — shown only when both `actionLabel` and `onAction` are provided.
 
 ---
 
@@ -113,13 +166,18 @@ Last updated: 2026-07-07
 File: `components/ui/LoadingSpinner.tsx`
 Last updated: 2026-07-07
 
-| Property  | Value             |
-| --------- | ----------------- |
-| Color     | `colors.accent`   |
-| Size      | large             |
-| Container | Full screen, centered |
+| Property         | Value                   |
+| ---------------- | ----------------------- |
+| Background       | none (transparent)      |
+| Border           | none                    |
+| Border radius    | none                    |
+| Text             | none                    |
+| Spacing          | full screen centered    |
+| Interactive      | none                    |
+| Shadow           | none                    |
+| Accent usage     | `colors.accent` spinner |
 
-**Pattern notes:** Used as full-screen loading state. For inline loading, wrap the content area instead.
+**Pattern notes:** Used as full-screen loading state. Minimal — just a centered ActivityIndicator in accent color.
 
 ---
 
@@ -128,19 +186,22 @@ Last updated: 2026-07-07
 File: `features/glucose/components/ReadingCard.tsx`
 Last updated: 2026-07-07
 
-| Property          | Value                    |
-| ----------------- | ------------------------ |
-| Background        | `colors.surface`         |
-| Border            | 1px `colors.border`      |
-| Left border width | 4px (color-coded)        |
-| Border radius     | 16                       |
-| Padding           | `spacing.xl` (24px)      |
-| Gap               | `spacing.sm` (8px)       |
-| Type label        | 14px, 500, `colors.textSecondary` |
-| Timestamp         | 12px, 400, `colors.textMuted` |
-| Value             | 28px, 700, `colors.textPrimary` |
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Background       | `colors.surface`         |
+| Border           | none                     |
+| Border radius    | 14 (overflow hidden)     |
+| Left accent bar  | 4px, color-coded (success/warning/error) |
+| Type label       | 14px, 500, `colors.textSecondary` |
+| Timestamp        | 13px, 400, `colors.textMuted` |
+| Value            | 32px, 700, color-coded by status |
+| Unit             | 16px, 500, same color as value |
+| Spacing          | `spacing.xl` (20px) body padding, `spacing.sm` (8px) gap |
+| Interactive      | none (static)            |
+| Shadow           | `shadows.sm`             |
+| Accent usage     | status color drives bar + value |
 
-**Pattern notes:** Left border is color-coded by threshold status (green=normal, orange=borderline, red=high). Value always shows unit. Layout: type+time on top row, value below.
+**Pattern notes:** Row layout: accent bar (4px) + body. Accent bar and value text share the same status color (green=normal, orange=borderline, red=high). No border — uses subtle shadow. Card uses `overflow: hidden` for clean radius on the accent bar top/bottom.
 
 ---
 
@@ -149,15 +210,37 @@ Last updated: 2026-07-07
 File: `features/glucose/components/DecisionCard.tsx`
 Last updated: 2026-07-07
 
-| Property          | Value                    |
-| ----------------- | ------------------------ |
-| Background        | `colors.surface`         |
-| Border            | 1px `colors.border`      |
-| Left border width | 4px (color-coded)        |
-| Border radius     | 16                       |
-| Padding           | `spacing.xl` (24px)      |
-| Gap               | `spacing.md` (12px)      |
-| Title             | 14px, 600, color-coded   |
-| Message text      | 14px, 400, `colors.textSecondary` |
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Background       | `colors.surface`         |
+| Border           | none                     |
+| Border radius    | 14 (overflow hidden)     |
+| Left accent bar  | 4px, color-coded         |
+| Title            | 15px, 600, color-coded   |
+| Message          | 14px, 400, `colors.textSecondary` |
+| Spacing          | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap |
+| Interactive      | optional action Button   |
+| Shadow           | `shadows.sm`             |
+| Accent usage     | accent bar + title color |
 
-**Pattern notes:** Same card structure as ReadingCard but with title + message body. Used for pattern alerts and threshold warnings. Optional action button at the bottom.
+**Pattern notes:** Same card structure as ReadingCard — row layout with accent bar + body. Used for pattern alerts and threshold warnings. Shares identical radius (14), shadow (sm), and accent bar pattern for visual consistency.
+
+---
+
+### TabBar (Navigation)
+
+File: `navigation/AppNavigator.tsx`
+Last updated: 2026-07-07
+
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Background       | `colors.surface`         |
+| Top border       | 1px `colors.borderLight` |
+| Height           | 64px                     |
+| Active icon      | `colors.accent`          |
+| Inactive icon    | `colors.textMuted`       |
+| Icon font size   | 20px                     |
+| Label font       | 11px, 500                |
+| Icon shape       | Geometric Unicode symbols (◆◇●○■□▲△) |
+
+**Pattern notes:** Tab bar uses geometric symbols instead of text labels. Active state uses filled symbol, inactive uses outlined. Four tabs: Dashboard, Food, Workout, Settings. Min height 64px with 8px top/bottom padding.
