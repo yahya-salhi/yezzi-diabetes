@@ -7,7 +7,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Foundation
-**Last completed:** Feature 1 spec written and committed
+**Last completed:** Feature 2 spec written and committed
 **Next:** 01 Project Setup
 
 ---
@@ -17,6 +17,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 1 — Foundation
 
 - [X] Spec: Blood Glucose Tracking Design Doc
+- [X] Spec: Food Tracking Design Doc
 - [ ] 01 Project Setup
 - [ ] 02 Dashboard Screen — Full UI
 - [ ] 03 Add Reading Screen — Full UI
@@ -29,8 +30,13 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 2 — Food Tracking
 
-- [ ] Spec: Food Tracking Design Doc
-- [ ] _Implementation features_
+- [ ] 10 Food Database Migration
+- [ ] 11 Food Dashboard — Full UI
+- [ ] 12 Snap Meal — Camera + Review UI
+- [ ] 13 GPT-4o Vision Integration
+- [ ] 14 Save Food Log + Manual Entry
+- [ ] 15 Meal-to-Reading Linking
+- [ ] 16 Meal Insights Dashboard
 
 ### Phase 3 — Exercise Tracking
 
@@ -46,6 +52,9 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-07** — expo-sqlite for local storage, no cloud or account needed
 - **2026-07-07** — Approach B (feature-sliced) adopted for folder structure
 - **2026-07-07** — Stack navigator selected for sub-screens, bottom tabs for main sections
+- **2026-07-07** — GPT-4o Vision for food recognition + nutrition estimation
+- **2026-07-07** — Photo saved locally, only base64 sent to OpenAI API
+- **2026-07-07** — Meals linked to glucose readings for actual vs estimated impact comparison
 
 ---
 

@@ -55,7 +55,26 @@
 │   │   │   ├── useReadings.ts
 │   │   │   └── useAverages.ts
 │   │   └── types.ts
-│   ├── food/              → Phase 2
+│   ├── food/
+│   │   ├── screens/
+│   │   │   ├── FoodDashboardScreen.tsx
+│   │   │   ├── SnapMealScreen.tsx
+│   │   │   ├── MealDetailScreen.tsx
+│   │   │   └── ManualEntryScreen.tsx
+│   │   ├── components/
+│   │   │   ├── MealCard.tsx
+│   │   │   ├── CameraView.tsx
+│   │   │   ├── NutritionBreakdown.tsx
+│   │   │   ├── EstimatedImpactBadge.tsx
+│   │   │   └── MealLinkSuggestion.tsx
+│   │   ├── services/
+│   │   │   ├── foodLog.ts
+│   │   │   ├── mealAnalysis.ts
+│   │   │   └── impactEstimator.ts
+│   │   ├── hooks/
+│   │   │   ├── useFoodLog.ts
+│   │   │   └── useMealAnalysis.ts
+│   │   └── types.ts
 │   └── exercise/          → Phase 3
 ├── db/
 │   ├── database.ts        → SQLite init
@@ -84,7 +103,7 @@
 
 | Folder        | Owns                                                                                   |
 | ------------- | -------------------------------------------------------------------------------------- |
-| `features/`   | One subfolder per feature. Screens, components, services, hooks — all feature-owned.   |
+| `features/` | One subfolder per feature. Screens, components, services, hooks, types — all feature-owned. |
 | `db/`         | Database initialisation and migrations only. No business logic.                        |
 | `navigation/` | Navigator setup only. No business logic.                                                |
 | `theme/`      | Token constants only. No logic.                                                        |
@@ -134,20 +153,38 @@ Dashboard renders DecisionCard with alert
 
 ### `glucose_readings`
 
-| Column     | Type     | Notes                                    |
-| ---------- | -------- | ---------------------------------------- |
-| id         | text     | UUID, primary key                        |
-| value      | real     | Stored in mg/dL internally               |
-| unit       | text     | 'mg/dL' or 'mmol/L' — user's input unit  |
-| type       | text     | 'fasting' or 'post_lunch'                |
-| date       | text     | ISO YYYY-MM-DD                           |
-| time       | text     | HH:mm                                    |
-| notes      | text     | Optional user notes                      |
-| created_at | text     | ISO timestamp, default current datetime  |
+| Column      | Type     | Notes                                    |
+| ----------- | -------- | ---------------------------------------- |
+| id          | text     | UUID, primary key                        |
+| value       | real     | Stored in mg/dL internally               |
+| unit        | text     | 'mg/dL' or 'mmol/L' — user's input unit  |
+| type        | text     | 'fasting' or 'post_lunch'                |
+| date        | text     | ISO YYYY-MM-DD                           |
+| time        | text     | HH:mm                                    |
+| food_log_id | text     | Nullable FK to food_log.id               |
+| notes       | text     | Optional user notes                      |
+| created_at  | text     | ISO timestamp, default current datetime  |
+
+### `food_log`
+
+| Column           | Type     | Notes                                          |
+| ---------------- | -------- | ---------------------------------------------- |
+| id               | text     | UUID, primary key                              |
+| reading_id       | text     | Nullable FK to glucose_readings.id             |
+| meal_type        | text     | 'breakfast', 'lunch', 'dinner', 'snack'        |
+| date             | text     | ISO YYYY-MM-DD                                 |
+| time             | text     | HH:mm                                          |
+| photo_uri        | text     | Local file path to captured photo              |
+| food_name        | text     | GPT-4o identified food name                    |
+| carbs_g          | real     | Estimated carbs in grams                       |
+| protein_g        | real     | Estimated protein, nullable                    |
+| fat_g            | real     | Estimated fat, nullable                        |
+| estimated_impact | real     | GPT-4o's estimated glucose rise (mg/dL)        |
+| notes            | text     | Optional user notes                            |
+| created_at       | text     | ISO timestamp                                  |
 
 ### Future Tables
 
-- `food_log` — meals, carbs, estimated impact (Phase 2)
 - `exercise_log` — workouts, sets, reps, weights (Phase 3)
 - `user_preferences` — unit preference, target ranges
 

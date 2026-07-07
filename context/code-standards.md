@@ -241,6 +241,8 @@ Never install a new package without a clear reason. Before installing anything c
 Approved dependencies for this project:
 
 - `expo-sqlite` — Local database
+- `expo-camera` — Camera capture for food photos
+- `expo-file-system` — Save captured photos locally
 - `@react-navigation/native` — Navigation container
 - `@react-navigation/bottom-tabs` — Bottom tab navigator
 - `@react-navigation/native-stack` — Stack navigator
@@ -251,5 +253,6 @@ Approved dependencies for this project:
 - `victory-native` — Charts for trends
 - `date-fns` — Date formatting and calculations
 - `uuid` — UUID generation for IDs
+- `openai` — GPT-4o Vision for food recognition + estimation
 
 Do not install any other packages without updating this list first.

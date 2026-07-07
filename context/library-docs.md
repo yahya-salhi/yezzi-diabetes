@@ -269,6 +269,73 @@ export function formatReadingTime(timeStr: string): string {
 
 ---
 
+## OpenAI GPT-4o Vision
+
+**Check first:** Read the OpenAI Vision docs at https://platform.openai.com/docs/guides/vision before using.
+
+### Food Recognition + Nutrition Estimation
+
+```typescript
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
+// From photo (base64)
+export async function analyzeMealFromPhoto(base64Image: string) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0.3,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Identify this meal. Estimate: food name, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return ONLY valid JSON: { "food_name": string, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
+          },
+          {
+            type: "image_url",
+            image_url: { url: `data:image/jpeg;base64,${base64Image}` },
+          },
+        ],
+      },
+    ],
+  });
+
+  const content = response.choices[0].message.content!;
+  return JSON.parse(content);
+}
+
+// From text description (fallback)
+export async function analyzeMealFromText(description: string) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0.3,
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "user",
+        content: `Given this meal description: "${description}", estimate the food name, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return: { "food_name": string, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
+      },
+    ],
+  });
+
+  const content = response.choices[0].message.content!;
+  return JSON.parse(content);
+}
+```
+
+**Rules:**
+- Model is always `gpt-4o` — never use other models
+- Temperature is `0.3` for consistent estimations
+- Always validate parsed JSON before using — wrap in try/catch
+- On parse failure — max 2 retries, then fallback to manual entry
+- Photo sent as base64 data URL — never upload to any other server
+- Prompt must explicitly request ONLY valid JSON — prevents markdown-wrapped responses
+- Nullable fields (protein_g, fat_g) set to null when GPT-4o cannot estimate
+
+---
+
 ## expo-font
 
 ```typescript

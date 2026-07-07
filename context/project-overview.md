@@ -53,11 +53,13 @@ Bottom tab bar with four tabs: Dashboard, Food, Workout, Settings. Stack navigat
 - Color-coded decision cards per reading based on IDF thresholds
 - Pattern detection: 3+ high readings of same type triggers pattern alert
 
-### Food Logging (Feature 2 — planned)
+### Food Logging (Feature 2 — active)
 
-- Log meals with name, portion, estimated carbs
-- App estimates blood sugar impact
-- Recommendations: what to avoid, what's healthy
+- Snap a photo of the meal → GPT-4o Vision identifies food and estimates nutrition (carbs, protein, fat) + blood glucose impact
+- Manual text entry fallback when camera is unavailable
+- Link meals to post-lunch glucose readings for actual vs estimated impact comparison
+- Meal insights dashboard: "Highest Spikes This Week" shows meals with biggest actual impact
+- Per-meal feedback on estimated glucose rise
 
 ### Exercise Tracking (Feature 3 — planned)
 
@@ -91,7 +93,11 @@ All data lives on-device. No cloud sync, no account required. The database holds
 - Pattern detection (3+ consecutive high readings)
 - Decision cards with color-coded feedback
 - Reading history with filters and date range
-- Food log with blood sugar impact estimation (Phase 2)
+- Food log with photo capture and GPT-4o Vision food recognition
+- Estimated nutrition (carbs, protein, fat) per meal
+- Estimated blood glucose impact per meal
+- Meal-to-reading linking for actual vs estimated comparison
+- Meal insights dashboard (highest spike meals)
 - Exercise log and weekly planner (Phase 3)
 - On-device storage — no sign-up required
 

@@ -177,12 +177,109 @@ Build the History screen with filters and real data.
 
 ## Phase 2 — Food Tracking
 
-_Planned after Feature 1 completion._
+### 10 Food Database Migration
 
-- Meal logging screen
-- Food database / manual entry
-- Blood sugar impact estimation
-- Recommendations engine
+Add `food_log` table and `food_log_id` column to `glucose_readings`.
+
+**Files:**
+- `db/migrations.ts` — Add food_log table creation, add food_log_id column to glucose_readings
+
+**Verification:** Migration runs without errors. New table queryable.
+
+---
+
+### 11 Food Dashboard — Full UI
+
+Build FoodDashboardScreen with mock data. Empty states for no meals logged.
+
+**UI:**
+- Today's date header
+- Meals list area — "No meals logged today" empty state
+- Today's totals card — carbs, estimated impact with "—" placeholders
+- Quick snap FAB button (bottom-right, floating)
+- Recent meals horizontal strip (placeholder empty state)
+- MealLinkSuggestion component preview
+
+**Verification:** Dashboard renders with correct spacing, tokens, empty states.
+
+---
+
+### 12 Snap Meal — Camera + Review UI
+
+Build the camera screen and the review/edit screen.
+
+**UI:**
+- CameraScreen: full-screen camera preview, square crop overlay, capture button, flash toggle, close button
+- ReviewScreen: captured photo thumbnail, food name input (pre-filled by AI), nutrition fields (carbs, protein, fat) with edit capability, meal_type picker, estimated impact badge, notes textarea, save button
+- Loading state during AI processing: skeleton card with spinner
+
+**Verification:** Camera opens, captures photo, navigates to review screen. All UI elements present.
+
+---
+
+### 13 GPT-4o Vision Integration
+
+Wire the camera to GPT-4o for food recognition.
+
+**Logic:**
+- `features/food/services/mealAnalysis.ts`
+- Capture photo → save to app documents directory via expo-file-system
+- Convert to base64 → POST to OpenAI GPT-4o Vision
+- Parse JSON response: `{ food_name, carbs_g, protein_g, fat_g, estimated_impact_mgdl }`
+- On parse failure: 2 retries, then fallback to ManualEntryScreen
+- `openai` package added as dependency
+
+**Verification:** Snapping a photo of a meal returns food name and nutrition estimates. Review screen pre-fills correctly.
+
+---
+
+### 14 Save Food Log + Manual Entry
+
+Wire save logic and build manual entry fallback.
+
+**Logic:**
+- `features/food/services/foodLog.ts` — insertMeal(), getMeals(), getMealById(), getMealsByDate()
+- `features/food/types.ts` — FoodLog, InsertFoodLog types
+- On save: validate → save to SQLite → navigate back
+- ManualEntryScreen: text input for meal description → GPT-4o text-based estimation → same save flow
+
+**Verification:** Meal saves to SQLite. Manual entry fallback works when camera fails.
+
+---
+
+### 15 Meal-to-Reading Linking
+
+Wire the linking flow between food logs and glucose readings.
+
+**Logic:**
+- When user logs a post-lunch reading → query today's food_log entries with meal_type='lunch'
+- If found → show MealLinkSuggestion dialog
+- On accept: update glucose_readings.food_log_id
+- `features/food/services/impactEstimator.ts`:
+  - getActualImpact(readingId) — returns actual rise (post-meal value - fasting avg)
+  - getEstimatedVsActual(mealId) — returns estimated vs actual comparison
+  - Link query: JOIN food_log ON glucose_readings.food_log_id = food_log.id
+- Dashboard shows linked data when available
+
+**Verification:** After saving a meal and a post-lunch reading, linking suggestion appears. Linked meals show actual vs estimated impact.
+
+---
+
+### 16 Meal Insights Dashboard
+
+Surface food pattern insights on the dashboard.
+
+**UI:**
+- "Highest Spikes This Week" — top 3 meals by actual glucose impact, shown as cards with food name, impact number, time
+- Only appears when 2+ linked meal + reading pairs exist
+- Currently empty state card when no data
+
+**Logic:**
+- Query last 7 days of linked meals where glucose_readings.food_log_id IS NOT NULL
+- Calculate actual rise = post-lunch value - pre-meal fasting baseline
+- Sort descending, take top 3
+
+**Verification:** Insights card appears after linked data exists. Shows correct sorting.
 
 ---
 
@@ -202,6 +299,6 @@ _Planned after Feature 2 completion._
 | Phase                | Features |
 | -------------------- | -------- |
 | Phase 1 — Foundation | 9        |
-| Phase 2 — Food       | TBD      |
+| Phase 2 — Food       | 7        |
 | Phase 3 — Exercise   | TBD      |
-| **Total**            | **9+**   |
+| **Total**            | **16+**  |
