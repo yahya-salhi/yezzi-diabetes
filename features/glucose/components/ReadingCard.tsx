@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, spacing } from "@/theme/tokens";
+import { colors, spacing, shadows } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
 
@@ -30,33 +30,44 @@ export function ReadingCard({ reading }: Props) {
   const statusColor = getStatusColor(reading.value, reading.type);
 
   return (
-    <View style={[styles.card, { borderLeftColor: statusColor }]}>
-      <View style={styles.header}>
-        <Text style={styles.type}>{READING_TYPE_LABELS[reading.type] || reading.type}</Text>
-        <Text style={styles.time}>
-          {reading.date === format(new Date(), "yyyy-MM-dd") ? "Today" : reading.date} {reading.time}
+    <View style={[styles.card, shadows.sm]}>
+      <View style={[styles.accentBar, { backgroundColor: statusColor }]} />
+      <View style={styles.body}>
+        <View style={styles.header}>
+          <Text style={styles.type}>{READING_TYPE_LABELS[reading.type] || reading.type}</Text>
+          <Text style={styles.time}>
+            {reading.date === format(new Date(), "yyyy-MM-dd") ? "Today" : reading.date} {reading.time}
+          </Text>
+        </View>
+        <Text style={[styles.value, { color: statusColor }]}>
+          {Math.round(reading.value)} <Text style={styles.unit}>{reading.unit}</Text>
         </Text>
       </View>
-      <Text style={styles.value}>
-        {Math.round(reading.value)} {reading.unit}
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    flexDirection: "row",
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderLeftWidth: 4,
-    borderRadius: 16,
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  accentBar: {
+    width: 4,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
+  },
+  body: {
+    flex: 1,
     padding: spacing.xl,
     gap: spacing.sm,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
   type: {
     fontSize: 14,
@@ -64,13 +75,16 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   time: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "400",
     color: colors.textMuted,
   },
   value: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "700",
-    color: colors.textPrimary,
+  },
+  unit: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

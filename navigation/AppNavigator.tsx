@@ -1,7 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { colors } from "@/theme/tokens";
 import { DashboardScreen } from "@/features/glucose/screens/DashboardScreen";
 import { AddReadingScreen } from "@/features/glucose/screens/AddReadingScreen";
@@ -26,19 +26,35 @@ type GlucoseStackParamList = {
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const GlucoseStack = createNativeStackNavigator<GlucoseStackParamList>();
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+const TAB_ICONS: Record<string, { active: string; inactive: string }> = {
+  Dashboard: { active: "◆", inactive: "◇" },
+  Food: { active: "●", inactive: "○" },
+  Workout: { active: "■", inactive: "□" },
+  Settings: { active: "▲", inactive: "△" },
+};
+
+function TabIcon({ routeName, focused }: { routeName: string; focused: boolean }) {
+  const icon = TAB_ICONS[routeName];
   return (
-    <Text
-      style={{
-        fontSize: 10,
-        fontWeight: "500",
-        color: focused ? colors.accent : colors.textMuted,
-      }}
-    >
-      {label}
-    </Text>
+    <View style={tabStyles.container}>
+      <Text style={[tabStyles.icon, { color: focused ? colors.accent : colors.textMuted }]}>
+        {focused ? icon.active : icon.inactive}
+      </Text>
+    </View>
   );
 }
+
+const tabStyles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 48,
+    height: 28,
+  },
+  icon: {
+    fontSize: 20,
+  },
+});
 
 function DashboardStack() {
   return (
@@ -66,49 +82,31 @@ export function AppNavigator() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
           tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors.textMuted,
-          tabBarStyle: { height: 60 },
-        }}
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.borderLight,
+            borderTopWidth: 1,
+            height: 64,
+            paddingBottom: 8,
+            paddingTop: 8,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: "500",
+          },
+          tabBarIcon: ({ focused }) => (
+            <TabIcon routeName={route.name} focused={focused} />
+          ),
+        })}
       >
-        <Tab.Screen
-          name="Dashboard"
-          component={DashboardStack}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabIcon label="Dashboard" focused={focused} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Food"
-          component={FoodDashboardScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabIcon label="Food" focused={focused} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Workout"
-          component={WorkoutDashboardScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabIcon label="Workout" focused={focused} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabIcon label="Settings" focused={focused} />
-            ),
-          }}
-        />
+        <Tab.Screen name="Dashboard" component={DashboardStack} />
+        <Tab.Screen name="Food" component={FoodDashboardScreen} />
+        <Tab.Screen name="Workout" component={WorkoutDashboardScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );

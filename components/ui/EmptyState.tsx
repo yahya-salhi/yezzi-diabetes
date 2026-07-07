@@ -27,9 +27,10 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   message: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "400",
     color: colors.textMuted,
     textAlign: "center",
+    lineHeight: 22,
   },
 });

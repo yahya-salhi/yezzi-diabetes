@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, spacing } from "@/theme/tokens";
+import { colors } from "@/theme/tokens";
 
 type Props = {
   label: string;
@@ -22,12 +22,12 @@ export function Badge({
 const styles = StyleSheet.create({
   badge: {
     borderRadius: 999,
-    paddingVertical: 2,
-    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
     alignSelf: "flex-start",
   },
   text: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "500",
   },
 });
