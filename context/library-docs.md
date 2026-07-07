@@ -192,38 +192,34 @@ function DashboardScreen() {
 
 ---
 
-## Victory Native (Charts)
+## react-native-gifted-charts (Charts)
 
-**Check first:** Read the Victory Native docs at https://docs.page/FormidableLabs/victory-native before using.
-
-> **⚠ Performance risk:** Victory Native uses SVG rendering which can lag with many data points. Fine for 14-day charts (~280 pts max). For 90-day or longer windows, consider swapping to `react-native-gifted-charts` if performance degrades.
+**Check first:** Read the react-native-gifted-charts docs at https://gifted-charts.web.app/ before using.
 
 ### Trend Chart (14-day Glucose)
 
 ```tsx
-import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme } from "victory-native";
+import { LineChart } from "react-native-gifted-charts";
 
-// Data points: { x: date string, y: value }
+// Data points: { value: number, label: string }
 // Separate lines per reading type (fasting, pre_meal, post_meal, etc.)
 
-<VictoryChart theme={VictoryTheme.material} domainPadding={10}>
-  <VictoryLine
-    data={fastingData}
-    style={{ data: { stroke: "#7C5CFC", strokeWidth: 2 } }}
-  />
-  <VictoryLine
-    data={postLunchData}
-    style={{ data: { stroke: "#61A8FF", strokeWidth: 2 } }}
-  />
-  <VictoryAxis
-    tickFormat={(t) => format(new Date(t), "MMM dd")}
-    style={{ tickLabels: { fontSize: 10, padding: 5 } }}
-  />
-  <VictoryAxis dependentAxis
-    label="mg/dL"
-    style={{ tickLabels: { fontSize: 10 } }}
-  />
-</VictoryChart>
+<LineChart
+  data={fastingData}
+  data2={postLunchData}
+  color1="#7C5CFC"
+  color2="#61A8FF"
+  dataPointsColor1="#7C5CFC"
+  dataPointsColor2="#61A8FF"
+  startFillColor1="#7C5CFC"
+  startFillColor2="#61A8FF"
+  startOpacity={0.1}
+  endOpacity={0.1}
+  xAxisLabelTextStyle={{ fontSize: 10 }}
+  yAxisTextStyle={{ fontSize: 10 }}
+  noOfSections={5}
+  scrollToEnd
+/>
 ```
 
 **Rules:**
@@ -231,7 +227,6 @@ import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme } from "victory-na
 - Show at least fasting line on trend charts; add per-type lines as data allows
 - Fasting line color: `colors.accent` (#7C5CFC)
 - Post-meal line color: `colors.info` (#61A8FF)
-- Normal range shown as a shaded band (optional, 70-140 mg/dL)
 - X-axis always shows dates, Y-axis shows glucose values
 - Never show more than 30 data points on a single chart — slice to 14 days
 

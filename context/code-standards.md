@@ -253,7 +253,9 @@ Approved dependencies for this project:
 - `react-native-safe-area-context` — Safe area handling
 - `@expo-google-fonts/inter` — Inter font
 - `expo-font` — Font loading
-- `victory-native` — Charts for trends
+- `react-native-gifted-charts` — Charts for trends
+- `react-native-svg` — SVG rendering (required by react-native-gifted-charts)
+- `expo-linear-gradient` — Gradients (required by react-native-gifted-charts)
 - `date-fns` — Date formatting and calculations
 - `uuid` — UUID generation for IDs
 - `openai` — GPT-4o Vision for food recognition + estimation

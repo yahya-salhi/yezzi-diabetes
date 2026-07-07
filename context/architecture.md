@@ -7,7 +7,7 @@
 | Framework      | Expo SDK 54 + React 19        | React Native app framework             |
 | Navigation     | React Navigation 7            | Stack + bottom tab navigation          |
 | Database       | expo-sqlite                   | Local on-device storage                |
-| Charts         | Victory Native                | Trend charts and data visualisation    |
+| Charts         | react-native-gifted-charts     | Trend charts and data visualisation    |
 | Font           | Inter via @expo-google-fonts  | Primary font                           |
 | Date handling  | date-fns                      | Date formatting and calculations       |
 | ID generation  | uuid                          | UUID generation for database records   |

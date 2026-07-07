@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Foundation
-**Last completed:** Feature 3 spec written and committed
-**Next:** 01 Project Setup
+**Phase:** Foundation — Complete
+**Last completed:** 10 History Screen — Full UI + Logic
+**Next:** 11 Food Database Migration (Phase 2)
 
 ---
 
@@ -19,15 +19,16 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] Spec: Blood Glucose Tracking Design Doc
 - [X] Spec: Food Tracking Design Doc
 - [X] Spec: Exercise Tracking Design Doc
-- [ ] 01 Project Setup
-- [ ] 02 Dashboard Screen — Full UI
-- [ ] 03 Add Reading Screen — Full UI
-- [ ] 04 Add Reading — Save Logic
-- [ ] 05 Dashboard Screen — Real Data
-- [ ] 06 Averages Engine
-- [ ] 07 Trend Chart
-- [ ] 08 IDF Threshold + Decision Cards
-- [ ] 09 History Screen — Full UI + Logic
+- [X] 01 Project Setup
+- [X] 02 Onboarding — First-Run Setup
+- [X] 03 Dashboard Screen — Full UI
+- [X] 04 Add Reading Screen — Full UI
+- [X] 05 Add Reading — Save Logic
+- [X] 06 Dashboard Screen — Real Data
+- [X] 07 Averages Engine
+- [X] 08 Trend Chart
+- [X] 09 IDF Threshold + Decision Cards
+- [X] 10 History Screen — Full UI + Logic
 
 ### Phase 2 — Food Tracking
 
@@ -54,6 +55,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Decisions Made During Build
 
 - **2026-07-07** — IDF thresholds adopted for reading classification (fasting <100 normal, 100-125 pre-diabetic, >=126 high)
+- **2026-07-07** — Swapped Victory Native for react-native-gifted-charts due to peer dependency conflict with RN 0.81.5
 - **2026-07-07** — mg/dL as internal storage unit, mmol/L supported for input/display with * 18.0182 conversion
 - **2026-07-07** — expo-sqlite for local storage, no cloud or account needed
 - **2026-07-07** — Approach B (feature-sliced) adopted for folder structure
