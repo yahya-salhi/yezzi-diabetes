@@ -1,11 +1,22 @@
+import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 import type { FoodLog, InsertFoodLog } from "../types";
 
-export function createSqliteFoodLog(db: DatabasePort) {
+export interface FoodLogRepo {
+  getUnlinkedMeals(date: string): Promise<FoodLog[]>;
+  insert(meal: InsertFoodLog): Promise<void>;
+  getById(id: string): Promise<FoodLog | null>;
+  getByDate(date: string): Promise<FoodLog[]>;
+  deleteById(id: string): Promise<void>;
+}
+
+export function createSqliteFoodLog(db?: DatabasePort): FoodLogRepo {
+  const adapter = db ?? getDbAdapter();
+
   return {
-    async getUnlinkedMeals(date: string): Promise<FoodLog[]> {
+    async getUnlinkedMeals(date) {
       try {
-        return await db.getAllAsync<FoodLog>(
+        return await adapter.getAllAsync<FoodLog>(
           `SELECT f.* FROM food_log f
            WHERE f.date = ?
            AND f.id NOT IN (
@@ -20,9 +31,9 @@ export function createSqliteFoodLog(db: DatabasePort) {
       }
     },
 
-    async insert(meal: InsertFoodLog): Promise<void> {
+    async insert(meal) {
       try {
-        await db.runAsync(
+        await adapter.runAsync(
           `INSERT INTO food_log (id, meal_type, date, time, photo_uri, food_name, carbs_g, protein_g, fat_g, calories, estimated_impact, notes, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
           [
@@ -46,9 +57,9 @@ export function createSqliteFoodLog(db: DatabasePort) {
       }
     },
 
-    async getById(id: string): Promise<FoodLog | null> {
+    async getById(id) {
       try {
-        return await db.getFirstAsync<FoodLog>(
+        return await adapter.getFirstAsync<FoodLog>(
           "SELECT * FROM food_log WHERE id = ?",
           [id],
         );
@@ -58,9 +69,9 @@ export function createSqliteFoodLog(db: DatabasePort) {
       }
     },
 
-    async getByDate(date: string): Promise<FoodLog[]> {
+    async getByDate(date) {
       try {
-        return await db.getAllAsync<FoodLog>(
+        return await adapter.getAllAsync<FoodLog>(
           "SELECT * FROM food_log WHERE date = ? ORDER BY time ASC",
           [date],
         );
@@ -70,13 +81,47 @@ export function createSqliteFoodLog(db: DatabasePort) {
       }
     },
 
-    async deleteById(id: string): Promise<void> {
+    async deleteById(id) {
       try {
-        await db.runAsync("DELETE FROM food_log WHERE id = ?", [id]);
+        await adapter.runAsync("DELETE FROM food_log WHERE id = ?", [id]);
       } catch (err) {
         console.error("[foodLog] deleteById failed", err);
         throw err;
       }
+    },
+  };
+}
+
+export function createFakeFoodLog(): FoodLogRepo {
+  const store: FoodLog[] = [];
+
+  return {
+    async getUnlinkedMeals(date) {
+      return store.filter((m) => m.date === date);
+    },
+
+    async insert(meal) {
+      store.push({
+        ...meal,
+        photo_uri: meal.photo_uri ?? null,
+        protein_g: meal.protein_g ?? null,
+        fat_g: meal.fat_g ?? null,
+        notes: meal.notes ?? null,
+        created_at: new Date().toISOString(),
+      });
+    },
+
+    async getById(id) {
+      return store.find((m) => m.id === id) ?? null;
+    },
+
+    async getByDate(date) {
+      return store.filter((m) => m.date === date);
+    },
+
+    async deleteById(id) {
+      const idx = store.findIndex((m) => m.id === id);
+      if (idx >= 0) store.splice(idx, 1);
     },
   };
 }

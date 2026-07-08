@@ -1,3 +1,4 @@
+import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 import type { GlucoseReading, InsertReading, ReadingType } from "@/features/glucose/types";
 
@@ -19,7 +20,9 @@ export interface GlucoseReadings {
   getRollingAverage(days: number, type?: ReadingType): Promise<number | null>;
 }
 
-export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
+export function createSqliteGlucoseReadings(db?: DatabasePort): GlucoseReadings {
+  const adapter = db ?? getDbAdapter();
+
   return {
     async query(filter) {
       try {
@@ -52,7 +55,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
           params.push(String(filter.limit));
         }
 
-        return await db.getAllAsync<GlucoseReading>(sql, params);
+        return await adapter.getAllAsync<GlucoseReading>(sql, params);
       } catch (err) {
         console.error("[GlucoseReadings] query failed", err);
         return [];
@@ -61,7 +64,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
 
     async getById(id) {
       try {
-        return await db.getFirstAsync<GlucoseReading>(
+        return await adapter.getFirstAsync<GlucoseReading>(
           "SELECT * FROM glucose_readings WHERE id = ?",
           [id],
         );
@@ -73,7 +76,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
 
     async insert(reading) {
       try {
-        await db.runAsync(
+        await adapter.runAsync(
           `INSERT INTO glucose_readings (id, value, unit, type, date, time, notes)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
@@ -94,7 +97,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
 
     async linkToMeal(readingId, foodLogId) {
       try {
-        await db.runAsync(
+        await adapter.runAsync(
           "UPDATE glucose_readings SET food_log_id = ? WHERE id = ?",
           [foodLogId, readingId],
         );
@@ -106,7 +109,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
 
     async getDailyAverage(date) {
       try {
-        const row = await db.getFirstAsync<{ avg: number | null }>(
+        const row = await adapter.getFirstAsync<{ avg: number | null }>(
           "SELECT AVG(value) as avg FROM glucose_readings WHERE date = ?",
           [date],
         );
@@ -125,7 +128,7 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
           typeFilter = " AND type = ?";
           params.push(type);
         }
-        const row = await db.getFirstAsync<{ avg: number | null }>(
+        const row = await adapter.getFirstAsync<{ avg: number | null }>(
           `SELECT AVG(value) as avg FROM glucose_readings
            WHERE date >= date('now', '-' || ? || ' days')${typeFilter}`,
           params,

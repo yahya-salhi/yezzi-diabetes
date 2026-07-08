@@ -3,7 +3,8 @@ import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
 import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
-import { getThresholdColor, getThresholdStatus, getThresholdLabel } from "@/features/glucose/services/thresholds";
+import { classifyReading, getColor, getLabel } from "@/features/glucose/services/ReadingClassifier";
+import type { ThresholdMap } from "@/features/glucose/services/ReadingClassifier";
 
 const READING_TYPE_LABELS: Record<string, string> = {
   fasting: "Fasting",
@@ -15,13 +16,14 @@ const READING_TYPE_LABELS: Record<string, string> = {
 
 type Props = {
   reading: GlucoseReading;
+  thresholds?: ThresholdMap;
 };
 
-export function ReadingCard({ reading }: Props) {
+export function ReadingCard({ reading, thresholds }: Props) {
   const gv = GlucoseValue.fromMgdl(reading.value);
-  const status = getThresholdStatus(reading.value, reading.type);
-  const statusColor = getThresholdColor(status);
-  const label = getThresholdLabel(status);
+  const status = classifyReading(reading.value, reading.type, thresholds);
+  const statusColor = getColor(status);
+  const label = getLabel(status);
 
   return (
     <View style={styles.card}>

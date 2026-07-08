@@ -1,11 +1,10 @@
 import { useState, useCallback } from "react";
 import { randomUUID } from "expo-crypto";
 import { format } from "date-fns";
-import { getDbAdapter } from "@/db/instance";
 import { createSqliteFoodLog } from "../services/foodLog";
 import type { FoodLog, MealType } from "../types";
 
-const foodLogRepo = createSqliteFoodLog(getDbAdapter());
+const foodLogRepo = createSqliteFoodLog();
 
 export type SaveMealParams = {
   meal_type: MealType;

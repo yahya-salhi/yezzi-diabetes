@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
-import { getThresholdColor } from "@/features/glucose/services/thresholds";
+import { getColor } from "@/features/glucose/services/ReadingClassifier";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function DecisionCard({ alert, onAction, actionLabel }: Props) {
-  const accentColor = getThresholdColor(
+  const accentColor = getColor(
     alert.severity === "alert" ? "high" : "borderline",
   );
 

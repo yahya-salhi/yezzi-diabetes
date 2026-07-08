@@ -1,11 +1,10 @@
 import { useState, useCallback } from "react";
-import { getDbAdapter } from "@/db/instance";
 import { createSqliteFoodLog } from "../services/foodLog";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { FoodLog } from "../types";
 
-const foodLogRepo = createSqliteFoodLog(getDbAdapter());
-const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
+const foodLogRepo = createSqliteFoodLog();
+const readingsRepo = createSqliteGlucoseReadings();
 
 type UseMealLinkingResult = {
   suggestibleMeals: FoodLog[];

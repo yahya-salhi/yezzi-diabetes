@@ -1,4 +1,5 @@
-import { getThresholdStatus } from "@/features/glucose/services/thresholds";
+import { classifyReading, IDF_THRESHOLDS } from "@/features/glucose/services/ReadingClassifier";
+import type { ThresholdMap } from "@/features/glucose/services/ReadingClassifier";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
 
 export type PatternAlert = {
@@ -11,8 +12,10 @@ export type PatternAlert = {
 export function detectPatterns(
   readings: GlucoseReading[],
   readingType: ReadingType,
+  thresholds?: ThresholdMap,
 ): PatternAlert[] {
   const alerts: PatternAlert[] = [];
+  const t = thresholds ?? IDF_THRESHOLDS;
 
   const recent = readings
     .filter((r) => r.type === readingType)
@@ -27,7 +30,7 @@ export function detectPatterns(
   if (recent.length < 3) return alerts;
 
   const highCount = recent.filter((v) => {
-    const status = getThresholdStatus(v, readingType);
+    const status = classifyReading(v, readingType, t);
     return status === "high";
   }).length;
 
@@ -41,7 +44,7 @@ export function detectPatterns(
   }
 
   const borderlineCount = recent.filter((v) => {
-    const status = getThresholdStatus(v, readingType);
+    const status = classifyReading(v, readingType, t);
     return status === "borderline" || status === "high";
   }).length;
 
@@ -59,7 +62,8 @@ export function detectPatterns(
 
 export function detectAllPatterns(
   readings: GlucoseReading[],
+  thresholds?: ThresholdMap,
 ): PatternAlert[] {
   const types: ReadingType[] = ["fasting", "pre_meal", "post_meal", "bedtime", "other"];
-  return types.flatMap((t) => detectPatterns(readings, t));
+  return types.flatMap((t) => detectPatterns(readings, t, thresholds));
 }
