@@ -1,15 +1,15 @@
 ﻿import { useState, useMemo } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { format, subDays } from "date-fns";
-import { colors, spacing, shadows } from "@/theme/tokens";
+import { colors, spacing } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReadingCard } from "@/features/glucose/components/ReadingCard";
 import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useReadings } from "@/features/glucose/hooks/useReadings";
+import { useAverages } from "@/features/glucose/hooks/useAverages";
 import { usePatterns } from "@/features/glucose/hooks/usePatterns";
-import { computeAverage } from "@/features/glucose/services/averages";
 import type { ReadingType } from "@/features/glucose/types";
 
 const READING_TYPES: { key: string; label: string }[] = [
@@ -26,6 +26,13 @@ const DATE_RANGES: { key: string; label: string; days: number | null }[] = [
   { key: "14d", label: "14d", days: 14 },
   { key: "30d", label: "30d", days: 30 },
   { key: "all", label: "All", days: null },
+];
+
+const AVERAGE_WINDOWS = [
+  { key: "7d", label: "7d", value: "rolling7Day" as const },
+  { key: "14d", label: "14d", value: "rolling14Day" as const },
+  { key: "30d", label: "30d", value: "rolling30Day" as const },
+  { key: "90d", label: "90d", value: "rolling90Day" as const },
 ];
 
 export function HistoryScreen() {
@@ -47,13 +54,41 @@ export function HistoryScreen() {
   const currentType = filterType === "all" ? undefined : (filterType as ReadingType);
 
   const { readings, loading } = useReadings(filter);
+  const { rolling7Day, rolling14Day, rolling30Day, rolling90Day, loading: averagesLoading } = useAverages();
   const { alerts } = usePatterns(currentType);
 
-  const average = useMemo(() => computeAverage(readings), [readings]);
+  const rollingAverages = { rolling7Day, rolling14Day, rolling30Day, rolling90Day };
+
+  const readingsByDay = useMemo(() => {
+    const groups: Record<string, typeof readings> = {};
+    for (const r of readings) {
+      if (!groups[r.date]) groups[r.date] = [];
+      groups[r.date].push(r);
+    }
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+  }, [readings]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.filterSection}>
+      <Text style={styles.screenTitle}>History</Text>
+
+      {!averagesLoading && (
+        <View style={styles.statStrip}>
+          {AVERAGE_WINDOWS.map((w) => {
+            const val = rollingAverages[w.value];
+            return (
+              <View key={w.key} style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {val !== null ? Math.round(val).toString() : "—"}
+                </Text>
+                <Text style={styles.statLabel}>{w.label}</Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
+      <View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.chipRow}>
             {READING_TYPES.map((t) => (
@@ -71,7 +106,7 @@ export function HistoryScreen() {
         </ScrollView>
       </View>
 
-      <View style={styles.filterSection}>
+      <View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.chipRow}>
             {DATE_RANGES.map((r) => (
@@ -89,19 +124,9 @@ export function HistoryScreen() {
         </ScrollView>
       </View>
 
-      {average !== null && (
-        <View style={[styles.averageCard, shadows.sm]}>
-          <Text style={styles.averageLabel}>Average</Text>
-          <Text style={styles.averageValue}>{Math.round(average)}</Text>
-          <Text style={styles.averageUnit}>mg/dL</Text>
-        </View>
-      )}
-
-      {currentType !== undefined && alerts.map((alert, i) => (
+      {currentType !== undefined && alerts.slice(0, 2).map((alert, i) => (
         <DecisionCard key={i} alert={alert} />
       ))}
-
-      <View style={styles.divider} />
 
       <Text style={styles.sectionTitle}>
         {filterType === "all"
@@ -116,7 +141,27 @@ export function HistoryScreen() {
           <EmptyState message="No readings match your filters." />
         </Card>
       ) : (
-        readings.map((r) => <ReadingCard key={r.id} reading={r} />)
+        <View style={styles.readingsGrouped}>
+          {readingsByDay.map(([date, dayReadings]) => (
+            <View key={date} style={styles.dayGroup}>
+              <View style={styles.dayHeader}>
+                <View style={styles.dayDot} />
+                <Text style={styles.dayLabel}>
+                  {date === format(new Date(), "yyyy-MM-dd")
+                    ? "Today"
+                    : date === format(subDays(new Date(), 1), "yyyy-MM-dd")
+                    ? "Yesterday"
+                    : format(new Date(date), "MMM d")}
+                </Text>
+              </View>
+              <View style={styles.dayReadings}>
+                {dayReadings.map((r) => (
+                  <ReadingCard key={r.id} reading={r} />
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
       )}
     </ScrollView>
   );
@@ -129,10 +174,38 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.xl,
-    gap: spacing.xxl,
+    gap: spacing.xl,
+    paddingBottom: spacing.xxxl,
   },
-  filterSection: {
-    marginBottom: spacing.xs,
+  screenTitle: {
+    fontSize: 34,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginTop: spacing.md,
+  },
+  statStrip: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: spacing.lg,
+    gap: 0,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+    gap: 2,
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   chipRow: {
     flexDirection: "row",
@@ -159,39 +232,36 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontWeight: "600",
   },
-  averageCard: {
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    padding: spacing.xl,
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  averageLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "rgba(255,255,255,0.7)",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  averageValue: {
-    fontSize: 42,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  averageUnit: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "rgba(255,255,255,0.6)",
-    marginTop: -spacing.xs,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: spacing.sm,
-  },
   sectionTitle: {
     fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
+  },
+  readingsGrouped: {
+    gap: spacing.xl,
+  },
+  dayGroup: {
+    gap: spacing.sm,
+  },
+  dayHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  dayDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.accent,
+  },
+  dayLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  dayReadings: {
+    gap: spacing.sm,
   },
 });

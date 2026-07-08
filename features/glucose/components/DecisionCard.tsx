@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, spacing, shadows } from "@/theme/tokens";
+import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
 import { getThresholdColor } from "@/features/glucose/services/thresholds";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
@@ -16,15 +16,17 @@ export function DecisionCard({ alert, onAction, actionLabel }: Props) {
   );
 
   return (
-    <View style={[styles.card, shadows.sm]}>
+    <View style={styles.card}>
       <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
       <View style={styles.body}>
-        <Text style={[styles.title, { color: accentColor }]}>
-          {alert.severity === "alert" ? "▲" : "●"} {alert.severity === "alert" ? "High" : "Elevated"} {alert.type.replace("_", " ")} readings
+        <Text style={styles.title}>
+          {alert.severity === "alert" ? "High" : "Elevated"} {alert.type.replace("_", " ")} readings
         </Text>
         <Text style={styles.message}>{alert.message}</Text>
         {actionLabel && onAction && (
-          <Button title={actionLabel} variant="secondary" onPress={onAction} />
+          <View style={styles.actionWrap}>
+            <Button title={actionLabel} variant="ghost" onPress={onAction} />
+          </View>
         )}
       </View>
     </View>
@@ -46,16 +48,20 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     padding: spacing.xl,
-    gap: spacing.md,
+    gap: spacing.xs,
   },
   title: {
     fontSize: 15,
     fontWeight: "600",
+    color: colors.textPrimary,
   },
   message: {
     fontSize: 14,
     fontWeight: "400",
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  actionWrap: {
+    marginTop: spacing.sm,
   },
 });

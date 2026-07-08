@@ -1,12 +1,14 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { colors } from "@/theme/tokens";
+import { ReadingsIcon, FoodIcon, WorkoutIcon, SettingsIcon } from "@/components/ui/Icons";
 import { DashboardScreen } from "@/features/glucose/screens/DashboardScreen";
 import { AddReadingScreen } from "@/features/glucose/screens/AddReadingScreen";
 import { HistoryScreen } from "@/features/glucose/screens/HistoryScreen";
 import { FoodDashboardScreen } from "@/features/food/screens/FoodDashboardScreen";
+import { SnapMealScreen } from "@/features/food/screens/SnapMealScreen";
 import { WorkoutDashboardScreen } from "@/features/exercise/screens/WorkoutDashboardScreen";
 import { SettingsScreen } from "@/features/settings/screens/SettingsScreen";
 
@@ -23,23 +25,31 @@ type GlucoseStackParamList = {
   History: undefined;
 };
 
+type FoodStackParamList = {
+  FoodHome: undefined;
+  SnapMeal: undefined;
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const GlucoseStack = createNativeStackNavigator<GlucoseStackParamList>();
+const FoodStack = createNativeStackNavigator<FoodStackParamList>();
 
-const TAB_ICONS: Record<string, { active: string; inactive: string }> = {
-  Dashboard: { active: "◆", inactive: "◇" },
-  Food: { active: "●", inactive: "○" },
-  Workout: { active: "■", inactive: "□" },
-  Settings: { active: "▲", inactive: "△" },
+const TAB_ICONS: Record<string, typeof ReadingsIcon> = {
+  Dashboard: ReadingsIcon,
+  Food: FoodIcon,
+  Workout: WorkoutIcon,
+  Settings: SettingsIcon,
 };
 
 function TabIcon({ routeName, focused }: { routeName: string; focused: boolean }) {
-  const icon = TAB_ICONS[routeName];
+  const IconComponent = TAB_ICONS[routeName];
   return (
     <View style={tabStyles.container}>
-      <Text style={[tabStyles.icon, { color: focused ? colors.accent : colors.textMuted }]}>
-        {focused ? icon.active : icon.inactive}
-      </Text>
+      <IconComponent
+        size={22}
+        color={focused ? colors.accent : colors.textMuted}
+        strokeWidth={1.8}
+      />
     </View>
   );
 }
@@ -48,13 +58,27 @@ const tabStyles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
-    width: 48,
+    width: 28,
     height: 28,
   },
-  icon: {
-    fontSize: 20,
-  },
 });
+
+function FoodStackNavigator() {
+  return (
+    <FoodStack.Navigator>
+      <FoodStack.Screen
+        name="FoodHome"
+        component={FoodDashboardScreen}
+        options={{ title: "Food" }}
+      />
+      <FoodStack.Screen
+        name="SnapMeal"
+        component={SnapMealScreen}
+        options={{ title: "Snap Meal", presentation: "modal" }}
+      />
+    </FoodStack.Navigator>
+  );
+}
 
 function DashboardStack() {
   return (
@@ -104,7 +128,7 @@ export function AppNavigator() {
         })}
       >
         <Tab.Screen name="Dashboard" component={DashboardStack} />
-        <Tab.Screen name="Food" component={FoodDashboardScreen} />
+        <Tab.Screen name="Food" component={FoodStackNavigator} />
         <Tab.Screen name="Workout" component={WorkoutDashboardScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>

@@ -19,6 +19,25 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_readings_type ON glucose_readings(type);
     CREATE INDEX IF NOT EXISTS idx_readings_date_type ON glucose_readings(date, type);
 
+    CREATE TABLE IF NOT EXISTS food_log (
+      id TEXT PRIMARY KEY,
+      meal_type TEXT NOT NULL CHECK(meal_type IN ('breakfast', 'lunch', 'dinner', 'snack')),
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      photo_uri TEXT,
+      food_name TEXT NOT NULL,
+      carbs_g REAL NOT NULL,
+      protein_g REAL,
+      fat_g REAL,
+      calories REAL NOT NULL,
+      estimated_impact REAL NOT NULL,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_food_log_date ON food_log(date);
+    CREATE INDEX IF NOT EXISTS idx_food_log_meal_type ON food_log(meal_type);
+
     CREATE TABLE IF NOT EXISTS user_preferences (
       id TEXT PRIMARY KEY DEFAULT 'default',
       unit TEXT NOT NULL DEFAULT 'mg/dL' CHECK(unit IN ('mg/dL', 'mmol/L')),

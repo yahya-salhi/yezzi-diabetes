@@ -158,10 +158,8 @@ export function AddReadingScreen() {
         />
       </View>
 
-      <View style={styles.actions}>
-        <Button title={saving ? "Saving..." : "Save Reading"} disabled={!valid || saving} onPress={handleSave} />
-        <Button title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
-      </View>
+      <Button title={saving ? "Saving..." : "Save Reading"} disabled={!valid || saving} onPress={handleSave} />
+      <View style={styles.spacer} />
     </ScrollView>
   );
 }
@@ -179,7 +177,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
   },
@@ -258,9 +256,7 @@ const styles = StyleSheet.create({
     minHeight: 90,
     textAlignVertical: "top",
   },
-  actions: {
-    gap: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xxxl,
+  spacer: {
+    height: spacing.xxl,
   },
 });
