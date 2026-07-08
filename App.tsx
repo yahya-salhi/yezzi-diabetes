@@ -6,6 +6,7 @@ import { View, StyleSheet } from "react-native";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { OnboardingScreen } from "@/features/onboarding/screens/OnboardingScreen";
 import { getPreferences } from "@/features/onboarding/services/preferences";
+import { RepoProvider } from "@/features/repos/RepoContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,14 +45,16 @@ export default function App() {
   if (!fontsLoaded || !ready) return null;
 
   return (
-    <View style={styles.root} onLayout={onLayoutRootView}>
-      <StatusBar style="dark" />
-      {showOnboarding ? (
-        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-      ) : (
-        <AppNavigator />
-      )}
-    </View>
+    <RepoProvider>
+      <View style={styles.root} onLayout={onLayoutRootView}>
+        <StatusBar style="dark" />
+        {showOnboarding ? (
+          <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+        ) : (
+          <AppNavigator />
+        )}
+      </View>
+    </RepoProvider>
   );
 }
 

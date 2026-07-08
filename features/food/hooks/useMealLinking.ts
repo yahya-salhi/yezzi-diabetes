@@ -1,10 +1,6 @@
 import { useState, useCallback } from "react";
-import { createSqliteFoodLog } from "../services/foodLog";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useGlucoseReadings, useFoodLogRepo } from "@/features/repos/RepoContext";
 import type { FoodLog } from "../types";
-
-const foodLogRepo = createSqliteFoodLog();
-const readingsRepo = createSqliteGlucoseReadings();
 
 type UseMealLinkingResult = {
   suggestibleMeals: FoodLog[];
@@ -16,6 +12,8 @@ type UseMealLinkingResult = {
 };
 
 export function useMealLinking(): UseMealLinkingResult {
+  const foodLogRepo = useFoodLogRepo();
+  const readingsRepo = useGlucoseReadings();
   const [suggestibleMeals, setSuggestibleMeals] = useState<FoodLog[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,7 +37,7 @@ export function useMealLinking(): UseMealLinkingResult {
         setLoading(false);
       }
     },
-    [],
+    [foodLogRepo],
   );
 
   const linkMeal = useCallback(
@@ -54,7 +52,7 @@ export function useMealLinking(): UseMealLinkingResult {
         // silently fail — user can retry later
       }
     },
-    [pendingReadingId],
+    [readingsRepo, pendingReadingId],
   );
 
   const dismiss = useCallback(() => {
