@@ -14,6 +14,7 @@ export interface GlucoseReadings {
   query(filter?: ReadingFilter): Promise<GlucoseReading[]>;
   getById(id: string): Promise<GlucoseReading | null>;
   insert(reading: InsertReading): Promise<void>;
+  linkToMeal(readingId: string, foodLogId: string): Promise<void>;
   getDailyAverage(date: string): Promise<number | null>;
   getRollingAverage(days: number, type?: ReadingType): Promise<number | null>;
 }
@@ -91,6 +92,18 @@ export function createSqliteGlucoseReadings(db: DatabasePort): GlucoseReadings {
       }
     },
 
+    async linkToMeal(readingId, foodLogId) {
+      try {
+        await db.runAsync(
+          "UPDATE glucose_readings SET food_log_id = ? WHERE id = ?",
+          [foodLogId, readingId],
+        );
+      } catch (err) {
+        console.error("[GlucoseReadings] linkToMeal failed", err);
+        throw err;
+      }
+    },
+
     async getDailyAverage(date) {
       try {
         const row = await db.getFirstAsync<{ avg: number | null }>(
@@ -150,6 +163,13 @@ export function createFakeGlucoseReadings(): GlucoseReadings {
         ...reading,
         created_at: new Date().toISOString(),
       });
+    },
+
+    async linkToMeal(readingId, foodLogId) {
+      const reading = store.find((r) => r.id === readingId);
+      if (reading) {
+        reading.food_log_id = foodLogId;
+      }
     },
 
     async getDailyAverage(date) {

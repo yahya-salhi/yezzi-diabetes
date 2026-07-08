@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Food Tracking
-**Last completed:** 14 Save Food Log + Manual Entry
-**Next:** 15 Meal-to-Reading Linking (Phase 2)
+**Last completed:** 15 Meal-to-Reading Linking
+**Next:** 16 Meal Insights Dashboard (Phase 2)
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -39,7 +39,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 12 Snap Meal — Camera + Review UI
 - [X] 13 GPT-4o Vision Integration
 - [X] 14 Save Food Log + Manual Entry
-- [ ] 15 Meal-to-Reading Linking
+- [X] 15 Meal-to-Reading Linking
 - [ ] 16 Meal Insights Dashboard
 
 ### Phase 3 — Store Readiness & v1 Launch
@@ -90,6 +90,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-08** — API key strategy: user-provided OpenAI key stored via expo-secure-store; Cloudflare Workers proxy deferred to Phase 3
 - **2026-07-08** — Photo saved to FileSystem.documentDirectory via new expo-file-system File/Directory API (SDK 57+)
 - **2026-07-08** — MealReviewForm extracted as shared component between SnapMealScreen and ManualEntryScreen
+- **2026-07-08** — Meal-to-Reading Linking: separate `linkToMeal()` on GlucoseReadings (UPDATE, not modifying insert); `useMealLinking` hook orchestrates query + link; matching by time proximity on same day; single-meal shows MealLinkSuggestion dialog, multi-meal shows picker list
 
 ---
 

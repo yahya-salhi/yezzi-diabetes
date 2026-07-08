@@ -444,6 +444,31 @@ Last updated: 2026-07-08
 
 ---
 
+### MealLinkPicker (inline — AddReadingScreen)
+
+File: `features/glucose/screens/AddReadingScreen.tsx` (inline, multi-meal variant)
+Last updated: 2026-07-08
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Overlay bg       | `rgba(0,0,0,0.4)`                  |
+| Modal content    | card(s) centered in overlay        |
+| Card radius      | 14                                 |
+| Card bg          | `colors.surface`                   |
+| Card padding     | `spacing.xl` (20px)                |
+| Card gap         | `spacing.sm` (8px)                 |
+| Title            | 17px, 600, `colors.textPrimary`    |
+| Row layout       | row, space-between, center         |
+| Row padding      | `spacing.md` (12px) vertical       |
+| Row divider      | 1px `colors.border`, bottom        |
+| Meal name        | 15px, 500, `colors.textPrimary`    |
+| Impact value     | 14px, 600, `colors.info`           |
+| Skip button      | ghost Button                       |
+
+**Pattern notes:** Used when saving a post-meal reading and multiple unlinked meals exist. Shows above the `MealLinkSuggestion` component (which is rendered for the single-meal case). The card structure matches the standard card pattern (surface, 14px radius, xl padding). Overlay matches the ApiKeyModal approach but uses 0.4 opacity (slightly lighter than ApiKeyModal's 0.5). Rows use border-bottom dividers (matching SettingsGroup row dividers) but the border is `colors.border` (not `borderLight` like SettingsGroup). Impact values use `colors.info` to match MealLinkSuggestion's info-blue accent.
+
+---
+
 ### EstimatedImpactBadge
 
 File: `features/food/components/EstimatedImpactBadge.tsx`

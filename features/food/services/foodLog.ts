@@ -3,6 +3,23 @@ import type { FoodLog, InsertFoodLog } from "../types";
 
 export function createSqliteFoodLog(db: DatabasePort) {
   return {
+    async getUnlinkedMeals(date: string): Promise<FoodLog[]> {
+      try {
+        return await db.getAllAsync<FoodLog>(
+          `SELECT f.* FROM food_log f
+           WHERE f.date = ?
+           AND f.id NOT IN (
+             SELECT food_log_id FROM glucose_readings WHERE food_log_id IS NOT NULL
+           )
+           ORDER BY f.time ASC`,
+          [date],
+        );
+      } catch (err) {
+        console.error("[foodLog] getUnlinkedMeals failed", err);
+        return [];
+      }
+    },
+
     async insert(meal: InsertFoodLog): Promise<void> {
       try {
         await db.runAsync(
