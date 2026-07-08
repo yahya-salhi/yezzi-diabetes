@@ -14,6 +14,17 @@
 | Styling        | React Native StyleSheet       | All styling — no CSS-in-JS libraries   |
 | Language       | TypeScript strict             | Throughout                             |
 
+### Planned — Phase 3 (Store Readiness)
+
+| Layer          | Tool                          | Purpose                                |
+| -------------- | ----------------------------- | -------------------------------------- |
+| Notifications  | expo-notifications            | Local reading reminders (no push)      |
+| Subscriptions  | react-native-purchases (RevenueCat) | YeZZi Plus subscription           |
+| File sharing   | expo-sharing                  | Backup file + CSV export via share sheet |
+| PDF            | expo-print                    | Doctor report generation               |
+| AI proxy       | Cloudflare Workers            | Server-side OpenAI calls + scan quota  |
+| Analytics      | Aptabase or PostHog           | Anonymous event counts only            |
+
 ---
 
 ## Folder Structure
@@ -132,6 +143,28 @@
 | `navigation/` | Navigator setup only. No business logic.                                                |
 | `theme/`      | Token constants only. No logic.                                                        |
 | `components/` | Shared UI primitives only. No business logic, no feature-specific code.                |
+
+---
+
+## External Service Boundary (Phase 3)
+
+The app has exactly one external data boundary: the AI proxy. Everything else stays on-device.
+
+```
+Meal photo (base64)
+        ↓
+App → POST to Cloudflare Workers proxy (with anonymous device UUID + entitlement)
+        ↓
+Proxy checks scan quota (free: 10/month) or Plus entitlement (unlimited)
+        ↓
+Proxy → OpenAI GPT-4o Vision (API key lives server-side only)
+        ↓
+Nutrition JSON returned to app — photo processed, never stored server-side
+```
+
+- Device UUID: random, generated on first launch, no personal data
+- RevenueCat entitlement distinguishes free (quota) from Plus (unlimited)
+- Backup/export: local file via system share sheet — no servers hold user data
 
 ---
 
@@ -291,3 +324,8 @@ Rules the AI agent must never violate:
 - Every screen has an empty state and an error state.
 - DB migrations are additive only — never drop or alter existing columns.
 - All dates stored as ISO strings (YYYY-MM-DD). All times stored as HH:mm.
+- The OpenAI API key never ships in the app binary — all AI calls go through the proxy.
+- No personal data leaves the device — only meal photos (for analysis), the anonymous device UUID, purchase state, and anonymous analytics events.
+- Logging is never blocked by quota or paywall — manual entry always works.
+- "Delete all my data" must wipe SQLite, preferences, AsyncStorage flags, and the device UUID.
+- App copy never gives medical advice — always defers to the user's care team.

@@ -307,9 +307,118 @@ Surface food pattern insights on the dashboard.
 
 ---
 
-## Phase 3 — Exercise Tracking
+## Phase 3 — Store Readiness & v1 Launch
 
-### 18 Exercise Database Migration
+Growth and launch layer per `docs/superpowers/specs/2026-07-08-store-readiness-design.md`. Ships before exercise. v1 = glucose + food AI + this phase.
+
+### 18 Reading Reminders
+
+Local notifications via expo-notifications.
+
+**UI:**
+- Onboarding soft-ask step: "Want a nudge for your morning reading?"
+- Settings section: per-type reminder toggles + time pickers (fasting / post-meal / bedtime), weekly summary toggle
+
+**Logic:**
+- Schedule/cancel local notifications per preference
+- Skip a reminder when that reading type is already logged that day
+- Weekly summary notification with positive framing ("Your week: 5 days in range")
+
+**Verification:** Reminder fires at set time. Logging a fasting reading suppresses that day's fasting reminder.
+
+---
+
+### 19 Logging Streak
+
+**UI:**
+- Dashboard streak counter — consecutive days with ≥1 reading, milestones at 7/30/90 days
+- Calm presentation per design bible — no confetti, no guilt copy
+
+**Logic:**
+- `features/glucose/services/streaks.ts` — getLoggingStreak(), getMilestones()
+
+**Verification:** Streak increments across consecutive days, resets after a missed day, milestone badge appears at 7 days.
+
+---
+
+### 20 Backup & Restore
+
+**UI:**
+- Settings → "Back up my data" and "Restore from backup"
+- Gentle reminder card after 30 days of data with no backup ever made
+
+**Logic:**
+- Serialize all tables + preferences to one versioned JSON file → system share sheet (expo-sharing)
+- Restore validates schema version before import
+
+**Verification:** Backup → fresh install → restore round-trip yields identical data.
+
+---
+
+### 21 CSV Export + PDF Doctor Report
+
+**UI:**
+- Export options in Settings: CSV (free), formatted PDF report (Plus)
+
+**Logic:**
+- CSV of readings with type/date/value/unit/notes
+- PDF via expo-print: averages, trend chart, in-range summary — doctor-ready
+
+**Verification:** CSV opens correctly in a spreadsheet. PDF renders charts and averages accurately.
+
+---
+
+### 22 AI Proxy + Scan Quota
+
+Move the OpenAI call behind a server proxy — the API key never ships in the app binary.
+
+**Logic:**
+- Cloudflare Workers endpoint: photo in → quota check → OpenAI GPT-4o Vision → nutrition JSON out; photos processed, never stored
+- Anonymous device UUID generated on first launch
+- Free tier: 10 scans/month, resets monthly; remaining count shown on Food screen
+- Manual meal entry always available — logging is never blocked
+
+**Verification:** No API key in binary. Quota decrements per scan, blocks at 0, resets monthly. Manual entry still works at 0.
+
+---
+
+### 23 YeZZi Plus — Subscription + Paywall
+
+**Logic:**
+- RevenueCat SDK, Google Play products: $2.99/month, $19.99/year
+- Entitlement grants unlimited scans (checked by proxy) + PDF reports
+- Paywall shown only at natural moments: quota exhausted, PDF export — never at launch
+
+**Verification:** Sandbox purchase unlocks unlimited scans and PDF. Cancellation returns to free tier cleanly.
+
+---
+
+### 24 Compliance Pack
+
+**Logic:**
+- Medical disclaimer: shown once at onboarding, always accessible in Settings
+- Privacy policy hosted at public URL (GitHub Pages)
+- "Delete all my data" button in Settings — wipes SQLite + preferences + device ID
+- Anonymous analytics (Aptabase or PostHog free tier) — event counts only
+
+**Verification:** Disclaimer flow works. Delete-all leaves no user data. Analytics events contain no personal data.
+
+---
+
+### 25 Store Listing + Launch
+
+**Deliverables:**
+- Play listing: title "YeZZi — Diabetes & Glucose Tracker", screenshots from the 6-screen design set with benefit captions, feature graphic, icon
+- Play Console: health apps declaration, data safety form
+- Launch sequence: internal track (1–2 weeks) → closed beta (15–30 testers) → staged rollout 10% → 50% → 100%
+
+**Verification:** Pre-launch checklist from the spec passes: purchase/cancel flows, quota reset, backup round-trip, crash-free on test devices.
+
+---
+
+## Phase 4 — Exercise Tracking (v1.1 — post-launch)
+
+### 26 Exercise Database Migration
 
 Add 4 new tables and `workout_session_id` column to `glucose_readings`.
 
@@ -320,7 +429,7 @@ Add 4 new tables and `workout_session_id` column to `glucose_readings`.
 
 ---
 
-### 19 Template Setup — Full UI
+### 27 Template Setup — Full UI
 
 Build the first-run template selection flow.
 
@@ -335,7 +444,7 @@ Build the first-run template selection flow.
 
 ---
 
-### 20 Workout Dashboard — Full UI
+### 28 Workout Dashboard — Full UI
 
 Build the weekly workout dashboard.
 
@@ -350,7 +459,7 @@ Build the weekly workout dashboard.
 
 ---
 
-### 21 Active Workout Logger — Full UI + Logic
+### 29 Active Workout Logger — Full UI + Logic
 
 Build the real-time workout logger.
 
@@ -371,7 +480,7 @@ Build the real-time workout logger.
 
 ---
 
-### 22 Progressive Overload Engine
+### 30 Progressive Overload Engine
 
 Build auto-suggestion logic for weight increases.
 
@@ -385,7 +494,7 @@ Build auto-suggestion logic for weight increases.
 
 ---
 
-### 23 Workout History + Progress Highlights
+### 31 Workout History + Progress Highlights
 
 Build history screen and motivation system.
 
@@ -404,7 +513,7 @@ Build history screen and motivation system.
 
 ---
 
-### 24 Workout-to-Glucose Linking + Insights
+### 32 Workout-to-Glucose Linking + Insights
 
 Wire linking flow and exercise-glucose insights.
 
@@ -421,9 +530,10 @@ Wire linking flow and exercise-glucose insights.
 
 ## Feature Count
 
-| Phase                | Features |
-| -------------------- | -------- |
-| Phase 1 — Foundation | 10       |
-| Phase 2 — Food       | 7        |
-| Phase 3 — Exercise   | 7        |
-| **Total**            | **24**   |
+| Phase                                  | Features |
+| -------------------------------------- | -------- |
+| Phase 1 — Foundation                   | 10       |
+| Phase 2 — Food                         | 7        |
+| Phase 3 — Store Readiness & v1 Launch  | 8        |
+| Phase 4 — Exercise (v1.1)              | 7        |
+| **Total**                              | **32**   |

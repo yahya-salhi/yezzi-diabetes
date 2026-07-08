@@ -10,6 +10,8 @@ Update this file after every completed feature. Any AI agent reading this should
 **Last completed:** 12 Snap Meal — Camera + Review UI
 **Next:** 13 GPT-4o Vision Integration (Phase 2)
 
+**Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
+
 ---
 
 ## Progress
@@ -40,15 +42,27 @@ Update this file after every completed feature. Any AI agent reading this should
 - [ ] 15 Meal-to-Reading Linking
 - [ ] 16 Meal Insights Dashboard
 
-### Phase 3 — Exercise Tracking
+### Phase 3 — Store Readiness & v1 Launch
 
-- [ ] 17 Exercise Database Migration
-- [ ] 18 Template Setup — Full UI
-- [ ] 19 Workout Dashboard — Full UI
-- [ ] 20 Active Workout Logger — Full UI + Logic
-- [ ] 21 Progressive Overload Engine
-- [ ] 22 Workout History + Progress Highlights
-- [ ] 23 Workout-to-Glucose Linking + Insights
+- [X] Spec: Store Readiness & Growth Design Doc
+- [ ] 17 Reading Reminders
+- [ ] 18 Logging Streak
+- [ ] 19 Backup & Restore
+- [ ] 20 CSV Export + PDF Doctor Report
+- [ ] 21 AI Proxy + Scan Quota
+- [ ] 22 YeZZi Plus — Subscription + Paywall
+- [ ] 23 Compliance Pack
+- [ ] 24 Store Listing + Launch
+
+### Phase 4 — Exercise Tracking (v1.1 — post-launch)
+
+- [ ] 25 Exercise Database Migration
+- [ ] 26 Template Setup — Full UI
+- [ ] 27 Workout Dashboard — Full UI
+- [ ] 28 Active Workout Logger — Full UI + Logic
+- [ ] 29 Progressive Overload Engine
+- [ ] 30 Workout History + Progress Highlights
+- [ ] 31 Workout-to-Glucose Linking + Insights
 
 ---
 
@@ -68,6 +82,11 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-07** — Workout linked to glucose readings (same pattern as meals)
 - **2026-07-07** — Cardio tracking: duration, distance, intensity, optional heart rate
 - **2026-07-07** — Motivation via post-workout comparisons, streak tracking, milestone badges
+- **2026-07-08** — Freemium model: core tracking free forever; 10 free AI scans/month; YeZZi Plus ($2.99/mo, $19.99/yr) for unlimited scans + PDF reports
+- **2026-07-08** — Google Play first, App Store fast follow (v1.2)
+- **2026-07-08** — Lean v1: glucose + food AI + growth essentials; exercise deferred to v1.1
+- **2026-07-08** — Approach A infrastructure: no accounts, local file backup, Cloudflare Workers AI proxy (key never in binary), RevenueCat, local notifications
+- **2026-07-08** — Health Connect → v1.1 (Android), Apple Health → v1.2 (iOS)
 
 ---
 
