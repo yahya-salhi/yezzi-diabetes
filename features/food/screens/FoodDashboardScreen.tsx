@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MealCard } from "@/features/food/components/MealCard";
 import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
+import { CameraIcon } from "@/components/ui/Icons";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<any>;
@@ -14,6 +15,11 @@ type Nav = NativeStackNavigationProp<any>;
 const MOCK_MEALS: FoodLog[] = [];
 
 const MOCK_RECENT: FoodLog[] = [];
+
+const SAMPLE_SPIKES = [
+  { meal: "Pasta Bolognese", impact: 58, date: "Jun 28" },
+  { meal: "Rice & Beans", impact: 44, date: "Jun 26" },
+];
 
 export function FoodDashboardScreen() {
   const navigation = useNavigation<Nav>();
@@ -24,45 +30,37 @@ export function FoodDashboardScreen() {
   return (
     <View style={styles.root}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.screenTitle}>Food</Text>
-          <Text style={styles.date}>{today}</Text>
-        </View>
+        <Text style={styles.screenTitle}>Food</Text>
+        <Text style={styles.date}>{today}</Text>
 
-        <View style={[styles.totalsCard, shadows.md]}>
-          <Text style={styles.totalsTitle}>Today's Totals</Text>
-          <View style={styles.totalsRow}>
-            <View style={styles.totalItem}>
-              <Text style={styles.totalValue}>—</Text>
-              <Text style={styles.totalLabel}>calories</Text>
-            </View>
-            <View style={styles.totalDivider} />
-            <View style={styles.totalItem}>
-              <Text style={styles.totalValue}>—</Text>
-              <Text style={styles.totalLabel}>carbs (g)</Text>
-            </View>
-            <View style={styles.totalDivider} />
-            <View style={styles.totalItem}>
-              <Text style={styles.totalValue}>—</Text>
-              <Text style={styles.totalLabel}>impact</Text>
+        {!hasMeals && (
+          <Card>
+            <EmptyState message="No meals logged today. Snap a photo to get started." />
+          </Card>
+        )}
+
+        {hasMeals && (
+          <View>
+            <Text style={styles.sectionTitle}>Today's Meals</Text>
+            <View style={styles.mealsList}>
+              {MOCK_MEALS.map((meal) => <MealCard key={meal.id} meal={meal} />)}
             </View>
           </View>
-        </View>
+        )}
 
-        <MealLinkSuggestion
-          mealName="Chicken Salad"
-          estimatedImpact={28}
-        />
-
-        <View>
-          <Text style={styles.sectionTitle}>Today's Meals</Text>
-          {hasMeals ? (
-            MOCK_MEALS.map((meal) => <MealCard key={meal.id} meal={meal} />)
-          ) : (
-            <Card>
-              <EmptyState message="No meals logged today. Snap a photo to get started." />
-            </Card>
-          )}
+        <View style={styles.insightCard}>
+          <View style={styles.insightAccent} />
+          <View style={styles.insightBody}>
+            <Text style={styles.insightTitle}>Highest Spikes This Week</Text>
+            <View style={styles.insightList}>
+              {SAMPLE_SPIKES.map((s, i) => (
+                <View key={i} style={styles.insightRow}>
+                  <Text style={styles.insightMeal}>{s.meal}</Text>
+                  <Text style={styles.insightImpact}>+{s.impact} mg/dL</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
 
         <View>
@@ -71,24 +69,33 @@ export function FoodDashboardScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.recentRow}>
                 {MOCK_RECENT.map((meal) => (
-                  <View key={meal.id} style={styles.recentCard}>
-                    <View style={styles.recentThumb} />
-                    <Text style={styles.recentName} numberOfLines={1}>{meal.food_name}</Text>
-                    <Text style={styles.recentImpact}>+{Math.round(meal.estimated_impact)} mg/dL</Text>
-                  </View>
+                  <TouchableOpacity key={meal.id} style={styles.photoCard} activeOpacity={0.8}>
+                    <View style={styles.photoThumb}>
+                      <View style={styles.photoScrim} />
+                      <Text style={styles.photoImpact}>+{Math.round(meal.estimated_impact)}</Text>
+                    </View>
+                    <Text style={styles.photoName} numberOfLines={1}>{meal.food_name}</Text>
+                    <Text style={styles.photoCarbs}>{Math.round(meal.carbs_g)}g carbs</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
           ) : (
-            <Card>
-              <EmptyState message="Your recent meals will appear here." />
-            </Card>
+            <EmptyState message="Your recent meals will appear here." />
           )}
         </View>
+
+        {hasMeals && (
+          <MealLinkSuggestion mealName="Chicken Salad" estimatedImpact={28} />
+        )}
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={() => navigation.navigate("SnapMeal")}>
-        <Text style={styles.fabIcon}>+</Text>
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate("SnapMeal")}
+      >
+        <CameraIcon size={28} color="#FFFFFF" strokeWidth={1.8} />
       </TouchableOpacity>
     </View>
   );
@@ -105,59 +112,19 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.xl,
     gap: spacing.xxl,
-    paddingBottom: 100,
-  },
-  header: {
-    gap: spacing.xs,
-    paddingTop: spacing.md,
+    paddingBottom: 120,
   },
   screenTitle: {
-    fontSize: 22,
-    fontWeight: "600",
+    fontSize: 34,
+    fontWeight: "700",
     color: colors.textPrimary,
+    marginTop: spacing.md,
   },
   date: {
     fontSize: 15,
     fontWeight: "400",
     color: colors.textMuted,
-  },
-  totalsCard: {
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    padding: spacing.xxl,
-    gap: spacing.lg,
-  },
-  totalsTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "rgba(255,255,255,0.7)",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    textAlign: "center",
-  },
-  totalsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  totalItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  totalValue: {
-    fontSize: 34,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  totalLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "rgba(255,255,255,0.6)",
-  },
-  totalDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    marginTop: -spacing.md,
   },
   sectionTitle: {
     fontSize: 17,
@@ -165,50 +132,97 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
+  mealsList: {
+    gap: spacing.md,
+  },
+  insightCard: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  insightAccent: {
+    width: 4,
+    backgroundColor: colors.info,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
+  },
+  insightBody: {
+    flex: 1,
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  insightTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  insightList: {
+    gap: spacing.sm,
+  },
+  insightRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  insightMeal: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: colors.textSecondary,
+  },
+  insightImpact: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.info,
+  },
   recentRow: {
     flexDirection: "row",
     gap: spacing.md,
   },
-  recentCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    padding: spacing.lg,
-    width: 140,
+  photoCard: {
+    width: 160,
     gap: spacing.sm,
-    ...shadows.sm,
   },
-  recentThumb: {
-    width: "100%",
-    height: 80,
-    borderRadius: 10,
+  photoThumb: {
+    width: 160,
+    height: 120,
+    borderRadius: 14,
     backgroundColor: colors.surfaceSecondary,
+    overflow: "hidden",
+    justifyContent: "flex-end",
   },
-  recentName: {
+  photoScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    borderRadius: 14,
+  },
+  photoImpact: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  photoName: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.textPrimary,
   },
-  recentImpact: {
+  photoCarbs: {
     fontSize: 12,
     fontWeight: "500",
     color: colors.textMuted,
   },
   fab: {
     position: "absolute",
-    bottom: 24,
+    bottom: 32,
     right: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
     ...shadows.lg,
-  },
-  fabIcon: {
-    fontSize: 28,
-    fontWeight: "400",
-    color: "#FFFFFF",
-    lineHeight: 30,
   },
 });

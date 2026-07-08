@@ -9,6 +9,9 @@ const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
 type UseAveragesResult = {
   dailyAverage: number | null;
   rolling7Day: number | null;
+  rolling14Day: number | null;
+  rolling30Day: number | null;
+  rolling90Day: number | null;
   loading: boolean;
   refresh: () => Promise<void>;
 };
@@ -16,18 +19,27 @@ type UseAveragesResult = {
 export function useAverages(): UseAveragesResult {
   const [dailyAverage, setDailyAverage] = useState<number | null>(null);
   const [rolling7Day, setRolling7Day] = useState<number | null>(null);
+  const [rolling14Day, setRolling14Day] = useState<number | null>(null);
+  const [rolling30Day, setRolling30Day] = useState<number | null>(null);
+  const [rolling90Day, setRolling90Day] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
       const today = format(new Date(), "yyyy-MM-dd");
-      const [daily, rolling] = await Promise.all([
+      const [daily, r7, r14, r30, r90] = await Promise.all([
         readingsRepo.getDailyAverage(today),
         readingsRepo.getRollingAverage(7),
+        readingsRepo.getRollingAverage(14),
+        readingsRepo.getRollingAverage(30),
+        readingsRepo.getRollingAverage(90),
       ]);
       setDailyAverage(daily);
-      setRolling7Day(rolling);
+      setRolling7Day(r7);
+      setRolling14Day(r14);
+      setRolling30Day(r30);
+      setRolling90Day(r90);
     } catch {
       // silently fail
     } finally {
@@ -41,5 +53,5 @@ export function useAverages(): UseAveragesResult {
     }, [refresh]),
   );
 
-  return { dailyAverage, rolling7Day, loading, refresh };
+  return { dailyAverage, rolling7Day, rolling14Day, rolling30Day, rolling90Day, loading, refresh };
 }

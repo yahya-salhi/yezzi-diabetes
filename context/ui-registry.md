@@ -16,7 +16,7 @@ After building any component — update this file with the component name, file 
 
 ---
 
-## Baseline — Established 2026-07-07
+## Baseline — Established 2026-07-07 (updated 2026-07-08)
 
 [Note: This baseline was established via /imprint audit after the premium design overhaul]
 
@@ -39,20 +39,24 @@ After building any component — update this file with the component name, file 
 | Card radius         | 14px                                |
 | Button/Input radius | 10px                                |
 | Badge radius        | 999px (pill)                        |
-| Card padding        | `spacing.xl` (20px)                 |
-| Screen padding      | `spacing.xl` (20px)                 |
+| Card inner padding  | `spacing.xl` (20px)                 |
+| Screen outer padding| `spacing.xl` (20px)                 |
 | Section gap         | `spacing.xxl` (28px)                |
 | Shadow default      | `shadows.md` (2/8/0.04)             |
 | Shadow subtle       | `shadows.sm` (1/4/0.03)             |
 | Shadow elevated     | `shadows.lg` (4/12/0.06)            |
-| Screen title        | 22px / 600                          |
+| Screen title — hero  | 34px / 700 (Dashboard, Food, Workout, Settings, History) |
+| Screen section title| 22px / 600 (sub-screens, modals)     |
 | Section heading     | 17px / 600                          |
 | Body text           | 15px / 400                          |
 | Stat number         | 34px / 700                          |
 | Reading value       | 32px / 700                          |
 | Button label        | 15px / 600                          |
-| Tab icon size       | 20px                                |
+| Tab icon size       | 22px (SVG)                          |
+| Tab icon stroke     | 1.8px                               |
 | Tab bar height      | 64px                                |
+| FAB size            | 72px circle                          |
+| FAB default radius  | 36px (circle)                       |
 
 ---
 
@@ -184,7 +188,7 @@ Last updated: 2026-07-07
 ### ReadingCard
 
 File: `features/glucose/components/ReadingCard.tsx`
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 | Property         | Value                    |
 | ---------------- | ------------------------ |
@@ -196,19 +200,20 @@ Last updated: 2026-07-07
 | Timestamp        | 13px, 400, `colors.textMuted` |
 | Value            | 32px, 700, color-coded by status |
 | Unit             | 16px, 500, same color as value |
+| Status label     | 13px, 500, same color as value ("In range" / "Above target") |
 | Spacing          | `spacing.xl` (20px) body padding, `spacing.sm` (8px) gap |
 | Interactive      | none (static)            |
-| Shadow           | `shadows.sm`             |
-| Accent usage     | status color drives bar + value |
+| Shadow           | none                     |
+| Accent usage     | status color drives bar + value + status label |
 
-**Pattern notes:** Row layout: accent bar (4px) + body. Accent bar and value text share the same status color (green=normal, orange=borderline, red=high). No border — uses subtle shadow. Card uses `overflow: hidden` for clean radius on the accent bar top/bottom.
+**Pattern notes:** Row layout: accent bar (4px) + body. No shadow — cards sit flush on the background. Accent bar, value text, and status label all share the same status color (success=in range, warning=above target, error=above target). Status label added below value for extra clarity. Card uses `overflow: hidden` for clean radius on the accent bar top/bottom.
 
 ---
 
 ### DecisionCard
 
 File: `features/glucose/components/DecisionCard.tsx`
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 | Property         | Value                    |
 | ---------------- | ------------------------ |
@@ -216,21 +221,21 @@ Last updated: 2026-07-07
 | Border           | none                     |
 | Border radius    | 14 (overflow hidden)     |
 | Left accent bar  | 4px, color-coded         |
-| Title            | 15px, 600, color-coded   |
+| Title            | 15px, 600, `colors.textPrimary` (NOT color-coded) |
 | Message          | 14px, 400, `colors.textSecondary` |
-| Spacing          | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap |
-| Interactive      | optional action Button   |
-| Shadow           | `shadows.sm`             |
-| Accent usage     | accent bar + title color |
+| Spacing          | `spacing.xl` (20px) body padding, `spacing.xs` (4px) gap |
+| Action           | ghost Button with `marginTop: spacing.sm` |
+| Shadow           | none                     |
+| Accent usage     | accent bar only (title is textPrimary) |
 
-**Pattern notes:** Same card structure as ReadingCard — row layout with accent bar + body. Used for pattern alerts and threshold warnings. Shares identical radius (14), shadow (sm), and accent bar pattern for visual consistency.
+**Pattern notes:** Same row layout + accent bar as ReadingCard — shares radius (14), no shadow, and 4px accent bar. No emoji or decorative symbols in the title. Title is always textPrimary (not color-coded) — the accent bar alone communicates severity. Action button uses ghost variant to keep visual weight low. Body gap reduced to xs for tighter copy spacing.
 
 ---
 
 ### TabBar (Navigation)
 
 File: `navigation/AppNavigator.tsx`
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 | Property         | Value                    |
 | ---------------- | ------------------------ |
@@ -239,11 +244,34 @@ Last updated: 2026-07-07
 | Height           | 64px                     |
 | Active icon      | `colors.accent`          |
 | Inactive icon    | `colors.textMuted`       |
-| Icon font size   | 20px                     |
+| Icon component   | Custom SVG (`components/ui/Icons.tsx`) |
+| Icon size        | 22px, 1.8px stroke       |
+| Icon container   | 28×28px centered          |
 | Label font       | 11px, 500                |
-| Icon shape       | Geometric Unicode symbols (◆◇●○■□▲△) |
+| Icon set         | ReadingsIcon, FoodIcon, WorkoutIcon, SettingsIcon |
 
-**Pattern notes:** Tab bar uses geometric symbols instead of text labels. Active state uses filled symbol, inactive uses outlined. Four tabs: Dashboard, Food, Workout, Settings. Min height 64px with 8px top/bottom padding.
+**Pattern notes:** Custom SVG icons replace the old Unicode symbols. Each icon is a 24×24 viewBox rendered at 22px with 1.8px stroke, single color, rounded caps/joins. Active state uses teal fill, inactive uses textMuted. Four tabs: Dashboard, Food, Workout, Settings. Icon container is centered within the 64px bar.
+
+---
+
+### Icons
+
+File: `components/ui/Icons.tsx`
+Last updated: 2026-07-08
+
+| Property         | Value                    |
+| ---------------- | ------------------------ |
+| Render engine    | `react-native-svg` (`Svg`, `Path`, `Circle`, `Line`, `Rect`) |
+| ViewBox          | 24×24                     |
+| Default size     | 24px                      |
+| Default color    | `#6B6E6D` (textSecondary) |
+| Default stroke   | 1.8px                     |
+| Stroke caps      | `round`                   |
+| Stroke joins     | `round`                   |
+| Fill             | none                      |
+| Icon components  | ReadingsIcon, FoodIcon, WorkoutIcon, SettingsIcon, ChevronRightIcon, CameraIcon, FlameIcon, PlusIcon, CheckCircleIcon, ClockIcon |
+
+**Pattern notes:** All icons share the same Props interface (`size`, `color`, `strokeWidth` with defaults), the same `useDefaults` helper, and the same rendering pattern (Svg + Path primitives, fill="none"). Colors are always single-tone — no multi-color icons. Stroke weight is always 1.8px. For tab bar usage, pass `size={22}` and `color` from the active/inactive state. For inline usage (ChevronRight), pass `size={18}`. For the FAB, pass `size={28}` with `#FFFFFF`. Never mix stroke weights or icon styles across the app — always use these components.
 
 ---
 
@@ -387,3 +415,93 @@ Last updated: 2026-07-07
 | Accent usage   | background color drives severity (green/yellow/red) |
 
 **Pattern notes:** Color-coded badge that communicates estimated glucose impact severity. Follows the same three-tier color system as ReadingCard (success/warning/error thresholds). Always shows the value prominently. Used inside the Snap Meal review screen below the nutrition fields.
+
+---
+
+### HeroCard (Dashboard)
+
+File: `features/glucose/screens/DashboardScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property         | Value                            |
+| ---------------- | -------------------------------- |
+| Background       | `colors.surface`                 |
+| Border           | none                             |
+| Border radius    | 14 (overflow hidden)             |
+| Left accent bar  | 4px, color-coded by status       |
+| Label            | 14px, 500, `colors.textSecondary` |
+| Value            | 42px, 700, color-coded by status |
+| Unit             | 18px, 500, same color as value   |
+| Status text      | 15px, 500, same color as value   |
+| Spacing          | `spacing.xl` (20px) padding, `spacing.xs` (4px) gap |
+| Shadow           | none                             |
+| Empty state      | `—` 42px/700 textMuted + "No readings today" 15px/500 textSecondary, centered |
+
+**Pattern notes:** Same card structure as ReadingCard but larger — 42px value vs 32px. Used as the primary focal point on Dashboard. Uses identical left accent bar, surface background, and overflow-hidden radius. No shadow. The empty state is centered text (no accent bar) with muted value and secondary label — never shows both states simultaneously.
+
+---
+
+### StatStrip (History rolling averages)
+
+File: `features/glucose/screens/HistoryScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property         | Value                           |
+| ---------------- | ------------------------------- |
+| Background       | `colors.surface`                |
+| Border           | none                            |
+| Border radius    | 14                              |
+| Layout           | horizontal row, equal flex items |
+| Value            | 22px, 700, `colors.textPrimary` |
+| Label            | 11px, 500, `colors.textMuted`, uppercase, letterSpacing 0.5 |
+| Spacing          | `spacing.lg` (16px) padding     |
+| Item gap         | none (flex: 1 fills space)      |
+| Shadow           | none                            |
+| Min items        | 4 (7d/14d/30d/90d)              |
+
+**Pattern notes:** Compact horizontal strip of multiple stat windows embedded in a single surface card. Each stat is evenly spaced via flex:1. Labels are always uppercase and muted. Value uses the statNumber token size (22px in this compact variant). Never add dividers between items — spacing comes from the equal flex distribution.
+
+---
+
+### InsightCard (Highest Spikes)
+
+File: `features/food/screens/FoodDashboardScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property         | Value                            |
+| ---------------- | -------------------------------- |
+| Background       | `colors.surface`                 |
+| Border           | none                             |
+| Border radius    | 14 (overflow hidden)             |
+| Left accent bar  | 4px, `colors.info`               |
+| Title            | 15px, 600, `colors.textPrimary`  |
+| Row meal name    | 14px, 400, `colors.textSecondary`|
+| Row impact value | 14px, 600, `colors.info`         |
+| Spacing          | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap |
+| Shadow           | none                             |
+| Accent usage     | info accent bar + impact values  |
+
+**Pattern notes:** Same row layout + accent bar structure as ReadingCard/DecisionCard. Uses info blue (`#4E7FA7`) for the accent bar and impact values — the only place info blue appears in the UI. Title is textPrimary, not color-coded. Used for the "Highest Spikes This Week" summary on the Food Log. Keep rows simple (meal name | impact value) — no extra detail or decoration.
+
+---
+
+### SettingsGroup
+
+File: `features/settings/screens/SettingsScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property         | Value                            |
+| ---------------- | -------------------------------- |
+| Container bg     | `colors.surface`                 |
+| Container radius | 14                               |
+| Row min height   | 48px                             |
+| Row padding      | `spacing.xl` (20px) horizontal, `spacing.md` (12px) vertical |
+| Label            | 15px, 400, `colors.textPrimary`  |
+| Value            | 15px, 500, `colors.textSecondary`|
+| Chevron icon     | `ChevronRightIcon`, 18px, `colors.textMuted` |
+| Divider          | 1px, `colors.borderLight`, `marginLeft: spacing.xl` |
+| Section header   | 13px, 500, `colors.textMuted`, letterSpacing 0.5, uppercase |
+| Toggle track     | off: `colors.border`, on: `colors.accentLight` |
+| Toggle thumb     | off: `colors.surface`, on: `colors.accent` |
+
+**Pattern notes:** White rounded card containing vertical rows separated by indented dividers. Each row has a label on the left and either a value + chevron, a toggle, or a standalone action on the right. Section headers sit outside the card (above it) in muted uppercase. No shadow. Never add icons inside the label area — chevrons go on the right only. Danger actions use `colors.error` for the label.

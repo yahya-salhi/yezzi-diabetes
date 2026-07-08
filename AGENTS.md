@@ -10,6 +10,7 @@ Read these context files in order before writing any code:
 7. context/library-docs.md
 8. context/build-plan.md
 9. context/progress-tracker.md
+10. context/screen-design-bible.md
 
 Check docs/superpowers/specs/ for design specs before implementing any feature.
 Read the exact versioned Expo docs at https://docs.expo.dev/versions/v57.0.0/ before writing any Expo-specific code.

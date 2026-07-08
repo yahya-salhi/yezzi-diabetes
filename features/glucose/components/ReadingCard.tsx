@@ -1,8 +1,8 @@
 ﻿import { View, Text, StyleSheet } from "react-native";
-import { colors, spacing, shadows } from "@/theme/tokens";
+import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
-import { getThresholdColor, getThresholdStatus } from "@/features/glucose/services/thresholds";
+import { getThresholdColor, getThresholdStatus, getThresholdLabel } from "@/features/glucose/services/thresholds";
 
 const READING_TYPE_LABELS: Record<string, string> = {
   fasting: "Fasting",
@@ -19,9 +19,10 @@ type Props = {
 export function ReadingCard({ reading }: Props) {
   const status = getThresholdStatus(reading.value, reading.type);
   const statusColor = getThresholdColor(status);
+  const label = getThresholdLabel(status);
 
   return (
-    <View style={[styles.card, shadows.sm]}>
+    <View style={styles.card}>
       <View style={[styles.accentBar, { backgroundColor: statusColor }]} />
       <View style={styles.body}>
         <View style={styles.header}>
@@ -33,6 +34,7 @@ export function ReadingCard({ reading }: Props) {
         <Text style={[styles.value, { color: statusColor }]}>
           {Math.round(reading.value)} <Text style={styles.unit}>{reading.unit}</Text>
         </Text>
+        <Text style={[styles.statusLabel, { color: statusColor }]}>{label}</Text>
       </View>
     </View>
   );
@@ -76,6 +78,10 @@ const styles = StyleSheet.create({
   },
   unit: {
     fontSize: 16,
+    fontWeight: "500",
+  },
+  statusLabel: {
+    fontSize: 13,
     fontWeight: "500",
   },
 });

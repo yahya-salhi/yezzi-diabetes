@@ -19,6 +19,17 @@ export function getThresholdStatus(
   return "high";
 }
 
+export function getThresholdLabel(status: ThresholdStatus): string {
+  switch (status) {
+    case "normal":
+      return "In range";
+    case "borderline":
+      return "Above target";
+    case "high":
+      return "Above target";
+  }
+}
+
 export function getThresholdColor(status: ThresholdStatus): string {
   switch (status) {
     case "normal":

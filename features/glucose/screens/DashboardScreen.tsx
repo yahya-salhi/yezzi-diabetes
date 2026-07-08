@@ -1,115 +1,94 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { format } from "date-fns";
-import { colors, spacing, shadows } from "@/theme/tokens";
-import { Card } from "@/components/ui/Card";
+import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReadingCard } from "@/features/glucose/components/ReadingCard";
-import { TrendChart } from "@/features/glucose/components/TrendChart";
+import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useReadings } from "@/features/glucose/hooks/useReadings";
 import { useAverages } from "@/features/glucose/hooks/useAverages";
-import { useTrends } from "@/features/glucose/hooks/useTrends";
 import { usePatterns } from "@/features/glucose/hooks/usePatterns";
-import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { getThresholdStatus, getThresholdColor, getThresholdLabel } from "@/features/glucose/services/thresholds";
 
 type Nav = NativeStackNavigationProp<any>;
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
 
 export function DashboardScreen() {
   const navigation = useNavigation<Nav>();
   const today = format(new Date(), "yyyy-MM-dd");
   const { readings, loading: readingsLoading } = useReadings(today);
-  const { dailyAverage, rolling7Day, loading: averagesLoading } = useAverages();
-  const { fastingData, postMealData } = useTrends();
+  const { dailyAverage, loading: averagesLoading } = useAverages();
   const { alerts } = usePatterns();
   const displayDate = format(new Date(), "EEEE, MMM d");
 
   if (readingsLoading) return <LoadingSpinner />;
 
+  const latestReading = readings.length > 0 ? readings[readings.length - 1] : null;
+  const latestStatus = latestReading
+    ? getThresholdStatus(latestReading.value, latestReading.type)
+    : null;
+  const latestStatusColor = latestStatus ? getThresholdColor(latestStatus) : colors.textMuted;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>{getGreeting()}</Text>
-          <Text style={styles.date}>{displayDate}</Text>
-        </View>
-        <View style={[styles.avatarCircle, shadows.sm]}>
-          <Text style={styles.avatarLetter}>Y</Text>
-        </View>
-      </View>
+      <Text style={styles.screenTitle}>Today</Text>
+      <Text style={styles.date}>{displayDate}</Text>
 
-      <View style={[styles.todayOverview, shadows.md]}>
-        <Text style={styles.overviewLabel}>Today's Average</Text>
-        <Text style={styles.overviewValue}>
-          {averagesLoading ? "—" : dailyAverage ? Math.round(dailyAverage).toString() : "—"}
-        </Text>
-        <Text style={styles.overviewUnit}>mg/dL</Text>
-        {!readingsLoading && readings.length > 0 && (
-          <View style={styles.readingCountBadge}>
-            <Text style={styles.readingCountText}>{readings.length} reading{readings.length !== 1 ? "s" : ""} today</Text>
+      {latestReading ? (
+        <View style={styles.heroCard}>
+          <View style={[styles.heroAccentBar, { backgroundColor: latestStatusColor }]} />
+          <View style={styles.heroBody}>
+            <Text style={styles.heroLabel}>
+              {latestReading.type === "fasting" ? "Fasting" : latestReading.type === "post_meal" ? "Post-Meal" : "Latest"}
+            </Text>
+            <Text style={[styles.heroValue, { color: latestStatusColor }]}>
+              {Math.round(latestReading.value)}
+              <Text style={styles.heroUnit}> {latestReading.unit}</Text>
+            </Text>
+            <Text style={[styles.heroStatus, { color: latestStatusColor }]}>
+              {latestStatus ? getThresholdLabel(latestStatus) : ""}
+            </Text>
           </View>
-        )}
-      </View>
+        </View>
+      ) : (
+        <View style={styles.heroEmptyCard}>
+          <Text style={styles.heroEmptyValue}>—</Text>
+          <Text style={styles.heroEmptyLabel}>No readings today</Text>
+        </View>
+      )}
 
-      {alerts.map((alert, i) => (
+      {dailyAverage && (
+        <View style={styles.rangeSummary}>
+          <View style={styles.rangeDot} />
+          <Text style={styles.rangeText}>
+            {dailyAverage < 140 ? "Good range this week" : "Above target this week"}
+          </Text>
+        </View>
+      )}
+
+      {alerts.slice(0, 2).map((alert, i) => (
         <DecisionCard key={i} alert={alert} actionLabel="View History" onAction={() => navigation.navigate("History")} />
       ))}
 
-      <View style={styles.sectionHeader}>
+      <View>
         <Text style={styles.sectionTitle}>Today's Readings</Text>
-        {readings.length > 0 && (
-          <Text style={styles.sectionAction}>See all</Text>
-        )}
-      </View>
-
-      {readings.length === 0 ? (
-        <Card>
-          <EmptyState
-            message="No readings today. Tap below to log your first one."
-            actionLabel="Add Reading"
-            onAction={() => navigation.navigate("AddReading")}
-          />
-        </Card>
-      ) : (
-        readings.map((r) => <ReadingCard key={r.id} reading={r} />)
-      )}
-
-      <View style={styles.divider} />
-
-      <Text style={styles.sectionTitle}>Averages</Text>
-      <View style={styles.averagesRow}>
-        <View style={[styles.averageCard, shadows.sm]}>
-          <Text style={styles.averageLabel}>Today</Text>
-          <Text style={[styles.averageValue, { color: colors.accent }]}>
-            {averagesLoading ? "—" : dailyAverage ? Math.round(dailyAverage).toString() : "—"}
-          </Text>
-        </View>
-        <View style={[styles.averageCard, shadows.sm]}>
-          <Text style={styles.averageLabel}>7-day</Text>
-          <Text style={[styles.averageValue, { color: colors.accent }]}>
-            {averagesLoading ? "—" : rolling7Day ? Math.round(rolling7Day).toString() : "—"}
-          </Text>
+        <View style={styles.readingsList}>
+          {readings.length === 0 ? (
+            <EmptyState
+              message="Tap below to log your first reading."
+              actionLabel="Add Reading"
+              onAction={() => navigation.navigate("AddReading")}
+            />
+          ) : (
+            readings.map((r) => <ReadingCard key={r.id} reading={r} />)
+          )}
         </View>
       </View>
-
-      <TrendChart fastingData={fastingData} postMealData={postMealData} />
 
       <View style={styles.actions}>
         <Button title="Add Reading" onPress={() => navigation.navigate("AddReading")} />
-        <Button
-          title="View History"
-          variant="secondary"
-          onPress={() => navigation.navigate("History")}
-        />
       </View>
     </ScrollView>
   );
@@ -123,117 +102,96 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.xl,
     gap: spacing.xxl,
+    paddingBottom: spacing.xxxl,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingTop: spacing.md,
-  },
-  headerLeft: {
-    gap: spacing.xs,
-  },
-  greeting: {
-    fontSize: 24,
+  screenTitle: {
+    fontSize: 34,
     fontWeight: "700",
     color: colors.textPrimary,
+    marginTop: spacing.md,
   },
   date: {
     fontSize: 15,
     fontWeight: "400",
     color: colors.textMuted,
+    marginTop: -spacing.md,
   },
-  avatarCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.accentLight,
-    alignItems: "center",
-    justifyContent: "center",
+  heroCard: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    overflow: "hidden",
   },
-  avatarLetter: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.accent,
+  heroAccentBar: {
+    width: 4,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
-  todayOverview: {
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    padding: spacing.xxl,
-    alignItems: "center",
+  heroBody: {
+    flex: 1,
+    padding: spacing.xl,
     gap: spacing.xs,
   },
-  overviewLabel: {
+  heroLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "rgba(255,255,255,0.7)",
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    color: colors.textSecondary,
   },
-  overviewValue: {
-    fontSize: 52,
+  heroValue: {
+    fontSize: 42,
     fontWeight: "700",
-    color: "#FFFFFF",
-    lineHeight: 60,
+    lineHeight: 48,
   },
-  overviewUnit: {
-    fontSize: 16,
+  heroUnit: {
+    fontSize: 18,
     fontWeight: "500",
-    color: "rgba(255,255,255,0.6)",
-    marginTop: -spacing.xs,
   },
-  readingCountBadge: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 999,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    marginTop: spacing.md,
-  },
-  readingCountText: {
-    fontSize: 13,
+  heroStatus: {
+    fontSize: 15,
     fontWeight: "500",
-    color: "rgba(255,255,255,0.85)",
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  heroEmptyCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: spacing.xxl,
     alignItems: "center",
+    gap: spacing.sm,
+  },
+  heroEmptyValue: {
+    fontSize: 42,
+    fontWeight: "700",
+    color: colors.textMuted,
+  },
+  heroEmptyLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: colors.textSecondary,
+  },
+  rangeSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  rangeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
+  },
+  rangeText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: colors.textSecondary,
   },
   sectionTitle: {
     fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
-  sectionAction: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.accent,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: spacing.sm,
-  },
-  averagesRow: {
-    flexDirection: "row",
+  readingsList: {
     gap: spacing.md,
-  },
-  averageCard: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    padding: spacing.xl,
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  averageLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.textSecondary,
-  },
-  averageValue: {
-    fontSize: 34,
-    fontWeight: "700",
   },
   actions: {
     gap: spacing.md,
