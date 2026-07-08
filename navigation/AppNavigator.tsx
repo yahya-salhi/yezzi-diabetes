@@ -12,25 +12,7 @@ import { SnapMealScreen } from "@/features/food/screens/SnapMealScreen";
 import { ManualEntryScreen } from "@/features/food/screens/ManualEntryScreen";
 import { WorkoutDashboardScreen } from "@/features/exercise/screens/WorkoutDashboardScreen";
 import { SettingsScreen } from "@/features/settings/screens/SettingsScreen";
-
-type RootTabParamList = {
-  Dashboard: undefined;
-  Food: undefined;
-  Workout: undefined;
-  Settings: undefined;
-};
-
-type GlucoseStackParamList = {
-  DashboardHome: undefined;
-  AddReading: undefined;
-  History: undefined;
-};
-
-type FoodStackParamList = {
-  FoodHome: undefined;
-  SnapMeal: undefined;
-  ManualEntry: { photoUri?: string } | undefined;
-};
+import type { RootTabParamList, GlucoseStackParamList, FoodStackParamList } from "@/navigation/types";
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const GlucoseStack = createNativeStackNavigator<GlucoseStackParamList>();

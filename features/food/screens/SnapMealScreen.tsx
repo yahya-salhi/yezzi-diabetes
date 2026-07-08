@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { FoodStackParamList } from "@/navigation/types";
 import { colors, spacing } from "@/theme/tokens";
 import { CameraView } from "@/features/food/components/CameraView";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
@@ -11,7 +13,7 @@ import type { MealType } from "@/features/food/types";
 type ScreenMode = "camera" | "loading" | "review";
 
 export function SnapMealScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<FoodStackParamList>>();
   const { analyzing, needsKey, analyzePhoto, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
 
@@ -42,7 +44,7 @@ export function SnapMealScreen() {
       setEstimatedImpact(result.estimated_impact_mgdl);
       setMode("review");
     } else {
-      (navigation as any).navigate("ManualEntry", { photoUri: uri });
+      navigation.navigate("ManualEntry", { photoUri: uri });
     }
   };
 
