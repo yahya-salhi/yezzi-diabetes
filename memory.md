@@ -1,92 +1,67 @@
-# Memory — Snap Meal Camera + Review UI
-
-Last updated: 2026-07-07
-
-## What was built
-
-- **Created `features/food/components/CameraView.tsx`** — full-screen expo-camera with permission gate, square crop overlay with white corner guides, flash toggle (on/off), capture button (72px circle), close button, hint text
-- **Created `features/food/components/NutritionBreakdown.tsx`** — 2-column editable grid for calories, carbs, protein, fat with numeric inputs following standard Input pattern
-- **Created `features/food/components/EstimatedImpactBadge.tsx`** — color-coded badge (green <20, yellow 20-40, red 40+) with uppercase label and prominent value
-- **Created `features/food/screens/SnapMealScreen.tsx`** — three-mode screen (camera → loading skeleton with spinner → review) with mock pre-filled data after 1.8s delay
-- **Updated `features/food/screens/FoodDashboardScreen.tsx`** — FAB now navigates to SnapMeal screen
-- **Updated `navigation/AppNavigator.tsx`** — added FoodStack navigator with SnapMeal as modal screen
-- **Updated `context/progress-tracker.md`** — marked 12 Snap Meal complete
-- **Updated `context/ui-registry.md`** — imprinted CameraView, NutritionBreakdown, EstimatedImpactBadge
-- **Installed `expo-camera` and `expo-file-system`**
-- **Committed** as `2a9218d`
-
-## Decisions made
-
-- Camera uses `expo-camera` directly with ref-based capture (`cameraRef.takePictureAsync()`) — no wrapper abstraction
-- Square crop overlay is purely visual (white corner guides, semi-transparent dimming) — actual crop not yet implemented
-- Review screen uses mock data with `setTimeout` simulation of AI analysis — real GPT-4o integration comes in next feature
-- Loading skeleton matches review screen layout (photo placeholder, text lines, grid boxes) for smooth transition
-- EstimatedImpactBadge thresholds: <20 green, 20-40 yellow, 40+ red — matches reading severity color system
-
-## Problems solved
-
-None — straightforward build.
-
-## Current state
-
-- Camera opens, captures photo, shows loading skeleton, transitions to review with mock data
-- Review screen shows photo thumbnail, editable food name, editable nutrition fields, impact badge, meal type picker, notes, save button
-- TypeScript compiles clean
-- No GPT-4o Vision integration yet — review data is mocked
-- No save logic — save button just navigates back
-
-## Next session starts with
-
-Wire GPT-4o Vision integration (13 GPT-4o Vision Integration): save photo to documents directory via expo-file-system, convert to base64, POST to OpenAI with retry logic, parse JSON response, fallback to manual entry on failure.
-
-## Open questions
-
-None.
-
----
-
-# Session — Design Bible UI Enhancement
+# Memory — Phase 2 Complete (Food Tracking)
 
 Last updated: 2026-07-08
 
 ## What was built
 
-- **Created `components/ui/Icons.tsx`** — custom SVG icon system (Readings, Food, Workout, Settings, ChevronRight, Camera, Flame, Plus, CheckCircle, Clock) — 9 components, 24×24 viewBox, 1.8px round stroke
-- **Created `context/screen-design-bible.md`** — locked design bible for all 6 screens (palette, texture, typography, iconography, corners, navigation, signature components)
-- **Added `context/screen-design-bible.md`** to AGENTS.md as #10 context file
-- **Restructured DashboardScreen** — hero reading card (42px/700 value, 4px status bar, "In range" label), removed greeting/avatar, removed chart from first viewport, single "Add Reading" CTA, "Good range this week" summary, `getThresholdLabel()` utility
-- **Refined AddReadingScreen** — removed Cancel button (single CTA), section titles bumped to 17/600
-- **Built out HistoryScreen** — rolling-average stat strip (7/14/30/90d), readings grouped by day with dot timeline markers, pattern alerts pinned above list
-- **Restructured FoodDashboardScreen** — "Highest Spikes This Week" insight block (info-blue accent bar), 72px camera FAB (was 56px), photo carousel shelf with scrim overlay
-- **Built out WorkoutDashboardScreen** — streak badge + session count, PPL/Upper-Lower template cards, workout summaries, milestone tiles
-- **Refined SettingsScreen** — grouped white list cells, 13px uppercase section headers, appearance toggle, data section with export/delete, chevron indicators
-- **Updated ReadingCard** — removed `shadows.sm`, added status label (13px/500, "In range" / "Above target")
-- **Updated DecisionCard** — removed shadow and emoji indicators, title now textPrimary (not color-coded), action uses ghost, gap reduced to xs
-- **Updated AppNavigator** — replaced Unicode tab icons (◆◇●○■□▲△) with custom SVG icons
-- **Updated useAverages** — added 14/30/90 day rolling average support
-- **Updated thresholds.ts** — added `getThresholdLabel()` returning "In range" / "Above target"
-- **Updated ui-registry.md** — updated 3 entries (ReadingCard, DecisionCard, TabBar), added 5 new (Icons, HeroCard, StatStrip, InsightCard, SettingsGroup), updated baseline
+### Feature 15 — Meal-to-Reading Linking (7f1f7d1)
+- **Added `getUnlinkedMeals()` to `features/food/services/foodLog.ts`** — queries meals not yet linked to a reading, with `FoodLogRepo` interface and `createFakeFoodLog()` for testing
+- **Created `features/food/hooks/useMealLinking.ts`** — orchestrates: check for unlinked meals → single-match shows MealLinkSuggestion dialog, multi-match shows picker list → calls `linkToMeal()` on accept
+- **Added `linkToMeal()` to `features/glucose/GlucoseReadings.ts`** — UPDATE glucose_readings SET food_log_id — separate from insert, not modifying the add-reading flow
+- **Wired `AddReadingScreen.tsx`** — after post-meal save, queries unlinked meals by meal_type + date proximity, shows linking suggestion
+
+### Feature 16 — Meal Insights Dashboard (8fae238)
+- **Created `features/food/services/impactEstimator.ts`** — `createSqliteImpactEstimator()` with `getTopSpikes(days)`:
+  - JOINs linked `glucose_readings` with `food_log` WHERE `food_log_id IS NOT NULL`
+  - Finds closest prior baseline (fasting/pre_meal reading same day before post_meal time)
+  - Calculates actual impact = post_meal_value - baseline_value
+  - Returns top 3 sorted by actual impact descending
+  - Includes `createFakeImpactEstimator()` for testing
+- **Created `features/food/hooks/useInsights.ts`** — standard `{data, loading, error, refresh}` pattern, calls `getTopSpikes(7)`
+- **Wired `FoodDashboardScreen.tsx`** — replaced mock `SAMPLE_SPIKES` with real `useInsights()` data, enhanced row layout with meal type Badge, time, estimated vs actual comparison
+- **Added `MealSpike` type to `features/food/types.ts`** — meal_id, food_name, meal_type, date, meal_time, estimated_impact, baseline_value, post_meal_value, actual_impact
+
+### Refactoring
+- **Created `features/glucose/domain/GlucoseValue.ts`** (67f7ca9) — unit-safe glucose conversion module, extracted from AddReadingScreen
+- **Lifted seams to repository interfaces** (6fce885) — `FoodLogRepo` interface, adapter injection via `getDbAdapter()` default, extracted `ReadingClassifier` and threshold patterns, added `createFakeFoodLog()`
 
 ## Decisions made
 
-- No shadow on cards — cards sit flush on the warm background, shadow reserved for elevated elements only
-- Screen titles bumped to 34px/700 for hero screens — design bible specifies 22px/600 for sub-screens, 34px/700 for primary screens
-- Custom SVG icons over library icons — matches design bible's "no generic Lucide-default feel" mandate
-- DecisionCard title no longer color-coded — accent bar alone communicates severity
-- Info blue (#4E7FA7) only appears in insight cards and chart lines, never elsewhere
+- **Linking strategy**: `linkToMeal()` is a separate UPDATE on `glucose_readings`, not baked into insert — keeps meal linking optional and non-breaking
+- **Matching logic**: Same-day meals matching by meal_type + time proximity (defaults: breakfast < 11:00, lunch 11:00-16:00, dinner > 16:00, snack always); single-match shows inline suggestion, multi-match shows picker
+- **Impact estimation**: Actual impact = closest prior baseline (fasting/pre_meal same day before post_meal) subtracted from post_meal value; null baselines filtered out
+- **Repository pattern**: All data accessors now use `getDbAdapter()` as default parameter (no caller-side db passing) + `createFake*()` factories for testability
+
+## Problems solved
+
+- **Mismatched progress-tracker numbering** — build-plan starts Phase 2 at 11 (Food DB Migration) while progress-tracker starts at 10. Kept progress-tracker numbering as-is for now to avoid confusion.
+- **FoodLogRepo refactoring** — original `createSqliteFoodLog(db)` required callers to import `getDbAdapter()`. Refactored to accept optional `db` param, defaulting to `getDbAdapter()` internally — cleaner API with zero behavioral change.
 
 ## Current state
 
-- All 6 screens match screen-design-bible.md
-- Tab bar uses custom brand icons
-- ReadingCard and DecisionCard share consistent card structure (no shadow, 4px accent bar, 14px radius)
-- TypeScript compiles clean
-- Expo passes all 18 checks
+- **Phase 2 (Food Tracking) complete** — all 7 features done (11–17 in build-plan, 10–16 in progress-tracker)
+- End-to-end food flow: capture photo → GPT-4o → review/edit → save → link to post-meal reading → see impact in insights dashboard
+- GlucoseValue module extracted for unit-safe conversion
+- Repository interfaces extracted for testability
+- 8 total commits on `feat/phase-2-features`:
+  - `849c3f7` chore(deps): add openai and expo-secure-store
+  - `a7cfed6` feat(food): add GPT-4o meal analysis service and food log hooks
+  - `f4682b2` feat(food): wire GPT-4o Vision into SnapMeal with ManualEntry fallback
+  - `e80ae52` docs: update progress tracker, ui-registry, and session memory
+  - `7f1f7d1` feat(food): add meal-to-reading linking on post-meal save
+  - `67f7ca9` feat(glucose): extract GlucoseValue module for unit-safe conversion
+  - `6fce885` refactor(db): lift seam from raw SQL up to repository interfaces
+  - `8fae238` feat(food): add Meal Insights Dashboard with real top-spikes query
 
 ## Next session starts with
 
-GPT-4o Vision integration for Snap Meal screen.
+**Phase 3 — Feature 18: Reading Reminders** (build-plan line 314):
+- Local notifications via expo-notifications
+- Onboarding soft-ask step: "Want a nudge for your morning reading?"
+- Settings section: per-type reminder toggles + time pickers
+- Skip reminder when that reading type is already logged that day
+- Weekly summary notification
 
 ## Open questions
 
-None.
+- progress-tracker.md numbering is offset by -1 vs build-plan (starts Phase 2 at 10 instead of 11). Should be reconciled at some point.

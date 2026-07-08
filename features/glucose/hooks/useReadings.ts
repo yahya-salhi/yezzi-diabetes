@@ -1,10 +1,9 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
 
-const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
+const readingsRepo = createSqliteGlucoseReadings();
 
 type UseReadingsFilter = {
   date?: string;

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getDbAdapter } from "@/db/instance";
+import { useFocusEffect } from "@react-navigation/native";
 import type { UserPreferences } from "../services/preferences";
 import { getPreferences, upsertPreferences } from "../services/preferences";
 
@@ -20,7 +20,7 @@ export function usePreferences(): UsePreferencesResult {
     try {
       setLoading(true);
       setError(null);
-      const data = await getPreferences(getDbAdapter());
+      const data = await getPreferences();
       setPreferences(data);
     } catch (err) {
       setError(String(err));
@@ -29,11 +29,17 @@ export function usePreferences(): UsePreferencesResult {
     }
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
   const save = useCallback(async (prefs: Partial<UserPreferences>) => {
     try {
       setLoading(true);
       setError(null);
-      await upsertPreferences(getDbAdapter(), prefs);
+      await upsertPreferences(prefs);
       await refresh();
     } catch (err) {
       setError(String(err));

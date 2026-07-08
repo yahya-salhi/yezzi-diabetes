@@ -9,9 +9,11 @@ import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useReadings } from "@/features/glucose/hooks/useReadings";
 import { useAverages } from "@/features/glucose/hooks/useAverages";
 import { usePatterns } from "@/features/glucose/hooks/usePatterns";
+import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getThresholdStatus, getThresholdColor, getThresholdLabel } from "@/features/glucose/services/thresholds";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
+import { classifyReading, getColor, getLabel, thresholdsFromPreferences } from "@/features/glucose/services/ReadingClassifier";
 
 type Nav = NativeStackNavigationProp<any>;
 
@@ -21,15 +23,20 @@ export function DashboardScreen() {
   const { readings, loading: readingsLoading } = useReadings(today);
   const { dailyAverage, loading: averagesLoading } = useAverages();
   const { alerts } = usePatterns();
+  const { preferences } = usePreferences();
   const displayDate = format(new Date(), "EEEE, MMM d");
+
+  const thresholds = preferences ? thresholdsFromPreferences(preferences) : undefined;
+  const weeklyThreshold = thresholds?.post_meal.normalUpper ?? 140;
 
   if (readingsLoading) return <LoadingSpinner />;
 
   const latestReading = readings.length > 0 ? readings[readings.length - 1] : null;
+  const latestGv = latestReading ? GlucoseValue.fromMgdl(latestReading.value) : null;
   const latestStatus = latestReading
-    ? getThresholdStatus(latestReading.value, latestReading.type)
+    ? classifyReading(latestReading.value, latestReading.type, thresholds)
     : null;
-  const latestStatusColor = latestStatus ? getThresholdColor(latestStatus) : colors.textMuted;
+  const latestStatusColor = latestStatus ? getColor(latestStatus) : colors.textMuted;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -44,11 +51,11 @@ export function DashboardScreen() {
               {latestReading.type === "fasting" ? "Fasting" : latestReading.type === "post_meal" ? "Post-Meal" : "Latest"}
             </Text>
             <Text style={[styles.heroValue, { color: latestStatusColor }]}>
-              {Math.round(latestReading.value)}
+              {latestGv?.toDisplay(latestReading.unit)}
               <Text style={styles.heroUnit}> {latestReading.unit}</Text>
             </Text>
             <Text style={[styles.heroStatus, { color: latestStatusColor }]}>
-              {latestStatus ? getThresholdLabel(latestStatus) : ""}
+              {latestStatus ? getLabel(latestStatus) : ""}
             </Text>
           </View>
         </View>
@@ -61,9 +68,9 @@ export function DashboardScreen() {
 
       {dailyAverage && (
         <View style={styles.rangeSummary}>
-          <View style={styles.rangeDot} />
+          <View style={[styles.rangeDot, { backgroundColor: dailyAverage < weeklyThreshold ? colors.success : colors.warning }]} />
           <Text style={styles.rangeText}>
-            {dailyAverage < 140 ? "Good range this week" : "Above target this week"}
+            {dailyAverage < weeklyThreshold ? "Good range this week" : "Above target this week"}
           </Text>
         </View>
       )}
@@ -82,7 +89,7 @@ export function DashboardScreen() {
               onAction={() => navigation.navigate("AddReading")}
             />
           ) : (
-            readings.map((r) => <ReadingCard key={r.id} reading={r} />)
+            readings.map((r) => <ReadingCard key={r.id} reading={r} thresholds={thresholds} />)
           )}
         </View>
       </View>
@@ -177,7 +184,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.success,
   },
   rangeText: {
     fontSize: 15,

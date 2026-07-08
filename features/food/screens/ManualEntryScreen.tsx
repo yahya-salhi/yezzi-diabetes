@@ -1,22 +1,28 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { colors, spacing } from "@/theme/tokens";
-import { CameraView } from "@/features/food/components/CameraView";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import type { MealType } from "@/features/food/types";
 
-type ScreenMode = "camera" | "loading" | "review";
+type ManualEntryParams = {
+  ManualEntry: {
+    photoUri?: string;
+  };
+};
 
-export function SnapMealScreen() {
+type Step = "input" | "loading" | "review";
+
+export function ManualEntryScreen() {
   const navigation = useNavigation();
-  const { analyzing, needsKey, analyzePhoto, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
+  const route = useRoute<RouteProp<ManualEntryParams, "ManualEntry">>();
+  const { analyzing, needsKey, analyzeText, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
 
-  const [mode, setMode] = useState<ScreenMode>("camera");
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>("input");
+  const [description, setDescription] = useState("");
   const [foodName, setFoodName] = useState("");
   const [calories, setCalories] = useState("");
   const [carbsG, setCarbsG] = useState("");
@@ -27,11 +33,11 @@ export function SnapMealScreen() {
   const [estimatedImpact, setEstimatedImpact] = useState(0);
   const [keyInput, setKeyInput] = useState("");
 
-  const handleCapture = async (uri: string) => {
-    setPhotoUri(uri);
-    setMode("loading");
+  const handleAnalyze = async () => {
+    if (!description.trim()) return;
 
-    const result = await analyzePhoto(uri);
+    setStep("loading");
+    const result = await analyzeText(description.trim());
 
     if (result) {
       setFoodName(result.food_name);
@@ -40,9 +46,9 @@ export function SnapMealScreen() {
       setProteinG(result.protein_g !== null ? String(result.protein_g) : "");
       setFatG(result.fat_g !== null ? String(result.fat_g) : "");
       setEstimatedImpact(result.estimated_impact_mgdl);
-      setMode("review");
+      setStep("review");
     } else {
-      (navigation as any).navigate("ManualEntry", { photoUri: uri });
+      setStep("input");
     }
   };
 
@@ -56,7 +62,7 @@ export function SnapMealScreen() {
         protein_g: proteinG ? Number(proteinG) : null,
         fat_g: fatG ? Number(fatG) : null,
         estimated_impact: estimatedImpact,
-        photo_uri: photoUri,
+        photo_uri: route.params?.photoUri ?? null,
         notes: notes || null,
       });
       navigation.goBack();
@@ -65,40 +71,19 @@ export function SnapMealScreen() {
     }
   };
 
-  const handleProvideKey = async () => {
-    if (!keyInput.trim()) return;
-    await provideApiKey(keyInput.trim());
-    setKeyInput("");
-  };
-
-  if (mode === "camera") {
-    return <CameraView onCapture={handleCapture} onClose={() => navigation.goBack()} />;
-  }
-
-  if (mode === "loading" || analyzing) {
+  if (step === "loading" || analyzing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.accent} />
-        <View style={styles.loadingContent}>
-          <View style={styles.skeletonPhoto} />
-          <View style={styles.skeletonRow}>
-            <View style={styles.skeletonLine} />
-            <View style={styles.skeletonShort} />
-          </View>
-          <View style={styles.skeletonGrid}>
-            <View style={styles.skeletonBox} />
-            <View style={styles.skeletonBox} />
-          </View>
-        </View>
-        <Text style={styles.loadingText}>Analyzing your meal...</Text>
+        <Text style={styles.loadingText}>Analyzing your meal description...</Text>
       </View>
     );
   }
 
-  return (
-    <>
+  if (step === "review") {
+    return (
       <MealReviewForm
-        photoUri={photoUri}
+        photoUri={route.params?.photoUri}
         foodName={foodName}
         onFoodNameChange={setFoodName}
         calories={calories}
@@ -119,6 +104,40 @@ export function SnapMealScreen() {
         saving={saving}
         saveError={saveError}
       />
+    );
+  }
+
+  const handleProvideKey = async () => {
+    if (!keyInput.trim()) return;
+    await provideApiKey(keyInput.trim());
+    setKeyInput("");
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Describe Your Meal</Text>
+        <Text style={styles.subtitle}>
+          Type what you ate and we'll estimate the nutrition.
+        </Text>
+        <TextInput
+          style={styles.textarea}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="e.g. A bowl of chicken noodle soup with a side salad and vinaigrette dressing"
+          placeholderTextColor={colors.textMuted}
+          multiline
+          textAlignVertical="top"
+          autoFocus
+        />
+        <TouchableOpacity
+          style={[styles.analyzeButton, !description.trim() && styles.analyzeButtonDisabled]}
+          onPress={handleAnalyze}
+          disabled={!description.trim()}
+        >
+          <Text style={styles.analyzeButtonText}>Analyze Meal</Text>
+        </TouchableOpacity>
+      </View>
 
       {needsKey && (
         <View style={styles.overlay}>
@@ -148,58 +167,68 @@ export function SnapMealScreen() {
           </View>
         </View>
       )}
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+    padding: spacing.xl,
+    gap: spacing.lg,
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
     padding: spacing.xl,
-    gap: spacing.xxl,
-  },
-  loadingContent: {
-    width: "100%",
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   loadingText: {
     fontSize: 15,
     fontWeight: "500",
     color: colors.textSecondary,
   },
-  skeletonPhoto: {
-    width: "100%",
-    height: 200,
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontWeight: "400",
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  textarea: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 14,
-    backgroundColor: colors.borderLight,
+    padding: spacing.xl,
+    fontSize: 15,
+    color: colors.textPrimary,
+    minHeight: 140,
+    lineHeight: 22,
   },
-  skeletonRow: {
-    gap: spacing.sm,
-  },
-  skeletonLine: {
-    height: 18,
-    borderRadius: 8,
-    backgroundColor: colors.borderLight,
-    width: "60%",
-  },
-  skeletonShort: {
-    height: 14,
-    borderRadius: 8,
-    backgroundColor: colors.borderLight,
-    width: "30%",
-  },
-  skeletonGrid: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  skeletonBox: {
-    flex: 1,
-    height: 60,
+  analyzeButton: {
+    backgroundColor: colors.accent,
     borderRadius: 10,
-    backgroundColor: colors.borderLight,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  analyzeButtonDisabled: {
+    opacity: 0.5,
+  },
+  analyzeButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

@@ -85,7 +85,20 @@ All data lives on-device. No cloud sync, no account required. The database holds
 
 ---
 
-## Features In Scope
+## Release Plan
+
+Per `docs/superpowers/specs/2026-07-08-store-readiness-design.md`:
+
+- **v1 (Google Play):** glucose tracking + AI food log + reminders + backup/export + freemium (YeZZi Plus)
+- **v1.1 (4–6 weeks post-launch):** exercise module + Health Connect (Android)
+- **v1.2 (~2–3 months):** App Store launch + Apple Health; multi-language candidate (French + Arabic)
+- **v2 (with traction):** optional encrypted cloud backup, widgets, CGM exploration
+
+**Monetization:** core tracking free forever. 10 free AI scans/month; YeZZi Plus subscription ($2.99/month, $19.99/year) unlocks unlimited scans + PDF doctor reports. AI calls go through an anonymous API proxy — no accounts, no personal data server-side.
+
+---
+
+## Features In Scope — v1
 
 - Manual blood glucose entry (fasting, pre_meal, post_meal, bedtime, other)
 - Support for mg/dL and mmol/L with conversion
@@ -95,31 +108,39 @@ All data lives on-device. No cloud sync, no account required. The database holds
 - Pattern detection (3+ consecutive high readings)
 - Decision cards with color-coded feedback
 - Reading history with filters and date range
-- Food log with photo capture and GPT-4o Vision food recognition
+- Food log with photo capture and GPT-4o Vision food recognition (via API proxy, quota'd)
 - Estimated nutrition (carbs, protein, fat) per meal
 - Estimated blood glucose impact per meal
 - Meal-to-reading linking for actual vs estimated comparison
 - Meal insights dashboard (highest spike meals)
+- Reading reminders (local notifications, skip-when-logged)
+- Logging streak with 7/30/90-day milestones
+- Backup/restore to a local file via share sheet
+- CSV export (free) + PDF doctor report (Plus)
+- YeZZi Plus subscription via RevenueCat
+- Medical disclaimer, privacy policy, delete-all-data
+- On-device storage — no sign-up required
+
+## Features In Scope — v1.1 (post-launch)
+
 - Workout logging (strength + cardio)
 - Weekly exercise templates with progressive overload
 - Workout-to-glucose linking and insights
-- Streak tracking and milestone badges
-- On-device storage — no sign-up required
+- Workout streak tracking and milestone badges
+- Health Connect integration (Android)
 
 ---
 
 ## Features Out of Scope
 
-- Cloud sync or backup
-- Data export (CSV) — **high priority for a follow-up**, simple to add but deferred from initial builds
-- User accounts or authentication
-- Medication/insulin logging
-- Bluetooth glucometer integration
-- Apple Health / Google Fit integration
-- Push notifications
-- Doctor/healthcare provider sharing
+- Cloud sync or automatic cloud backup — v2 candidate (encrypted, optional)
+- User accounts or authentication — anonymous device ID only
+- Medication/insulin logging — regulatory risk, stays out
+- Bluetooth glucometer / CGM integration
+- Apple Health — arrives with the App Store launch (v1.2)
+- Doctor/healthcare provider sharing beyond PDF export
 - IoT or wearable device integration
-- Multi-language support
+- Multi-language support — v1.2 candidate (French + Arabic first)
 - Social features or communities
 
 ---

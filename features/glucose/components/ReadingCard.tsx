@@ -2,7 +2,9 @@
 import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
-import { getThresholdColor, getThresholdStatus, getThresholdLabel } from "@/features/glucose/services/thresholds";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
+import { classifyReading, getColor, getLabel } from "@/features/glucose/services/ReadingClassifier";
+import type { ThresholdMap } from "@/features/glucose/services/ReadingClassifier";
 
 const READING_TYPE_LABELS: Record<string, string> = {
   fasting: "Fasting",
@@ -14,12 +16,14 @@ const READING_TYPE_LABELS: Record<string, string> = {
 
 type Props = {
   reading: GlucoseReading;
+  thresholds?: ThresholdMap;
 };
 
-export function ReadingCard({ reading }: Props) {
-  const status = getThresholdStatus(reading.value, reading.type);
-  const statusColor = getThresholdColor(status);
-  const label = getThresholdLabel(status);
+export function ReadingCard({ reading, thresholds }: Props) {
+  const gv = GlucoseValue.fromMgdl(reading.value);
+  const status = classifyReading(reading.value, reading.type, thresholds);
+  const statusColor = getColor(status);
+  const label = getLabel(status);
 
   return (
     <View style={styles.card}>
@@ -32,7 +36,7 @@ export function ReadingCard({ reading }: Props) {
           </Text>
         </View>
         <Text style={[styles.value, { color: statusColor }]}>
-          {Math.round(reading.value)} <Text style={styles.unit}>{reading.unit}</Text>
+          {gv.toDisplay(reading.unit)} <Text style={styles.unit}>{reading.unit}</Text>
         </Text>
         <Text style={[styles.statusLabel, { color: statusColor }]}>{label}</Text>
       </View>

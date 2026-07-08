@@ -1,3 +1,4 @@
+import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 
 export type UserPreferences = {
@@ -16,9 +17,10 @@ const DEFAULTS: UserPreferences = {
   postmeal_target_high: 140,
 };
 
-export async function getPreferences(db: DatabasePort): Promise<UserPreferences | null> {
+export async function getPreferences(db?: DatabasePort): Promise<UserPreferences | null> {
+  const adapter = db ?? getDbAdapter();
   try {
-    const row = await db.getFirstAsync<{
+    const row = await adapter.getFirstAsync<{
       id: string;
       unit: string;
       fasting_target_low: number;
@@ -43,14 +45,15 @@ export async function getPreferences(db: DatabasePort): Promise<UserPreferences 
 }
 
 export async function upsertPreferences(
-  db: DatabasePort,
   prefs: Partial<UserPreferences>,
+  db?: DatabasePort,
 ): Promise<void> {
-  try {
-    const existing = await getPreferences(db);
-    const merged = { ...DEFAULTS, ...existing, ...prefs };
+  const adapter = db ?? getDbAdapter();
+  const existing = await getPreferences(adapter);
+  const merged = { ...DEFAULTS, ...existing, ...prefs };
 
-    await db.runAsync(
+  try {
+    await adapter.runAsync(
       `INSERT OR REPLACE INTO user_preferences
        (id, unit, fasting_target_low, fasting_target_high, postmeal_target_low, postmeal_target_high, updated_at)
        VALUES ('default', ?, ?, ?, ?, ?, datetime('now'))`,

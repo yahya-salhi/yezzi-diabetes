@@ -398,6 +398,77 @@ Last updated: 2026-07-07
 
 ---
 
+### MealReviewForm
+
+File: `features/food/components/MealReviewForm.tsx`
+Last updated: 2026-07-08
+
+| Property          | Value                                 |
+| ----------------- | ------------------------------------- |
+| Background        | `colors.background`                   |
+| Content padding   | `spacing.xl` (20px)                   |
+| Section gap       | `spacing.xxl` (28px) between sections |
+| Section spacing   | `spacing.md` (12px) gap inside section|
+| Section title     | 15px, 600, `colors.textPrimary`       |
+| Photo             | 240px height, 14px radius, `colors.surfaceSecondary` bg |
+| Input             | `colors.surface`, 1px `colors.border`, 10px radius, 14px vertical padding, `spacing.xl` horizontal, 15px text |
+| Textarea          | minHeight 90, textAlignVertical top    |
+| Type chip         | 10px radius, 1px `colors.border`, `colors.surface` bg, `colors.textSecondary` 14px/500 text |
+| Type chip selected| `colors.accent` border, `colors.accentLight` bg, `colors.accent` 14px/600 text |
+| Save error        | 13px, 500, `colors.error`, center     |
+| Action buttons    | Button component (primary + secondary), `spacing.md` gap |
+
+**Pattern notes:** Shared review/edit form used by both SnapMealScreen and ManualEntryScreen. Never used standalone — always rendered inside a screen. Photo is optional (shown only when available). Uses NutritionBreakdown and EstimatedImpactBadge internally. Section titles follow the 15px/600 pattern (not the 22px/600 section heading — these are sub-section labels). Type chips are not a separate component — they're inline TouchableOpacity elements with consistent border/accent styling.
+
+---
+
+### ApiKeyModal (inline pattern)
+
+File: `features/food/screens/SnapMealScreen.tsx` and `features/food/screens/ManualEntryScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property          | Value                                |
+| ----------------- | ------------------------------------ |
+| Overlay bg        | `rgba(0,0,0,0.5)`                    |
+| Modal bg          | `colors.surface`                     |
+| Modal radius      | 16                                   |
+| Modal padding     | `spacing.xxl` (28px)                 |
+| Modal gap         | `spacing.lg` (16px)                  |
+| Title             | 18px, 600, `colors.textPrimary`, center |
+| Message           | 14px, 400, `colors.textSecondary`, center, lineHeight 20 |
+| Key input         | `colors.surfaceSecondary` bg, 1px `colors.border`, 10px radius, 14px vertical padding, `spacing.lg` horizontal, 15px text |
+| Primary button    | `colors.accent` bg, 10px radius, 14px vertical padding, `spacing.xxl` horizontal, full width, 15px/600 white |
+| Cancel link       | 14px, 500, `colors.textMuted`        |
+
+**Pattern notes:** Full-screen overlay modal for API key entry. Identical pattern in both SnapMealScreen and ManualEntryScreen — replicate exactly if used elsewhere. Modal uses 16px radius (slightly larger than the 14px card radius) to distinguish it as an overlay. Key input uses surfaceSecondary background (not surface) to visually differentiate from the modal surface. Primary button is full-width (not a standard width Button component). Cancel is a text link below the button, not a secondary Button.
+
+---
+
+### MealLinkPicker (inline — AddReadingScreen)
+
+File: `features/glucose/screens/AddReadingScreen.tsx` (inline, multi-meal variant)
+Last updated: 2026-07-08
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Overlay bg       | `rgba(0,0,0,0.4)`                  |
+| Modal content    | card(s) centered in overlay        |
+| Card radius      | 14                                 |
+| Card bg          | `colors.surface`                   |
+| Card padding     | `spacing.xl` (20px)                |
+| Card gap         | `spacing.sm` (8px)                 |
+| Title            | 17px, 600, `colors.textPrimary`    |
+| Row layout       | row, space-between, center         |
+| Row padding      | `spacing.md` (12px) vertical       |
+| Row divider      | 1px `colors.border`, bottom        |
+| Meal name        | 15px, 500, `colors.textPrimary`    |
+| Impact value     | 14px, 600, `colors.info`           |
+| Skip button      | ghost Button                       |
+
+**Pattern notes:** Used when saving a post-meal reading and multiple unlinked meals exist. Shows above the `MealLinkSuggestion` component (which is rendered for the single-meal case). The card structure matches the standard card pattern (surface, 14px radius, xl padding). Overlay matches the ApiKeyModal approach but uses 0.4 opacity (slightly lighter than ApiKeyModal's 0.5). Rows use border-bottom dividers (matching SettingsGroup row dividers) but the border is `colors.border` (not `borderLight` like SettingsGroup). Impact values use `colors.info` to match MealLinkSuggestion's info-blue accent.
+
+---
+
 ### EstimatedImpactBadge
 
 File: `features/food/components/EstimatedImpactBadge.tsx`
@@ -468,20 +539,27 @@ Last updated: 2026-07-08
 File: `features/food/screens/FoodDashboardScreen.tsx` (inline)
 Last updated: 2026-07-08
 
-| Property         | Value                            |
-| ---------------- | -------------------------------- |
-| Background       | `colors.surface`                 |
-| Border           | none                             |
-| Border radius    | 14 (overflow hidden)             |
-| Left accent bar  | 4px, `colors.info`               |
-| Title            | 15px, 600, `colors.textPrimary`  |
-| Row meal name    | 14px, 400, `colors.textSecondary`|
-| Row impact value | 14px, 600, `colors.info`         |
-| Spacing          | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap |
-| Shadow           | none                             |
-| Accent usage     | info accent bar + impact values  |
+| Property                 | Value                            |
+| ------------------------ | -------------------------------- |
+| Background               | `colors.surface`                 |
+| Border                   | none                             |
+| Border radius            | 14 (overflow hidden)             |
+| Left accent bar          | 4px, `colors.info`               |
+| Title                    | 15px, 600, `colors.textPrimary`  |
+| Row layout               | flex row, left/right split, `alignItems: flex-start` |
+| Left side                | flex:1 with `marginRight: spacing.md` |
+| Right side               | `alignItems: flex-end`, 2px gap |
+| Food name                | 14px, 600, `colors.textPrimary`  |
+| Meal type badge          | Badge component (default colors) |
+| Meal time                | 12px, 400, `colors.textMuted`    |
+| Actual impact            | 15px, 700, `colors.info`         |
+| Estimated comparison     | 12px, 400, `colors.textMuted`    |
+| Spacing                  | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap between sections, `spacing.sm` (8px) row gap, `spacing.xs` (4px) inside left/right |
+| Shadow                   | none                             |
+| Accent usage             | info accent bar + actual impact values |
+| Visibility               | hidden when fewer than 2 linked pairs |
 
-**Pattern notes:** Same row layout + accent bar structure as ReadingCard/DecisionCard. Uses info blue (`#4E7FA7`) for the accent bar and impact values — the only place info blue appears in the UI. Title is textPrimary, not color-coded. Used for the "Highest Spikes This Week" summary on the Food Log. Keep rows simple (meal name | impact value) — no extra detail or decoration.
+**Pattern notes:** Same row layout + accent bar structure as ReadingCard/DecisionCard. Uses info blue (`#4E7FA7`) for the accent bar and impact values — the only place info blue appears in the UI. Title is textPrimary, not color-coded. Used for the "Highest Spikes This Week" summary on the Food Log. Each row shows left (food name + badge + time) and right (actual impact + estimated comparison). The card is only visible when 2+ linked meal+reading pairs exist in the last 7 days. Badge + time sit in a meta row below the food name with `spacing.sm` gap.
 
 ---
 

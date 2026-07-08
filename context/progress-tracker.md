@@ -7,8 +7,10 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Food Tracking
-**Last completed:** 12 Snap Meal — Camera + Review UI
-**Next:** 13 GPT-4o Vision Integration (Phase 2)
+**Last completed:** 16 Meal Insights Dashboard
+**Next:** 17 Reading Reminders (Phase 3)
+
+**Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
 ---
 
@@ -35,20 +37,32 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 10 Food Database Migration
 - [X] 11 Food Dashboard — Full UI
 - [X] 12 Snap Meal — Camera + Review UI
-- [ ] 13 GPT-4o Vision Integration
-- [ ] 14 Save Food Log + Manual Entry
-- [ ] 15 Meal-to-Reading Linking
-- [ ] 16 Meal Insights Dashboard
+- [X] 13 GPT-4o Vision Integration
+- [X] 14 Save Food Log + Manual Entry
+- [X] 15 Meal-to-Reading Linking
+- [X] 16 Meal Insights Dashboard
 
-### Phase 3 — Exercise Tracking
+### Phase 3 — Store Readiness & v1 Launch
 
-- [ ] 17 Exercise Database Migration
-- [ ] 18 Template Setup — Full UI
-- [ ] 19 Workout Dashboard — Full UI
-- [ ] 20 Active Workout Logger — Full UI + Logic
-- [ ] 21 Progressive Overload Engine
-- [ ] 22 Workout History + Progress Highlights
-- [ ] 23 Workout-to-Glucose Linking + Insights
+- [X] Spec: Store Readiness & Growth Design Doc
+- [ ] 17 Reading Reminders
+- [ ] 18 Logging Streak
+- [ ] 19 Backup & Restore
+- [ ] 20 CSV Export + PDF Doctor Report
+- [ ] 21 AI Proxy + Scan Quota
+- [ ] 22 YeZZi Plus — Subscription + Paywall
+- [ ] 23 Compliance Pack
+- [ ] 24 Store Listing + Launch
+
+### Phase 4 — Exercise Tracking (v1.1 — post-launch)
+
+- [ ] 25 Exercise Database Migration
+- [ ] 26 Template Setup — Full UI
+- [ ] 27 Workout Dashboard — Full UI
+- [ ] 28 Active Workout Logger — Full UI + Logic
+- [ ] 29 Progressive Overload Engine
+- [ ] 30 Workout History + Progress Highlights
+- [ ] 31 Workout-to-Glucose Linking + Insights
 
 ---
 
@@ -68,6 +82,17 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-07** — Workout linked to glucose readings (same pattern as meals)
 - **2026-07-07** — Cardio tracking: duration, distance, intensity, optional heart rate
 - **2026-07-07** — Motivation via post-workout comparisons, streak tracking, milestone badges
+- **2026-07-08** — Freemium model: core tracking free forever; 10 free AI scans/month; YeZZi Plus ($2.99/mo, $19.99/yr) for unlimited scans + PDF reports
+- **2026-07-08** — Google Play first, App Store fast follow (v1.2)
+- **2026-07-08** — Lean v1: glucose + food AI + growth essentials; exercise deferred to v1.1
+- **2026-07-08** — Approach A infrastructure: no accounts, local file backup, Cloudflare Workers AI proxy (key never in binary), RevenueCat, local notifications
+- **2026-07-08** — Health Connect → v1.1 (Android), Apple Health → v1.2 (iOS)
+- **2026-07-08** — API key strategy: user-provided OpenAI key stored via expo-secure-store; Cloudflare Workers proxy deferred to Phase 3
+- **2026-07-08** — Photo saved to FileSystem.documentDirectory via new expo-file-system File/Directory API (SDK 57+)
+- **2026-07-08** — MealReviewForm extracted as shared component between SnapMealScreen and ManualEntryScreen
+- **2026-07-08** — Meal-to-Reading Linking: separate `linkToMeal()` on GlucoseReadings (UPDATE, not modifying insert); `useMealLinking` hook orchestrates query + link; matching by time proximity on same day; single-meal shows MealLinkSuggestion dialog, multi-meal shows picker list
+- **2026-07-08** — Impact estimation: actual = closest prior baseline (fasting/pre_meal same day) subtracted from post_meal value; null baselines filtered out; `getTopSpikes()` returns top 3 descending
+- **2026-07-08** — Repository pattern: all data accessors use `getDbAdapter()` as default param + `createFake*()` factories for testability
 
 ---
 

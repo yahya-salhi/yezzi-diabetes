@@ -1,15 +1,17 @@
 ﻿import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Modal } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import { randomUUID } from "expo-crypto";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
-import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useMealLinking } from "@/features/food/hooks/useMealLinking";
+import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
 import type { ReadingType, InsertReading } from "@/features/glucose/types";
 
-const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
+const readingsRepo = createSqliteGlucoseReadings();
 
 const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "fasting", label: "Fasting" },
@@ -18,25 +20,6 @@ const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "bedtime", label: "Bedtime" },
   { key: "other", label: "Other" },
 ];
-
-const MIN_MGDL = 20;
-const MAX_MGDL = 600;
-
-function toMmol(value: number): number {
-  return value / 18.0182;
-}
-
-function isValueValid(value: string, unit: "mg/dL" | "mmol/L"): boolean {
-  const num = Number(value);
-  if (isNaN(num) || num <= 0) return false;
-  if (unit === "mg/dL") return num >= MIN_MGDL && num <= MAX_MGDL;
-  return num >= toMmol(MIN_MGDL) && num <= toMmol(MAX_MGDL);
-}
-
-function toInternalMgdl(value: number, unit: "mg/dL" | "mmol/L"): number {
-  if (unit === "mg/dL") return value;
-  return value * 18.0182;
-}
 
 export function AddReadingScreen() {
   const navigation = useNavigation();
@@ -48,7 +31,8 @@ export function AddReadingScreen() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const valid = isValueValid(value, unit);
+  const { suggestibleMeals, showDialog, checkForMeals, linkMeal, dismiss } = useMealLinking();
+  const valid = GlucoseValue.isValidInput(value, unit);
 
   const handleSave = async () => {
     if (!valid || saving) return;
@@ -56,9 +40,10 @@ export function AddReadingScreen() {
     setSaving(true);
     try {
       const numValue = Number(value);
+      const readingId = randomUUID();
       const reading: InsertReading = {
-        id: randomUUID(),
-        value: toInternalMgdl(numValue, unit),
+        id: readingId,
+        value: GlucoseValue.parse(numValue, unit).toMgdl(),
         unit,
         type,
         date,
@@ -69,6 +54,12 @@ export function AddReadingScreen() {
       };
 
       await readingsRepo.insert(reading);
+
+      if (type === "post_meal") {
+        const found = await checkForMeals(date, readingId);
+        if (found) return;
+      }
+
       navigation.goBack();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -80,7 +71,8 @@ export function AddReadingScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.root}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Reading Type</Text>
         <View style={styles.typeRow}>
@@ -118,7 +110,7 @@ export function AddReadingScreen() {
         </View>
         {value !== "" && !valid && (
           <Text style={styles.validationError}>
-            Must be between {unit === "mg/dL" ? MIN_MGDL + "\u2013" + MAX_MGDL : toMmol(MIN_MGDL).toFixed(1) + "\u2013" + toMmol(MAX_MGDL).toFixed(1)} {unit}
+            Must be between {GlucoseValue.rangeLabel(unit)} {unit}
           </Text>
         )}
       </View>
@@ -161,13 +153,58 @@ export function AddReadingScreen() {
       <Button title={saving ? "Saving..." : "Save Reading"} disabled={!valid || saving} onPress={handleSave} />
       <View style={styles.spacer} />
     </ScrollView>
+
+    <Modal visible={showDialog} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          {suggestibleMeals.length === 1 ? (
+            <MealLinkSuggestion
+              mealName={suggestibleMeals[0].food_name}
+              estimatedImpact={suggestibleMeals[0].estimated_impact}
+              onAccept={async () => {
+                await linkMeal(suggestibleMeals[0].id);
+                navigation.goBack();
+              }}
+              onDismiss={() => {
+                dismiss();
+                navigation.goBack();
+              }}
+            />
+          ) : (
+            <View style={styles.pickerCard}>
+              <Text style={styles.pickerTitle}>Link to a meal?</Text>
+              {suggestibleMeals.map((meal) => (
+                <TouchableOpacity
+                  key={meal.id}
+                  style={styles.pickerRow}
+                  onPress={async () => {
+                    await linkMeal(meal.id);
+                    navigation.goBack();
+                  }}
+                >
+                  <Text style={styles.pickerMealName}>{meal.food_name}</Text>
+                  <Text style={styles.pickerImpact}>
+                    Est. +{Math.round(meal.estimated_impact)} mg/dL
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              <Button title="Skip" variant="ghost" onPress={() => { dismiss(); navigation.goBack(); }} />
+            </View>
+          )}
+        </View>
+      </View>
+    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  container: {
+    flex: 1,
   },
   content: {
     padding: spacing.xl,
@@ -258,5 +295,44 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: spacing.xxl,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    padding: spacing.xl,
+  },
+  modalContainer: {
+    gap: spacing.md,
+  },
+  pickerCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: spacing.xl,
+    gap: spacing.sm,
+  },
+  pickerTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  pickerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  pickerMealName: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: colors.textPrimary,
+  },
+  pickerImpact: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.info,
   },
 });
