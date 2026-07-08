@@ -3,8 +3,9 @@ import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
 import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
-import { classifyReading, getColor, getLabel } from "@/features/glucose/services/ReadingClassifier";
-import type { ThresholdMap } from "@/features/glucose/services/ReadingClassifier";
+import { classifyReading, getLabel } from "@/features/glucose/services/readingStatus";
+import { getColor } from "@/features/glucose/services/readingDisplay";
+import type { ThresholdMap } from "@/features/glucose/services/readingStatus";
 
 const READING_TYPE_LABELS: Record<string, string> = {
   fasting: "Fasting",

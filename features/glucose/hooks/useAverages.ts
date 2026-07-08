@@ -1,9 +1,7 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useGlucoseReadings } from "@/features/repos/RepoContext";
 import { format } from "date-fns";
-
-const readingsRepo = createSqliteGlucoseReadings();
 
 type UseAveragesResult = {
   dailyAverage: number | null;
@@ -16,6 +14,7 @@ type UseAveragesResult = {
 };
 
 export function useAverages(): UseAveragesResult {
+  const readingsRepo = useGlucoseReadings();
   const [dailyAverage, setDailyAverage] = useState<number | null>(null);
   const [rolling7Day, setRolling7Day] = useState<number | null>(null);
   const [rolling14Day, setRolling14Day] = useState<number | null>(null);
@@ -44,7 +43,7 @@ export function useAverages(): UseAveragesResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [readingsRepo]);
 
   useFocusEffect(
     useCallback(() => {

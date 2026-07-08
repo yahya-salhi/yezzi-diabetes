@@ -1,13 +1,11 @@
 ﻿import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useGlucoseReadings } from "@/features/repos/RepoContext";
 import { detectPatterns, detectAllPatterns } from "@/features/glucose/services/patterns";
-import { thresholdsFromPreferences } from "@/features/glucose/services/ReadingClassifier";
+import { thresholdsFromPreferences } from "@/features/glucose/services/readingStatus";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
 import type { ReadingType } from "@/features/glucose/types";
-
-const readingsRepo = createSqliteGlucoseReadings();
 
 type UsePatternsResult = {
   alerts: PatternAlert[];
@@ -16,6 +14,7 @@ type UsePatternsResult = {
 };
 
 export function usePatterns(type?: ReadingType): UsePatternsResult {
+  const readingsRepo = useGlucoseReadings();
   const { preferences } = usePreferences();
   const [alerts, setAlerts] = useState<PatternAlert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +31,7 @@ export function usePatterns(type?: ReadingType): UsePatternsResult {
     } finally {
       setLoading(false);
     }
-  }, [type, preferences]);
+  }, [readingsRepo, type, preferences]);
 
   useFocusEffect(
     useCallback(() => {

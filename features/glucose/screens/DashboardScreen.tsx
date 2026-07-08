@@ -6,30 +6,28 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReadingCard } from "@/features/glucose/components/ReadingCard";
 import { DecisionCard } from "@/features/glucose/components/DecisionCard";
-import { useReadings } from "@/features/glucose/hooks/useReadings";
-import { useAverages } from "@/features/glucose/hooks/useAverages";
-import { usePatterns } from "@/features/glucose/hooks/usePatterns";
+import { useDashboardData } from "@/features/glucose/hooks/useDashboardData";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { GlucoseStackParamList } from "@/navigation/types";
 import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
-import { classifyReading, getColor, getLabel, thresholdsFromPreferences } from "@/features/glucose/services/ReadingClassifier";
+import { classifyReading, getLabel, thresholdsFromPreferences } from "@/features/glucose/services/readingStatus";
+import { getColor } from "@/features/glucose/services/readingDisplay";
 
-type Nav = NativeStackNavigationProp<any>;
+type Nav = NativeStackNavigationProp<GlucoseStackParamList>;
 
 export function DashboardScreen() {
   const navigation = useNavigation<Nav>();
   const today = format(new Date(), "yyyy-MM-dd");
-  const { readings, loading: readingsLoading } = useReadings(today);
-  const { dailyAverage, loading: averagesLoading } = useAverages();
-  const { alerts } = usePatterns();
   const { preferences } = usePreferences();
+  const { readings, dailyAverage, alerts, loading } = useDashboardData(today, preferences);
   const displayDate = format(new Date(), "EEEE, MMM d");
 
   const thresholds = preferences ? thresholdsFromPreferences(preferences) : undefined;
   const weeklyThreshold = thresholds?.post_meal.normalUpper ?? 140;
 
-  if (readingsLoading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner />;
 
   const latestReading = readings.length > 0 ? readings[readings.length - 1] : null;
   const latestGv = latestReading ? GlucoseValue.fromMgdl(latestReading.value) : null;

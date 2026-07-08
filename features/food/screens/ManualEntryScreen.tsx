@@ -1,23 +1,18 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
+import type { FoodStackParamList } from "@/navigation/types";
 import { colors, spacing } from "@/theme/tokens";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import type { MealType } from "@/features/food/types";
 
-type ManualEntryParams = {
-  ManualEntry: {
-    photoUri?: string;
-  };
-};
-
 type Step = "input" | "loading" | "review";
 
 export function ManualEntryScreen() {
   const navigation = useNavigation();
-  const route = useRoute<RouteProp<ManualEntryParams, "ManualEntry">>();
+  const route = useRoute<RouteProp<FoodStackParamList, "ManualEntry">>();
   const { analyzing, needsKey, analyzeText, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
 

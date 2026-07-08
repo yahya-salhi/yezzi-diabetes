@@ -2,6 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-nati
 import { format } from "date-fns";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { FoodStackParamList } from "@/navigation/types";
 import { colors, spacing, shadows } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,7 +13,7 @@ import { CameraIcon } from "@/components/ui/Icons";
 import { useInsights } from "@/features/food/hooks/useInsights";
 import type { FoodLog } from "@/features/food/types";
 
-type Nav = NativeStackNavigationProp<any>;
+type Nav = NativeStackNavigationProp<FoodStackParamList>;
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
   breakfast: "Breakfast",

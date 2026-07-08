@@ -1,9 +1,7 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useGlucoseReadings } from "@/features/repos/RepoContext";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
-
-const readingsRepo = createSqliteGlucoseReadings();
 
 type UseReadingsFilter = {
   date?: string;
@@ -20,6 +18,7 @@ type UseReadingsResult = {
 };
 
 export function useReadings(filter?: string | UseReadingsFilter): UseReadingsResult {
+  const readingsRepo = useGlucoseReadings();
   const [readings, setReadings] = useState<GlucoseReading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +36,7 @@ export function useReadings(filter?: string | UseReadingsFilter): UseReadingsRes
     } finally {
       setLoading(false);
     }
-  }, [filterArg?.date, filterArg?.type, filterArg?.startDate, filterArg?.endDate]);
+  }, [readingsRepo, filterArg?.date, filterArg?.type, filterArg?.startDate, filterArg?.endDate]);
 
   useFocusEffect(
     useCallback(() => {
