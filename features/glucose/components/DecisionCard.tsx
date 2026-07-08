@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
-import { getColor } from "@/features/glucose/services/ReadingClassifier";
+import { getColor } from "@/features/glucose/services/readingDisplay";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
 
 type Props = {

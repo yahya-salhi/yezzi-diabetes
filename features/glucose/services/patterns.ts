@@ -1,5 +1,5 @@
-import { classifyReading, IDF_THRESHOLDS } from "@/features/glucose/services/ReadingClassifier";
-import type { ThresholdMap } from "@/features/glucose/services/ReadingClassifier";
+import { classifyReading, IDF_THRESHOLDS } from "@/features/glucose/services/readingStatus";
+import type { ThresholdMap } from "@/features/glucose/services/readingStatus";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
 
 export type PatternAlert = {

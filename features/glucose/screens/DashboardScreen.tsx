@@ -13,7 +13,8 @@ import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
-import { classifyReading, getColor, getLabel, thresholdsFromPreferences } from "@/features/glucose/services/ReadingClassifier";
+import { classifyReading, getLabel, thresholdsFromPreferences } from "@/features/glucose/services/readingStatus";
+import { getColor } from "@/features/glucose/services/readingDisplay";
 
 type Nav = NativeStackNavigationProp<any>;
 

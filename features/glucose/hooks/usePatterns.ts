@@ -2,7 +2,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useGlucoseReadings } from "@/features/repos/RepoContext";
 import { detectPatterns, detectAllPatterns } from "@/features/glucose/services/patterns";
-import { thresholdsFromPreferences } from "@/features/glucose/services/ReadingClassifier";
+import { thresholdsFromPreferences } from "@/features/glucose/services/readingStatus";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
 import type { PatternAlert } from "@/features/glucose/services/patterns";
 import type { ReadingType } from "@/features/glucose/types";
