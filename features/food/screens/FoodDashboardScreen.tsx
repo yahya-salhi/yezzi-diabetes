@@ -5,27 +5,33 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors, spacing, shadows } from "@/theme/tokens";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
 import { MealCard } from "@/features/food/components/MealCard";
 import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
 import { CameraIcon } from "@/components/ui/Icons";
+import { useInsights } from "@/features/food/hooks/useInsights";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<any>;
+
+const MEAL_TYPE_LABELS: Record<string, string> = {
+  breakfast: "Breakfast",
+  lunch: "Lunch",
+  dinner: "Dinner",
+  snack: "Snack",
+};
 
 const MOCK_MEALS: FoodLog[] = [];
 
 const MOCK_RECENT: FoodLog[] = [];
 
-const SAMPLE_SPIKES = [
-  { meal: "Pasta Bolognese", impact: 58, date: "Jun 28" },
-  { meal: "Rice & Beans", impact: 44, date: "Jun 26" },
-];
-
 export function FoodDashboardScreen() {
   const navigation = useNavigation<Nav>();
   const today = format(new Date(), "EEEE, MMM d");
+  const { topSpikes } = useInsights();
   const hasMeals = MOCK_MEALS.length > 0;
   const hasRecent = MOCK_RECENT.length > 0;
+  const hasSpikes = topSpikes.length >= 2;
 
   return (
     <View style={styles.root}>
@@ -48,20 +54,31 @@ export function FoodDashboardScreen() {
           </View>
         )}
 
+        {hasSpikes && (
         <View style={styles.insightCard}>
           <View style={styles.insightAccent} />
           <View style={styles.insightBody}>
             <Text style={styles.insightTitle}>Highest Spikes This Week</Text>
             <View style={styles.insightList}>
-              {SAMPLE_SPIKES.map((s, i) => (
-                <View key={i} style={styles.insightRow}>
-                  <Text style={styles.insightMeal}>{s.meal}</Text>
-                  <Text style={styles.insightImpact}>+{s.impact} mg/dL</Text>
+              {topSpikes.map((s) => (
+                <View key={s.meal_id} style={styles.insightRow}>
+                  <View style={styles.insightLeft}>
+                    <Text style={styles.insightMeal}>{s.food_name}</Text>
+                    <View style={styles.insightMeta}>
+                      <Badge label={MEAL_TYPE_LABELS[s.meal_type] ?? s.meal_type} />
+                      <Text style={styles.insightTime}>{s.meal_time}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.insightRight}>
+                    <Text style={styles.insightImpact}>+{Math.round(s.actual_impact)} mg/dL</Text>
+                    <Text style={styles.insightEstimate}>Est. +{Math.round(s.estimated_impact)}</Text>
+                  </View>
                 </View>
               ))}
             </View>
           </View>
         </View>
+        )}
 
         <View>
           <Text style={styles.sectionTitle}>Recent Meals</Text>
@@ -163,17 +180,41 @@ const styles = StyleSheet.create({
   insightRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+  },
+  insightLeft: {
+    flex: 1,
+    gap: spacing.xs,
+    marginRight: spacing.md,
   },
   insightMeal: {
     fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  insightMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  insightTime: {
+    fontSize: 12,
     fontWeight: "400",
-    color: colors.textSecondary,
+    color: colors.textMuted,
+  },
+  insightRight: {
+    alignItems: "flex-end",
+    gap: 2,
   },
   insightImpact: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: colors.info,
+  },
+  insightEstimate: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: colors.textMuted,
   },
   recentRow: {
     flexDirection: "row",

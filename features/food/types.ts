@@ -30,3 +30,15 @@ export type InsertFoodLog = {
   estimated_impact: number;
   notes?: string | null;
 };
+
+export type MealSpike = {
+  meal_id: string;
+  food_name: string;
+  meal_type: MealType;
+  date: string;
+  meal_time: string;
+  estimated_impact: number;
+  baseline_value: number;
+  post_meal_value: number;
+  actual_impact: number;
+};

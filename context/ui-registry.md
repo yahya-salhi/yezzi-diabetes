@@ -539,20 +539,27 @@ Last updated: 2026-07-08
 File: `features/food/screens/FoodDashboardScreen.tsx` (inline)
 Last updated: 2026-07-08
 
-| Property         | Value                            |
-| ---------------- | -------------------------------- |
-| Background       | `colors.surface`                 |
-| Border           | none                             |
-| Border radius    | 14 (overflow hidden)             |
-| Left accent bar  | 4px, `colors.info`               |
-| Title            | 15px, 600, `colors.textPrimary`  |
-| Row meal name    | 14px, 400, `colors.textSecondary`|
-| Row impact value | 14px, 600, `colors.info`         |
-| Spacing          | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap |
-| Shadow           | none                             |
-| Accent usage     | info accent bar + impact values  |
+| Property                 | Value                            |
+| ------------------------ | -------------------------------- |
+| Background               | `colors.surface`                 |
+| Border                   | none                             |
+| Border radius            | 14 (overflow hidden)             |
+| Left accent bar          | 4px, `colors.info`               |
+| Title                    | 15px, 600, `colors.textPrimary`  |
+| Row layout               | flex row, left/right split, `alignItems: flex-start` |
+| Left side                | flex:1 with `marginRight: spacing.md` |
+| Right side               | `alignItems: flex-end`, 2px gap |
+| Food name                | 14px, 600, `colors.textPrimary`  |
+| Meal type badge          | Badge component (default colors) |
+| Meal time                | 12px, 400, `colors.textMuted`    |
+| Actual impact            | 15px, 700, `colors.info`         |
+| Estimated comparison     | 12px, 400, `colors.textMuted`    |
+| Spacing                  | `spacing.xl` (20px) body padding, `spacing.md` (12px) gap between sections, `spacing.sm` (8px) row gap, `spacing.xs` (4px) inside left/right |
+| Shadow                   | none                             |
+| Accent usage             | info accent bar + actual impact values |
+| Visibility               | hidden when fewer than 2 linked pairs |
 
-**Pattern notes:** Same row layout + accent bar structure as ReadingCard/DecisionCard. Uses info blue (`#4E7FA7`) for the accent bar and impact values — the only place info blue appears in the UI. Title is textPrimary, not color-coded. Used for the "Highest Spikes This Week" summary on the Food Log. Keep rows simple (meal name | impact value) — no extra detail or decoration.
+**Pattern notes:** Same row layout + accent bar structure as ReadingCard/DecisionCard. Uses info blue (`#4E7FA7`) for the accent bar and impact values — the only place info blue appears in the UI. Title is textPrimary, not color-coded. Used for the "Highest Spikes This Week" summary on the Food Log. Each row shows left (food name + badge + time) and right (actual impact + estimated comparison). The card is only visible when 2+ linked meal+reading pairs exist in the last 7 days. Badge + time sit in a meta row below the food name with `spacing.sm` gap.
 
 ---
 
