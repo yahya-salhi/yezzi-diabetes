@@ -9,6 +9,7 @@ import { AddReadingScreen } from "@/features/glucose/screens/AddReadingScreen";
 import { HistoryScreen } from "@/features/glucose/screens/HistoryScreen";
 import { FoodDashboardScreen } from "@/features/food/screens/FoodDashboardScreen";
 import { SnapMealScreen } from "@/features/food/screens/SnapMealScreen";
+import { ManualEntryScreen } from "@/features/food/screens/ManualEntryScreen";
 import { WorkoutDashboardScreen } from "@/features/exercise/screens/WorkoutDashboardScreen";
 import { SettingsScreen } from "@/features/settings/screens/SettingsScreen";
 
@@ -28,6 +29,7 @@ type GlucoseStackParamList = {
 type FoodStackParamList = {
   FoodHome: undefined;
   SnapMeal: undefined;
+  ManualEntry: { photoUri?: string } | undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -75,6 +77,11 @@ function FoodStackNavigator() {
         name="SnapMeal"
         component={SnapMealScreen}
         options={{ title: "Snap Meal", presentation: "modal" }}
+      />
+      <FoodStack.Screen
+        name="ManualEntry"
+        component={ManualEntryScreen}
+        options={{ title: "Manual Entry", presentation: "modal" }}
       />
     </FoodStack.Navigator>
   );
