@@ -11,6 +11,7 @@ import { useAverages } from "@/features/glucose/hooks/useAverages";
 import { usePatterns } from "@/features/glucose/hooks/usePatterns";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
 import { getThresholdStatus, getThresholdColor, getThresholdLabel } from "@/features/glucose/services/thresholds";
 
 type Nav = NativeStackNavigationProp<any>;
@@ -26,6 +27,7 @@ export function DashboardScreen() {
   if (readingsLoading) return <LoadingSpinner />;
 
   const latestReading = readings.length > 0 ? readings[readings.length - 1] : null;
+  const latestGv = latestReading ? GlucoseValue.fromMgdl(latestReading.value) : null;
   const latestStatus = latestReading
     ? getThresholdStatus(latestReading.value, latestReading.type)
     : null;
@@ -44,7 +46,7 @@ export function DashboardScreen() {
               {latestReading.type === "fasting" ? "Fasting" : latestReading.type === "post_meal" ? "Post-Meal" : "Latest"}
             </Text>
             <Text style={[styles.heroValue, { color: latestStatusColor }]}>
-              {Math.round(latestReading.value)}
+              {latestGv?.toDisplay(latestReading.unit)}
               <Text style={styles.heroUnit}> {latestReading.unit}</Text>
             </Text>
             <Text style={[styles.heroStatus, { color: latestStatusColor }]}>

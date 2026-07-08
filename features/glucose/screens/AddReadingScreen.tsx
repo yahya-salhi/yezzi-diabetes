@@ -9,6 +9,7 @@ import { getDbAdapter } from "@/db/instance";
 import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
 import { useMealLinking } from "@/features/food/hooks/useMealLinking";
 import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
 import type { ReadingType, InsertReading } from "@/features/glucose/types";
 
 const readingsRepo = createSqliteGlucoseReadings(getDbAdapter());
@@ -21,25 +22,6 @@ const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "other", label: "Other" },
 ];
 
-const MIN_MGDL = 20;
-const MAX_MGDL = 600;
-
-function toMmol(value: number): number {
-  return value / 18.0182;
-}
-
-function isValueValid(value: string, unit: "mg/dL" | "mmol/L"): boolean {
-  const num = Number(value);
-  if (isNaN(num) || num <= 0) return false;
-  if (unit === "mg/dL") return num >= MIN_MGDL && num <= MAX_MGDL;
-  return num >= toMmol(MIN_MGDL) && num <= toMmol(MAX_MGDL);
-}
-
-function toInternalMgdl(value: number, unit: "mg/dL" | "mmol/L"): number {
-  if (unit === "mg/dL") return value;
-  return value * 18.0182;
-}
-
 export function AddReadingScreen() {
   const navigation = useNavigation();
   const [type, setType] = useState<ReadingType>("fasting");
@@ -51,8 +33,7 @@ export function AddReadingScreen() {
   const [saving, setSaving] = useState(false);
 
   const { suggestibleMeals, showDialog, checkForMeals, linkMeal, dismiss } = useMealLinking();
-
-  const valid = isValueValid(value, unit);
+  const valid = GlucoseValue.isValidInput(value, unit);
 
   const handleSave = async () => {
     if (!valid || saving) return;
@@ -63,7 +44,7 @@ export function AddReadingScreen() {
       const readingId = randomUUID();
       const reading: InsertReading = {
         id: readingId,
-        value: toInternalMgdl(numValue, unit),
+        value: GlucoseValue.parse(numValue, unit).toMgdl(),
         unit,
         type,
         date,
@@ -130,7 +111,7 @@ export function AddReadingScreen() {
         </View>
         {value !== "" && !valid && (
           <Text style={styles.validationError}>
-            Must be between {unit === "mg/dL" ? MIN_MGDL + "\u2013" + MAX_MGDL : toMmol(MIN_MGDL).toFixed(1) + "\u2013" + toMmol(MAX_MGDL).toFixed(1)} {unit}
+            Must be between {GlucoseValue.rangeLabel(unit)} {unit}
           </Text>
         )}
       </View>

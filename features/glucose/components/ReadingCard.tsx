@@ -2,6 +2,7 @@
 import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
 import { format } from "date-fns";
+import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
 import { getThresholdColor, getThresholdStatus, getThresholdLabel } from "@/features/glucose/services/thresholds";
 
 const READING_TYPE_LABELS: Record<string, string> = {
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function ReadingCard({ reading }: Props) {
+  const gv = GlucoseValue.fromMgdl(reading.value);
   const status = getThresholdStatus(reading.value, reading.type);
   const statusColor = getThresholdColor(status);
   const label = getThresholdLabel(status);
@@ -32,7 +34,7 @@ export function ReadingCard({ reading }: Props) {
           </Text>
         </View>
         <Text style={[styles.value, { color: statusColor }]}>
-          {Math.round(reading.value)} <Text style={styles.unit}>{reading.unit}</Text>
+          {gv.toDisplay(reading.unit)} <Text style={styles.unit}>{reading.unit}</Text>
         </Text>
         <Text style={[styles.statusLabel, { color: statusColor }]}>{label}</Text>
       </View>
