@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Food Tracking
-**Last completed:** 12 Snap Meal — Camera + Review UI
-**Next:** 13 GPT-4o Vision Integration (Phase 2)
+**Last completed:** 14 Save Food Log + Manual Entry
+**Next:** 15 Meal-to-Reading Linking (Phase 2)
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -37,8 +37,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 10 Food Database Migration
 - [X] 11 Food Dashboard — Full UI
 - [X] 12 Snap Meal — Camera + Review UI
-- [ ] 13 GPT-4o Vision Integration
-- [ ] 14 Save Food Log + Manual Entry
+- [X] 13 GPT-4o Vision Integration
+- [X] 14 Save Food Log + Manual Entry
 - [ ] 15 Meal-to-Reading Linking
 - [ ] 16 Meal Insights Dashboard
 
@@ -87,6 +87,9 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-08** — Lean v1: glucose + food AI + growth essentials; exercise deferred to v1.1
 - **2026-07-08** — Approach A infrastructure: no accounts, local file backup, Cloudflare Workers AI proxy (key never in binary), RevenueCat, local notifications
 - **2026-07-08** — Health Connect → v1.1 (Android), Apple Health → v1.2 (iOS)
+- **2026-07-08** — API key strategy: user-provided OpenAI key stored via expo-secure-store; Cloudflare Workers proxy deferred to Phase 3
+- **2026-07-08** — Photo saved to FileSystem.documentDirectory via new expo-file-system File/Directory API (SDK 57+)
+- **2026-07-08** — MealReviewForm extracted as shared component between SnapMealScreen and ManualEntryScreen
 
 ---
 

@@ -398,6 +398,52 @@ Last updated: 2026-07-07
 
 ---
 
+### MealReviewForm
+
+File: `features/food/components/MealReviewForm.tsx`
+Last updated: 2026-07-08
+
+| Property          | Value                                 |
+| ----------------- | ------------------------------------- |
+| Background        | `colors.background`                   |
+| Content padding   | `spacing.xl` (20px)                   |
+| Section gap       | `spacing.xxl` (28px) between sections |
+| Section spacing   | `spacing.md` (12px) gap inside section|
+| Section title     | 15px, 600, `colors.textPrimary`       |
+| Photo             | 240px height, 14px radius, `colors.surfaceSecondary` bg |
+| Input             | `colors.surface`, 1px `colors.border`, 10px radius, 14px vertical padding, `spacing.xl` horizontal, 15px text |
+| Textarea          | minHeight 90, textAlignVertical top    |
+| Type chip         | 10px radius, 1px `colors.border`, `colors.surface` bg, `colors.textSecondary` 14px/500 text |
+| Type chip selected| `colors.accent` border, `colors.accentLight` bg, `colors.accent` 14px/600 text |
+| Save error        | 13px, 500, `colors.error`, center     |
+| Action buttons    | Button component (primary + secondary), `spacing.md` gap |
+
+**Pattern notes:** Shared review/edit form used by both SnapMealScreen and ManualEntryScreen. Never used standalone — always rendered inside a screen. Photo is optional (shown only when available). Uses NutritionBreakdown and EstimatedImpactBadge internally. Section titles follow the 15px/600 pattern (not the 22px/600 section heading — these are sub-section labels). Type chips are not a separate component — they're inline TouchableOpacity elements with consistent border/accent styling.
+
+---
+
+### ApiKeyModal (inline pattern)
+
+File: `features/food/screens/SnapMealScreen.tsx` and `features/food/screens/ManualEntryScreen.tsx` (inline)
+Last updated: 2026-07-08
+
+| Property          | Value                                |
+| ----------------- | ------------------------------------ |
+| Overlay bg        | `rgba(0,0,0,0.5)`                    |
+| Modal bg          | `colors.surface`                     |
+| Modal radius      | 16                                   |
+| Modal padding     | `spacing.xxl` (28px)                 |
+| Modal gap         | `spacing.lg` (16px)                  |
+| Title             | 18px, 600, `colors.textPrimary`, center |
+| Message           | 14px, 400, `colors.textSecondary`, center, lineHeight 20 |
+| Key input         | `colors.surfaceSecondary` bg, 1px `colors.border`, 10px radius, 14px vertical padding, `spacing.lg` horizontal, 15px text |
+| Primary button    | `colors.accent` bg, 10px radius, 14px vertical padding, `spacing.xxl` horizontal, full width, 15px/600 white |
+| Cancel link       | 14px, 500, `colors.textMuted`        |
+
+**Pattern notes:** Full-screen overlay modal for API key entry. Identical pattern in both SnapMealScreen and ManualEntryScreen — replicate exactly if used elsewhere. Modal uses 16px radius (slightly larger than the 14px card radius) to distinguish it as an overlay. Key input uses surfaceSecondary background (not surface) to visually differentiate from the modal surface. Primary button is full-width (not a standard width Button component). Cancel is a text link below the button, not a secondary Button.
+
+---
+
 ### EstimatedImpactBadge
 
 File: `features/food/components/EstimatedImpactBadge.tsx`
