@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { createSqliteImpactEstimator } from "../services/impactEstimator";
+import { useImpactEstimator } from "@/features/repos/RepoContext";
 import type { MealSpike } from "../types";
-
-const estimator = createSqliteImpactEstimator();
 
 type UseInsightsResult = {
   topSpikes: MealSpike[];
@@ -12,6 +10,7 @@ type UseInsightsResult = {
 };
 
 export function useInsights(): UseInsightsResult {
+  const estimator = useImpactEstimator();
   const [topSpikes, setTopSpikes] = useState<MealSpike[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +27,7 @@ export function useInsights(): UseInsightsResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [estimator]);
 
   useEffect(() => {
     refresh();

@@ -5,13 +5,11 @@ import { format } from "date-fns";
 import { randomUUID } from "expo-crypto";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
-import { createSqliteGlucoseReadings } from "@/features/glucose/GlucoseReadings";
+import { useGlucoseReadings } from "@/features/repos/RepoContext";
 import { useMealLinking } from "@/features/food/hooks/useMealLinking";
 import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
 import { GlucoseValue } from "@/features/glucose/domain/GlucoseValue";
 import type { ReadingType, InsertReading } from "@/features/glucose/types";
-
-const readingsRepo = createSqliteGlucoseReadings();
 
 const READING_TYPES: { key: ReadingType; label: string }[] = [
   { key: "fasting", label: "Fasting" },
@@ -23,6 +21,7 @@ const READING_TYPES: { key: ReadingType; label: string }[] = [
 
 export function AddReadingScreen() {
   const navigation = useNavigation();
+  const readingsRepo = useGlucoseReadings();
   const [type, setType] = useState<ReadingType>("fasting");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState<"mg/dL" | "mmol/L">("mg/dL");
