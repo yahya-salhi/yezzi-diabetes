@@ -309,26 +309,30 @@ Last updated: 2026-07-07
 ### MealCard
 
 File: `features/food/components/MealCard.tsx`
-Last updated: 2026-07-07
+Last updated: 2026-07-10
 
 | Property         | Value                           |
 | ---------------- | ------------------------------- |
 | Background       | `colors.surface`                |
 | Border           | none                            |
 | Border radius    | 14                              |
+| Photo            | 100% width, 160px height        |
 | Food name        | 16px, 600, `colors.textPrimary` |
-| Nutrition bg     | `colors.surfaceSecondary`       |
-| Nutrition radius | 10                              |
+| Meta dot         | 8px circle, meal-type color     |
+| Timestamp        | 13px, 400, `colors.textMuted`   |
+| Impact badge     | 10px radius, color-coded bg     |
+| Impact value     | 18px, 800                       |
+| Impact unit      | 10px, 600                       |
+| Nutrition grid   | `colors.surfaceSecondary`, 10px radius |
 | Nutrition value  | 18px, 700, `colors.textPrimary` |
-| Nutrition label  | 12px, 500, `colors.textMuted`   |
-| Nutrition divider| 1px `colors.borderLight`        |
-| Timestamp        | 13px, `colors.textMuted`        |
-| Spacing          | `spacing.xl` (20px) padding, `spacing.md` (12px) gap |
+| Nutrition label  | 12px, 400, `colors.textMuted`   |
+| Notes            | 13px, 400, `colors.textSecondary`, italic |
+| Spacing          | `spacing.xl` (20px) padding, `spacing.lg` (16px) gap |
 | Interactive      | none (static)                   |
-| Shadow           | `shadows.sm`                    |
-| Accent usage     | badge (via Badge component)     |
+| Shadow           | `shadows.md`                    |
+| Meal type colors | breakfast: `colors.warning`, lunch: `colors.info`, dinner: `colors.accent`, snack: `colors.success` |
 
-**Pattern notes:** Follows same card pattern as ReadingCard/DecisionCard — surface background, 14px radius, subtle shadow. Inner nutrition row uses surfaceSecondary background with 10px radius (shared with Button radius). Nutrition items separated by 1px borderLight dividers. Uses Badge component for meal type label.
+**Pattern notes:** Card with optional photo header (160px). Body uses surface background, 14px radius. Food name + meta row (colored type dot + timestamp + Badge). Impact badge color-coded: red ≥30, orange ≥15, green <15 (all with "mg/dL" suffix). 4-column nutrition grid on surfaceSecondary. Notes section (italic) for AI observations. Uses Badge component for meal type label. No hex colors — all from tokens.
 
 ---
 
