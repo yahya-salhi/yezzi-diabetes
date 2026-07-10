@@ -36,12 +36,13 @@ export function SnapMealScreen() {
     const result = await analyzePhoto(uri);
 
     if (result) {
-      setFoodName(result.food_name);
-      setCalories(String(result.calories));
-      setCarbsG(String(result.carbs_g));
-      setProteinG(result.protein_g !== null ? String(result.protein_g) : "");
-      setFatG(result.fat_g !== null ? String(result.fat_g) : "");
-      setEstimatedImpact(result.estimated_impact_mgdl);
+      setPhotoUri(result.photoPath);
+      setFoodName(result.analysis.food_name);
+      setCalories(String(result.analysis.calories));
+      setCarbsG(String(result.analysis.carbs_g));
+      setProteinG(result.analysis.protein_g !== null ? String(result.analysis.protein_g) : "");
+      setFatG(result.analysis.fat_g !== null ? String(result.analysis.fat_g) : "");
+      setEstimatedImpact(result.analysis.estimated_impact_mgdl);
       setMode("review");
     } else {
       navigation.navigate("ManualEntry", { photoUri: uri });
@@ -125,15 +126,15 @@ export function SnapMealScreen() {
       {needsKey && (
         <View style={styles.overlay}>
           <View style={styles.keyModal}>
-            <Text style={styles.keyTitle}>OpenAI API Key Required</Text>
+            <Text style={styles.keyTitle}>OpenRouter API Key Required</Text>
             <Text style={styles.keyMessage}>
-              Enter your OpenAI API key to analyze meals. Your key is stored securely on your device.
+              Enter your OpenRouter API key to analyze meals. Your key is stored securely on your device.
             </Text>
             <TextInput
               style={styles.keyInput}
               value={keyInput}
               onChangeText={setKeyInput}
-              placeholder="sk-..."
+              placeholder="sk-or-v1-..."
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
               autoCorrect={false}

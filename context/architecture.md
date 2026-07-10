@@ -22,7 +22,7 @@
 | Subscriptions  | react-native-purchases (RevenueCat) | YeZZi Plus subscription           |
 | File sharing   | expo-sharing                  | Backup file + CSV export via share sheet |
 | PDF            | expo-print                    | Doctor report generation               |
-| AI proxy       | Cloudflare Workers            | Server-side OpenAI calls + scan quota  |
+| AI proxy       | Cloudflare Workers            | Server-side OpenRouter calls + scan quota  |
 | Analytics      | Aptabase or PostHog           | Anonymous event counts only            |
 
 ---
@@ -157,7 +157,7 @@ App → POST to Cloudflare Workers proxy (with anonymous device UUID + entitleme
         ↓
 Proxy checks scan quota (free: 10/month) or Plus entitlement (unlimited)
         ↓
-Proxy → OpenAI GPT-4o Vision (API key lives server-side only)
+Proxy → GPT-4o via OpenRouter (API key lives server-side only)
         ↓
 Nutrition JSON returned to app — photo processed, never stored server-side
 ```
@@ -324,7 +324,7 @@ Rules the AI agent must never violate:
 - Every screen has an empty state and an error state.
 - DB migrations are additive only — never drop or alter existing columns.
 - All dates stored as ISO strings (YYYY-MM-DD). All times stored as HH:mm.
-- The OpenAI API key never ships in the app binary — all AI calls go through the proxy.
+- When the AI proxy is active (Phase 3), the OpenRouter API key never ships in the app binary — all AI calls go through the proxy. Until then, the user provides their own OpenRouter key stored via expo-secure-store.
 - No personal data leaves the device — only meal photos (for analysis), the anonymous device UUID, purchase state, and anonymous analytics events.
 - Logging is never blocked by quota or paywall — manual entry always works.
 - "Delete all my data" must wipe SQLite, preferences, AsyncStorage flags, and the device UUID.

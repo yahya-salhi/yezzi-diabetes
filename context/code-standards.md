@@ -258,6 +258,6 @@ Approved dependencies for this project:
 - `expo-linear-gradient` — Gradients (required by react-native-gifted-charts)
 - `date-fns` — Date formatting and calculations
 - `uuid` — UUID generation for IDs
-- `openai` — GPT-4o Vision for food recognition + estimation
+- `openai` — GPT-4o Vision via OpenRouter for food recognition + estimation
 
 Do not install any other packages without updating this list first.
