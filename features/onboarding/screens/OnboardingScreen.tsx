@@ -3,6 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
+import { createSqliteReminderStorage } from "@/features/reminders/services/reminderStorage";
+import { createNotificationScheduler } from "@/features/reminders/services/notificationScheduler";
+import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
+import { useGlucoseReadings } from "@/features/repos/RepoContext";
+import * as Notifications from "expo-notifications";
 
 type Props = {
   onComplete: () => void;
@@ -17,6 +22,7 @@ const IDF_DEFAULTS = {
 
 export function OnboardingScreen({ onComplete }: Props) {
   const { save } = usePreferences();
+  const glucoseReadings = useGlucoseReadings();
   const [step, setStep] = useState(0);
   const [unit, setUnit] = useState<"mg/dL" | "mmol/L">("mg/dL");
   const [fastingLow, setFastingLow] = useState(String(IDF_DEFAULTS.fasting_low));
@@ -24,8 +30,31 @@ export function OnboardingScreen({ onComplete }: Props) {
   const [postmealLow, setPostmealLow] = useState(String(IDF_DEFAULTS.postmeal_low));
   const [postmealHigh, setPostmealHigh] = useState(String(IDF_DEFAULTS.postmeal_high));
   const [saving, setSaving] = useState(false);
+  const [showPermissionOverlay, setShowPermissionOverlay] = useState(false);
 
-  const handleFinish = async (skipTargets: boolean) => {
+  const finishWithReminder = async () => {
+    const storage = createSqliteReminderStorage();
+    await storage.save({ id: "fasting", enabled: true, hour: 7, minute: 0 });
+    const all = await storage.getAll();
+    const scheduler = createNotificationScheduler(glucoseReadings);
+    await scheduler.scheduleAll(all);
+    onComplete();
+  };
+
+  const handleReminderChoice = async (enable: boolean) => {
+    if (!enable) {
+      onComplete();
+      return;
+    }
+    const { granted } = await Notifications.getPermissionsAsync();
+    if (granted) {
+      await finishWithReminder();
+    } else {
+      setShowPermissionOverlay(true);
+    }
+  };
+
+  const handleFinishTargets = async (skipTargets: boolean) => {
     setSaving(true);
     try {
       await save({
@@ -39,13 +68,16 @@ export function OnboardingScreen({ onComplete }: Props) {
               postmeal_target_high: Number(postmealHigh),
             }),
       });
-      onComplete();
+      setStep(2);
     } catch {
+      setSaving(false);
+    } finally {
       setSaving(false);
     }
   };
 
   return (
+    <View style={styles.root}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {step === 0 && (
         <View style={styles.step}>
@@ -130,21 +162,59 @@ export function OnboardingScreen({ onComplete }: Props) {
             <View style={styles.targetActions}>
               <Button
                 title={saving ? "Saving..." : "Get Started"}
-                onPress={() => handleFinish(false)}
+                onPress={() => handleFinishTargets(false)}
                 disabled={saving}
               />
-              <TouchableOpacity onPress={() => handleFinish(true)} disabled={saving}>
+              <TouchableOpacity onPress={() => handleFinishTargets(true)} disabled={saving}>
                 <Text style={styles.skip}>Skip — use defaults</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       )}
+
+      {step === 2 && (
+        <View style={styles.step}>
+          <View style={styles.logoArea}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>Y</Text>
+            </View>
+            <Text style={styles.appName}>YeZZ</Text>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.title}>Morning reminder</Text>
+            <Text style={styles.subtitle}>
+              Want a nudge for your morning reading? We will remind you every day at 07:00.
+            </Text>
+            <Text style={styles.reminderNote}>
+              You can change the time or add more reminders later in Settings.
+            </Text>
+
+            <View style={styles.targetActions}>
+              <Button title="Yes, remind me at 07:00" onPress={() => handleReminderChoice(true)} />
+              <TouchableOpacity onPress={() => handleReminderChoice(false)}>
+                <Text style={styles.skip}>No, skip</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
+      {showPermissionOverlay && (
+        <NotificationPermissionOverlay
+          onGranted={finishWithReminder}
+          onDismiss={onComplete}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -260,5 +330,11 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: "center",
     textDecorationLine: "underline",
+  },
+  reminderNote: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: colors.textMuted,
+    lineHeight: 18,
   },
 });
