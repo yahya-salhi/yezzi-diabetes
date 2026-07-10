@@ -587,3 +587,25 @@ Last updated: 2026-07-08
 | Toggle thumb     | off: `colors.surface`, on: `colors.accent` |
 
 **Pattern notes:** White rounded card containing vertical rows separated by indented dividers. Each row has a label on the left and either a value + chevron, a toggle, or a standalone action on the right. Section headers sit outside the card (above it) in muted uppercase. No shadow. Never add icons inside the label area — chevrons go on the right only. Danger actions use `colors.error` for the label.
+
+---
+
+### NotificationPermissionOverlay
+
+File: `features/reminders/components/NotificationPermissionOverlay.tsx`
+Last updated: 2026-07-10
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Overlay bg       | `colors.background`                |
+| Content maxWidth | 320                                |
+| Icon circle      | 64px, `colors.accentLight`, rounded |
+| Title            | 20px, 600, `colors.textPrimary`, center |
+| Message          | 15px, 400, `colors.textSecondary`, center, lineHeight 22 |
+| Grant button     | `colors.accent`, 10px radius, 14px vertical, `spacing.xxl` horizontal, full width |
+| Button text      | 15px, 600, #FFFFFF                 |
+| Button disabled  | 0.6 opacity                        |
+| Skip link        | 15px, 500, `colors.textMuted`, `marginTop: spacing.sm` |
+| Content gap      | `spacing.lg` (16px)                |
+
+**Pattern notes:** Full-screen permission overlay matching the CameraView permission pattern (same background, title, message, button, and skip link tokens). Used when a user enables notifications but hasn't granted OS-level permission. The icon circle (64px accentLight with rounded corners) is the only visual addition over the camera pattern. Button is full-width (not centered like CameraView) to match mobile permission dialog conventions. Skip link uses standard muted text and sits below the button with `marginTop: spacing.sm`. Disabled state uses 0.6 opacity on the button.

@@ -1,67 +1,54 @@
-# Memory — Phase 2 Complete (Food Tracking)
+# Memory — Phase 3: Reading Reminders
 
-Last updated: 2026-07-08
+Last updated: 2026-07-10
 
 ## What was built
 
-### Feature 15 — Meal-to-Reading Linking (7f1f7d1)
-- **Added `getUnlinkedMeals()` to `features/food/services/foodLog.ts`** — queries meals not yet linked to a reading, with `FoodLogRepo` interface and `createFakeFoodLog()` for testing
-- **Created `features/food/hooks/useMealLinking.ts`** — orchestrates: check for unlinked meals → single-match shows MealLinkSuggestion dialog, multi-match shows picker list → calls `linkToMeal()` on accept
-- **Added `linkToMeal()` to `features/glucose/GlucoseReadings.ts`** — UPDATE glucose_readings SET food_log_id — separate from insert, not modifying the add-reading flow
-- **Wired `AddReadingScreen.tsx`** — after post-meal save, queries unlinked meals by meal_type + date proximity, shows linking suggestion
-
-### Feature 16 — Meal Insights Dashboard (8fae238)
-- **Created `features/food/services/impactEstimator.ts`** — `createSqliteImpactEstimator()` with `getTopSpikes(days)`:
-  - JOINs linked `glucose_readings` with `food_log` WHERE `food_log_id IS NOT NULL`
-  - Finds closest prior baseline (fasting/pre_meal reading same day before post_meal time)
-  - Calculates actual impact = post_meal_value - baseline_value
-  - Returns top 3 sorted by actual impact descending
-  - Includes `createFakeImpactEstimator()` for testing
-- **Created `features/food/hooks/useInsights.ts`** — standard `{data, loading, error, refresh}` pattern, calls `getTopSpikes(7)`
-- **Wired `FoodDashboardScreen.tsx`** — replaced mock `SAMPLE_SPIKES` with real `useInsights()` data, enhanced row layout with meal type Badge, time, estimated vs actual comparison
-- **Added `MealSpike` type to `features/food/types.ts`** — meal_id, food_name, meal_type, date, meal_time, estimated_impact, baseline_value, post_meal_value, actual_impact
-
-### Refactoring
-- **Created `features/glucose/domain/GlucoseValue.ts`** (67f7ca9) — unit-safe glucose conversion module, extracted from AddReadingScreen
-- **Lifted seams to repository interfaces** (6fce885) — `FoodLogRepo` interface, adapter injection via `getDbAdapter()` default, extracted `ReadingClassifier` and threshold patterns, added `createFakeFoodLog()`
+### Feature 18 — Reading Reminders
+- **Installed deps**: `expo-notifications` + `@react-native-community/datetimepicker`, added both to `app.json` plugins
+- **Added `reminder_preferences` table to `db/migrations.ts`** — 6 rows (fasting, pre_meal, post_meal, bedtime, other, weekly_summary), each with enabled INTEGER, hour, minute
+- **Created `features/reminders/types.ts`** — `ReminderType` (5 reading types + weekly_summary), `ReminderPreference`
+- **Created `features/reminders/services/reminderStorage.ts`** — `createSqliteReminderStorage` with `getAll()` (auto-seeds defaults) and `save()`; includes `createFakeReminderStorage()` for testing
+- **Created `features/reminders/services/notificationScheduler.ts`** — `scheduleAll()` cancels existing + schedules daily repeating triggers; `createSkipHandler()` returns the notification handler that suppresses per-type reminders when that reading is already logged today, and restricts weekly summary to Monday only
+- **Created `features/reminders/services/weeklySummary.ts`** — `getDaysInRange()` queries readings grouped by date, counts days where every reading was in range per IDF thresholds
+- **Created `features/reminders/hooks/useReminderSettings.ts`** — standard `{data, loading, error, save, refresh}` pattern, auto-reschedules notifications on save
+- **Created `features/reminders/hooks/useNotificationPermissions.ts`** — wraps `getPermissionsAsync`/`requestPermissionsAsync`
+- **Created `features/reminders/components/NotificationPermissionOverlay.tsx`** — full-screen permission explainer (icon circle + title + message + Grant Access button + Not now link), follows CameraView permission pattern
+- **Updated `App.tsx`** — `NotificationInit` component inside `RepoProvider` sets up Android notification channel, registers notification handler via `createSkipHandler()`, loads prefs and schedules all on mount
+- **Updated `features/onboarding/screens/OnboardingScreen.tsx`** — Step 2 soft-ask: "Want a nudge for your morning reading?" with "Yes, remind me at 07:00" / "No, skip"; checks notification permission before saving; shows overlay if not granted
+- **Updated `features/settings/screens/SettingsScreen.tsx`** — REMINDERS section with per-type Switch + tappable native time picker (DateTimePicker), weekly summary toggle; permission overlay shown on first enable
+- **Updated `ui-registry.md`** — imprinted `NotificationPermissionOverlay` entry
 
 ## Decisions made
 
-- **Linking strategy**: `linkToMeal()` is a separate UPDATE on `glucose_readings`, not baked into insert — keeps meal linking optional and non-breaking
-- **Matching logic**: Same-day meals matching by meal_type + time proximity (defaults: breakfast < 11:00, lunch 11:00-16:00, dinner > 16:00, snack always); single-match shows inline suggestion, multi-match shows picker
-- **Impact estimation**: Actual impact = closest prior baseline (fasting/pre_meal same day before post_meal) subtracted from post_meal value; null baselines filtered out
-- **Repository pattern**: All data accessors now use `getDbAdapter()` as default parameter (no caller-side db passing) + `createFake*()` factories for testability
+- **Skip-if-logged**: checked at notification fire time via `setNotificationHandler`, not at schedule time. Allows repeating daily triggers to work regardless of app state — the handler dynamically suppresses when a reading is already logged that calendar day
+- **Weekly summary fires daily but only shows Monday**: repeating daily trigger at 09:00, handler suppresses on non-Monday. Avoids stale pre-calculated content and reschedule logic
+- **Notification permission overlay**: follows CameraView permission pattern (same background, button, skip link tokens) with added icon circle. Full-width grant button (vs CameraView's centered) for mobile convention
+- **All 5 reading types + weekly_summary get reminders**, not just the 3 listed in the spec (fasting/post-meal/bedtime)
 
 ## Problems solved
 
-- **Mismatched progress-tracker numbering** — build-plan starts Phase 2 at 11 (Food DB Migration) while progress-tracker starts at 10. Kept progress-tracker numbering as-is for now to avoid confusion.
-- **FoodLogRepo refactoring** — original `createSqliteFoodLog(db)` required callers to import `getDbAdapter()`. Refactored to accept optional `db` param, defaulting to `getDbAdapter()` internally — cleaner API with zero behavioral change.
+- **Empty reminders section** — `useReminderSettings` hook defined `refresh` but never called it on mount. Added `useEffect` to call `refresh()` on initial render
+- **Type mismatch with expo-notifications** — trigger type requires `SchedulableTriggerInputTypes.DAILY` enum, not string `'daily'`. `NotificationBehavior` requires `shouldShowBanner`/`shouldShowList` instead of deprecated `shouldShowAlert`
 
 ## Current state
 
-- **Phase 2 (Food Tracking) complete** — all 7 features done (11–17 in build-plan, 10–16 in progress-tracker)
-- End-to-end food flow: capture photo → GPT-4o → review/edit → save → link to post-meal reading → see impact in insights dashboard
-- GlucoseValue module extracted for unit-safe conversion
-- Repository interfaces extracted for testability
-- 8 total commits on `feat/phase-2-features`:
-  - `849c3f7` chore(deps): add openai and expo-secure-store
-  - `a7cfed6` feat(food): add GPT-4o meal analysis service and food log hooks
-  - `f4682b2` feat(food): wire GPT-4o Vision into SnapMeal with ManualEntry fallback
-  - `e80ae52` docs: update progress tracker, ui-registry, and session memory
-  - `7f1f7d1` feat(food): add meal-to-reading linking on post-meal save
-  - `67f7ca9` feat(glucose): extract GlucoseValue module for unit-safe conversion
-  - `6fce885` refactor(db): lift seam from raw SQL up to repository interfaces
-  - `8fae238` feat(food): add Meal Insights Dashboard with real top-spikes query
+- **Phase 3 — Feature 18 (Reading Reminders) complete**
+- All 6 reminder preferences stored in SQLite with auto-seeded defaults
+- Onboarding shows soft-ask step for fasting reminder (07:00 default)
+- Settings has full REMINDERS section with per-type toggles + time pickers
+- Permission overlay shown on first enable (explains purpose before OS dialog)
+- Weekly summary fires daily at configured time, only shows on Monday
+- Per-type reminders auto-suppressed when that reading type is already logged today
+- Zero TypeScript errors
 
 ## Next session starts with
 
-**Phase 3 — Feature 18: Reading Reminders** (build-plan line 314):
-- Local notifications via expo-notifications
-- Onboarding soft-ask step: "Want a nudge for your morning reading?"
-- Settings section: per-type reminder toggles + time pickers
-- Skip reminder when that reading type is already logged that day
-- Weekly summary notification
+**Phase 3 — Feature 19: Logging Streak** (build-plan line 331):
+- Dashboard streak counter — consecutive days with ≥1 reading, milestones at 7/30/90 days
+- `features/glucose/services/streaks.ts` — `getLoggingStreak()`, `getMilestones()`
+- Calm presentation per design bible — no confetti, no guilt copy
 
 ## Open questions
 
-- progress-tracker.md numbering is offset by -1 vs build-plan (starts Phase 2 at 10 instead of 11). Should be reconciled at some point.
+- progress-tracker.md numbering offset remains (-1 vs build-plan). Feature 18 is #17 in progress-tracker. Should reconcile eventually.
