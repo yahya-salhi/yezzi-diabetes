@@ -75,7 +75,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-07** — Approach B (feature-sliced) adopted for folder structure
 - **2026-07-07** — Stack navigator selected for sub-screens, bottom tabs for main sections
 - **2026-07-07** — GPT-4o Vision for food recognition + nutrition estimation
-- **2026-07-07** — Photo saved locally, only base64 sent to OpenAI API
+- **2026-07-07** — Photo saved locally, only base64 sent to GPT-4o via OpenRouter API
 - **2026-07-07** — Meals linked to glucose readings for actual vs estimated impact comparison
 - **2026-07-07** — Progressive overload with +2.5kg suggestions when rep targets hit for 2+ consecutive sessions
 - **2026-07-07** — Exercise templates: Push/Pull/Legs, Upper/Lower, Full Body 3x, Custom
@@ -87,6 +87,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-08** — Lean v1: glucose + food AI + growth essentials; exercise deferred to v1.1
 - **2026-07-08** — Approach A infrastructure: no accounts, local file backup, Cloudflare Workers AI proxy (key never in binary), RevenueCat, local notifications
 - **2026-07-08** — Health Connect → v1.1 (Android), Apple Health → v1.2 (iOS)
+- **2026-07-10** — Switched from direct OpenAI to OpenRouter for GPT-4o; user provides OpenRouter API key (`sk-or-v1-...`); same `openai` npm package with `baseURL: https://openrouter.ai/api/v1`; model changed to `openai/gpt-4o`
 - **2026-07-08** — API key strategy: user-provided OpenAI key stored via expo-secure-store; Cloudflare Workers proxy deferred to Phase 3
 - **2026-07-08** — Photo saved to FileSystem.documentDirectory via new expo-file-system File/Directory API (SDK 57+)
 - **2026-07-08** — MealReviewForm extracted as shared component between SnapMealScreen and ManualEntryScreen

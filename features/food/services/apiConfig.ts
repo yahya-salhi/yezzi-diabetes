@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-const STORAGE_KEY = "openai_api_key";
+const STORAGE_KEY = "openrouter_api_key";
 
 export async function getApiKey(): Promise<string | null> {
   try {

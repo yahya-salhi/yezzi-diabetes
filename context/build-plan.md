@@ -241,17 +241,17 @@ Build the camera screen and the review/edit screen.
 
 ---
 
-### 14 GPT-4o Vision Integration
+### 14 GPT-4o Vision Integration (via OpenRouter)
 
-Wire the camera to GPT-4o for food recognition.
+Wire the camera to GPT-4o via OpenRouter for food recognition.
 
 **Logic:**
 - `features/food/services/mealAnalysis.ts`
 - Capture photo → save to app documents directory via expo-file-system
-- Convert to base64 → POST to OpenAI GPT-4o Vision
+- Convert to base64 → POST to OpenRouter API (`https://openrouter.ai/api/v1`) with model `openai/gpt-4o`
 - Parse JSON response: `{ food_name, calories, carbs_g, protein_g, fat_g, estimated_impact_mgdl }`
 - On parse failure: 2 retries, then fallback to ManualEntryScreen
-- `openai` package added as dependency
+- `openai` package used as SDK (OpenRouter is OpenAI-compatible)
 
 **Verification:** Snapping a photo of a meal returns food name and nutrition estimates. Review screen pre-fills correctly.
 
@@ -370,10 +370,10 @@ Local notifications via expo-notifications.
 
 ### 22 AI Proxy + Scan Quota
 
-Move the OpenAI call behind a server proxy — the API key never ships in the app binary.
+Move the OpenRouter call behind a server proxy — the API key never ships in the app binary.
 
 **Logic:**
-- Cloudflare Workers endpoint: photo in → quota check → OpenAI GPT-4o Vision → nutrition JSON out; photos processed, never stored
+- Cloudflare Workers endpoint: photo in → quota check → GPT-4o via OpenRouter → nutrition JSON out; photos processed, never stored
 - Anonymous device UUID generated on first launch
 - Free tier: 10 scans/month, resets monthly; remaining count shown on Food screen
 - Manual meal entry always available — logging is never blocked

@@ -25,7 +25,9 @@
     "plugins": [
       "expo-sqlite",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

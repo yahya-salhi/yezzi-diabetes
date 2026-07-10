@@ -266,53 +266,63 @@ export function formatReadingTime(timeStr: string): string {
 
 ---
 
-## OpenAI GPT-4o Vision
+## OpenRouter (GPT-4o Vision)
 
-**Check first:** Read the OpenAI Vision docs at https://platform.openai.com/docs/guides/vision before using.
+**Check first:** Read the OpenRouter docs at https://openrouter.ai/docs/quickstart before using.
 
-> **API Key Strategy — decide before Phase 2:**
-> `process.env` is **not available** in React Native. Never ship an API key in a mobile binary.
-> Options: (1) User provides their own key stored locally via `expo-secure-store` — simplest, zero infra.
-> (2) Backend proxy that holds the key — most secure, adds infra.
-> (3) `expo-constants` with env config — works for dev, but key ships with the app.
+> OpenRouter provides an OpenAI-compatible API. We use raw `fetch` instead of the `openai` SDK — the SDK has compatibility issues with custom base URLs in React Native's browser mode.
+
+### Key Strategy
+
+`process.env` is **not available** in React Native. Never ship an API key in a mobile binary.
+- User provides their own OpenRouter API key stored locally via `expo-secure-store`
+- Key format: `sk-or-v1-...`
 
 ### Food Recognition + Nutrition Estimation
 
 ```typescript
-import OpenAI from "openai";
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+async function openRouterRequest(apiKey: string, body: Record<string, unknown>) {
+  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://yezziapp.com",
+      "X-Title": "YeZZi",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const json = await res.json();
+  const raw = json.choices?.[0]?.message?.content;
+  return JSON.parse(raw.replace(/```(?:json)?\s*/g, "").trim());
+}
 
 // From photo (base64)
 export async function analyzeMealFromPhoto(base64Image: string, apiKey: string) {
-  const openai = new OpenAI({ apiKey });
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+  const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+
+  return openRouterRequest(apiKey, {
+    model: "openai/gpt-4o",
     temperature: 0.3,
     messages: [
       {
         role: "user",
         content: [
-          {
-            type: "text",
-            text: `Identify this meal. Estimate: food name, total calories, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return ONLY valid JSON: { "food_name": string, "calories": number, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }`,
-          },
-          {
-            type: "image_url",
-            image_url: { url: `data:image/jpeg;base64,${base64Image}` },
-          },
+          { type: "text", text: `Identify this meal. Estimate: food name, total calories, total carbs (g), protein (g), fat (g), and estimated blood glucose impact (mg/dL) for a person with diabetes. Return ONLY valid JSON: { "food_name": string, "calories": number, "carbs_g": number, "protein_g": number | null, "fat_g": number | null, "estimated_impact_mgdl": number }` },
+          { type: "image_url", image_url: { url: imageUrl } },
         ],
       },
     ],
   });
-
-  const content = response.choices[0].message.content!;
-  return JSON.parse(content);
 }
 
 // From text description (fallback)
 export async function analyzeMealFromText(description: string, apiKey: string) {
-  const openai = new OpenAI({ apiKey });
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+  return openRouterRequest(apiKey, {
+    model: "openai/gpt-4o",
     temperature: 0.3,
     response_format: { type: "json_object" },
     messages: [
@@ -322,15 +332,15 @@ export async function analyzeMealFromText(description: string, apiKey: string) {
       },
     ],
   });
-
-  const content = response.choices[0].message.content!;
-  return JSON.parse(content);
 }
 ```
 
 **Rules:**
-- Model is always `gpt-4o` — never use other models
+- Use raw `fetch` to OpenRouter API — never use the OpenAI SDK in React Native (it has compatibility issues with custom base URLs in browser mode)
+- Base URL is always `https://openrouter.ai/api/v1`
+- Model is always `openai/gpt-4o` — never use other models
 - Temperature is `0.3` for consistent estimations
+- Always send `HTTP-Referer` and `X-Title` headers for OpenRouter tracking
 - Always validate parsed JSON before using — wrap in try/catch
 - On parse failure — max 2 retries, then fallback to manual entry
 - Photo sent as base64 data URL — never upload to any other server

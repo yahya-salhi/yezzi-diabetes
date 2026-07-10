@@ -48,5 +48,15 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS reminder_preferences (
+      id TEXT PRIMARY KEY,
+      reminder_type TEXT NOT NULL CHECK(reminder_type IN ('fasting', 'pre_meal', 'post_meal', 'bedtime', 'other', 'weekly_summary')),
+      enabled INTEGER NOT NULL DEFAULT 0,
+      hour INTEGER,
+      minute INTEGER,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 }

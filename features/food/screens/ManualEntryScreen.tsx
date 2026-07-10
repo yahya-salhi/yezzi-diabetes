@@ -137,15 +137,15 @@ export function ManualEntryScreen() {
       {needsKey && (
         <View style={styles.overlay}>
           <View style={styles.keyModal}>
-            <Text style={styles.keyTitle}>OpenAI API Key Required</Text>
+            <Text style={styles.keyTitle}>OpenRouter API Key Required</Text>
             <Text style={styles.keyMessage}>
-              Enter your OpenAI API key to analyze meals. Your key is stored securely on your device.
+              Enter your OpenRouter API key to analyze meals. Your key is stored securely on your device.
             </Text>
             <TextInput
               style={styles.keyInput}
               value={keyInput}
               onChangeText={setKeyInput}
-              placeholder="sk-..."
+              placeholder="sk-or-v1-..."
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
               autoCorrect={false}

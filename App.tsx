@@ -1,14 +1,47 @@
 import { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
+import * as Notifications from "expo-notifications";
+import { Platform, View, StyleSheet } from "react-native";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
 import { StatusBar } from "expo-status-bar";
-import { View, StyleSheet } from "react-native";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { OnboardingScreen } from "@/features/onboarding/screens/OnboardingScreen";
 import { getPreferences } from "@/features/onboarding/services/preferences";
-import { RepoProvider } from "@/features/repos/RepoContext";
+import { RepoProvider, useGlucoseReadings } from "@/features/repos/RepoContext";
+import { createSqliteReminderStorage } from "@/features/reminders/services/reminderStorage";
+import { createNotificationScheduler, createSkipHandler } from "@/features/reminders/services/notificationScheduler";
+import { colors } from "@/theme/tokens";
 
 SplashScreen.preventAutoHideAsync();
+
+function NotificationInit() {
+  const glucoseReadings = useGlucoseReadings();
+
+  useEffect(() => {
+    async function setup() {
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("reading-reminders", {
+          name: "Reading Reminders",
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: colors.accent,
+        });
+      }
+
+      Notifications.setNotificationHandler({
+        handleNotification: createSkipHandler(glucoseReadings),
+      });
+
+      const storage = createSqliteReminderStorage();
+      const prefs = await storage.getAll();
+      const scheduler = createNotificationScheduler(glucoseReadings);
+      await scheduler.scheduleAll(prefs);
+    }
+    setup();
+  }, [glucoseReadings]);
+
+  return null;
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -46,6 +79,7 @@ export default function App() {
 
   return (
     <RepoProvider>
+      <NotificationInit />
       <View style={styles.root} onLayout={onLayoutRootView}>
         <StatusBar style="dark" />
         {showOnboarding ? (
