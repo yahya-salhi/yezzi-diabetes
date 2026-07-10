@@ -1,6 +1,8 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useState, useCallback } from "react";
+import { ScrollView, View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { format } from "date-fns";
 import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { FoodStackParamList } from "@/navigation/types";
 import { colors, spacing, shadows } from "@/theme/tokens";
@@ -8,9 +10,9 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { MealCard } from "@/features/food/components/MealCard";
-import { MealLinkSuggestion } from "@/features/food/components/MealLinkSuggestion";
 import { CameraIcon } from "@/components/ui/Icons";
 import { useInsights } from "@/features/food/hooks/useInsights";
+import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<FoodStackParamList>;
@@ -22,16 +24,24 @@ const MEAL_TYPE_LABELS: Record<string, string> = {
   snack: "Snack",
 };
 
-const MOCK_MEALS: FoodLog[] = [];
-
-const MOCK_RECENT: FoodLog[] = [];
-
 export function FoodDashboardScreen() {
   const navigation = useNavigation<Nav>();
   const today = format(new Date(), "EEEE, MMM d");
   const { topSpikes } = useInsights();
-  const hasMeals = MOCK_MEALS.length > 0;
-  const hasRecent = MOCK_RECENT.length > 0;
+  const { getTodaysMeals } = useFoodLog();
+  const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      getTodaysMeals().then((meals) => {
+        if (!cancelled) setTodayMeals(meals);
+      });
+      return () => { cancelled = true; };
+    }, [getTodaysMeals])
+  );
+
+  const hasMeals = todayMeals.length > 0;
   const hasSpikes = topSpikes.length >= 2;
 
   return (
@@ -50,7 +60,7 @@ export function FoodDashboardScreen() {
           <View>
             <Text style={styles.sectionTitle}>Today's Meals</Text>
             <View style={styles.mealsList}>
-              {MOCK_MEALS.map((meal) => <MealCard key={meal.id} meal={meal} />)}
+              {todayMeals.map((meal) => <MealCard key={meal.id} meal={meal} />)}
             </View>
           </View>
         )}
@@ -83,12 +93,15 @@ export function FoodDashboardScreen() {
 
         <View>
           <Text style={styles.sectionTitle}>Recent Meals</Text>
-          {hasRecent ? (
+          {todayMeals.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.recentRow}>
-                {MOCK_RECENT.map((meal) => (
+                {todayMeals.map((meal) => (
                   <TouchableOpacity key={meal.id} style={styles.photoCard} activeOpacity={0.8}>
                     <View style={styles.photoThumb}>
+                      {meal.photo_uri ? (
+                        <Image source={{ uri: meal.photo_uri }} style={styles.photoImage} />
+                      ) : null}
                       <View style={styles.photoScrim} />
                       <Text style={styles.photoImpact}>+{Math.round(meal.estimated_impact)}</Text>
                     </View>
@@ -103,9 +116,6 @@ export function FoodDashboardScreen() {
           )}
         </View>
 
-        {hasMeals && (
-          <MealLinkSuggestion mealName="Chicken Salad" estimatedImpact={28} />
-        )}
       </ScrollView>
 
       <TouchableOpacity
@@ -232,6 +242,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
     overflow: "hidden",
     justifyContent: "flex-end",
+  },
+  photoImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
+    borderRadius: 14,
   },
   photoScrim: {
     ...StyleSheet.absoluteFillObject,

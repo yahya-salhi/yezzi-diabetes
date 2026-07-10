@@ -5,12 +5,17 @@ import { getApiKey, setApiKey } from "../services/apiConfig";
 import { analyzeMealFromPhoto, analyzeMealFromText } from "../services/mealAnalysis";
 import type { MealAnalysisResult } from "../services/mealAnalysis";
 
+export type PhotoAnalysisResult = {
+  analysis: MealAnalysisResult;
+  photoPath: string;
+};
+
 type UseMealAnalysisResult = {
   analyzing: boolean;
   result: MealAnalysisResult | null;
   error: string | null;
   needsKey: boolean;
-  analyzePhoto: (uri: string) => Promise<MealAnalysisResult | null>;
+  analyzePhoto: (uri: string) => Promise<PhotoAnalysisResult | null>;
   analyzeText: (description: string) => Promise<MealAnalysisResult | null>;
   provideApiKey: (key: string) => Promise<void>;
   dismissKeyPrompt: () => void;
@@ -40,7 +45,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
     setNeedsKey(false);
   }, []);
 
-  const analyzePhoto = useCallback(async (uri: string): Promise<MealAnalysisResult | null> => {
+  const analyzePhoto = useCallback(async (uri: string): Promise<PhotoAnalysisResult | null> => {
     const apiKey = await ensureKey();
     if (!apiKey) return null;
 
@@ -57,7 +62,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
 
       const analysis = await analyzeMealFromPhoto(base64, apiKey);
       setResult(analysis);
-      return analysis;
+      return { analysis, photoPath: destFile.uri };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to analyze meal";
       setError(msg);
