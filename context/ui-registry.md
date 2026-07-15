@@ -656,3 +656,92 @@ Last updated: 2026-07-15
 | Shadow           | none                               |
 
 **Pattern notes:** Alert-style reminder card with accentLight background. Only appears when user has 30+ days of data and no backup ever made. Title uses accent color (not textPrimary) to visually tie to the accent background. Button is inline TouchableOpacity — not using the shared Button component. Button radius is 8px (differs from standard 10px Button pattern). Consider using the Button component in future iterations for consistency.
+
+---
+
+### ExportSection
+
+File: `features/settings/components/ExportSection.tsx`
+Last updated: 2026-07-15
+
+| Property       | Value                               |
+| -------------- | ----------------------------------- |
+| Container bg   | `colors.surface`                    |
+| Container r    | 14                                  |
+| Row min height | 48px                                |
+| Row padding    | `spacing.xl` (20px) horizontal, `spacing.md` (12px) vertical |
+| Label          | 15px, 400, `colors.textPrimary`     |
+| Chevron icon   | `ChevronRightIcon`, 18px, `colors.textMuted` |
+| Divider        | 1px, `colors.borderLight`, `marginLeft: spacing.xl` |
+| Plus badge     | `colors.accentLight` bg, 6px radius, 2px vertical, `spacing.sm` horizontal |
+| Plus text      | 11px, 600, `colors.accent`          |
+| Loading        | `ActivityIndicator`, `colors.accent` |
+
+**Pattern notes:** Matches `SettingsGroup` pattern exactly — same container radius, row dimensions, label styling, chevron, and divider. The Plus badge is the only visual addition. Badge radius is 6px (not 10px standard button radius — deliberate, it's a small tag not a button). Used between Backup and Data sections in Settings. If a third export type is ever added, add another divider + row in the same pattern.
+
+---
+
+### ExportRangePicker
+
+File: `features/settings/components/ExportRangePicker.tsx`
+Last updated: 2026-07-15
+
+| Property       | Value                               |
+| -------------- | ----------------------------------- |
+| Overlay bg     | `rgba(0,0,0,0.4)`                   |
+| Card radius    | 14                                  |
+| Card bg        | `colors.surface`                    |
+| Card maxWidth  | 320                                 |
+| Title          | 15px, 600, `colors.textPrimary`, center, `spacing.lg` vertical |
+| Option row     | `spacing.md` (12px) vertical, `spacing.xl` (20px) horizontal, center |
+| Option text    | 15px, 400, `colors.textPrimary`, center |
+| Cancel text    | 15px, 500, `colors.accent`, center  |
+| Divider        | 1px, `colors.borderLight`           |
+
+**Pattern notes:** Simple picker modal matching the overlay-style pattern from MealLinkPicker (same rgba(0,0,0,0.4) overlay, same card radius 14, same centered card layout). Cancel is always the last row in accent color — matches ApiKeyModal's cancel-link approach. Rows are single-select (no checkmarks), just tap an option. Centered text for all labels (differs from SettingsGroup's left-aligned labels). Always wrap options in `TouchableOpacity` inside the card.
+
+---
+
+### PdfPreviewModal
+
+File: `features/settings/components/PdfPreviewModal.tsx`
+Last updated: 2026-07-15
+
+| Property          | Value                              |
+| ----------------- | ---------------------------------- |
+| Container bg      | `colors.background`                |
+| Header bg         | `colors.surface`                   |
+| Header bottom     | 1px `colors.borderLight`           |
+| Header padding    | `spacing.xl` (20px) horizontal, `spacing.xxl` (28px) top, `spacing.lg` (16px) bottom |
+| Screen title      | 17px, 600, `colors.textPrimary`    |
+| Close text        | 15px, 500, `colors.accent`         |
+| Content padding   | `spacing.xl` (20px)                |
+| Content gap       | `spacing.xxl` (28px)               |
+| Report title      | 22px, 700, `colors.textPrimary`, center |
+| Report subtitle   | 14px, `colors.textSecondary`, center |
+| Section title     | 17px, 600, `colors.textPrimary`    |
+| Card bg           | `colors.surface`                   |
+| Card radius       | 14                                 |
+| Stat row padding  | `spacing.md` (12px) vertical, `spacing.xl` (20px) horizontal |
+| Stat label        | 15px, `colors.textPrimary`, flex 1 |
+| Stat value        | 15px, 600, `colors.textPrimary`, textAlign right |
+| Stat count        | 13px, `colors.textMuted`, textAlign right |
+| Table header      | `spacing.xl` horizontal pad, `spacing.md` top, `spacing.sm` bottom, `colors.border` bottom |
+| Table header text | 12px, 500, `colors.textSecondary`  |
+| Table row         | `spacing.xl` horizontal pad, `spacing.sm` vertical |
+| Table row border  | 1px `colors.borderLight` bottom    |
+| Table cell        | 13px, `colors.textSecondary`       |
+| Bar height        | 8px, 4px radius                    |
+| Bar value         | 12px, 500, `colors.textPrimary`    |
+| Disclaimer        | 12px, `colors.textMuted`, center   |
+| Footer bg         | `colors.surface`                   |
+| Footer top        | 1px `colors.borderLight`           |
+| Share button bg   | `colors.accent`                    |
+| Share button r    | 12                                 |
+| Share button pad  | `spacing.md` (12px) vertical        |
+| Share text        | 16px, 600, #FFFFFF                 |
+| Share disabled    | 0.6 opacity                        |
+| Loading spinner   | `ActivityIndicator`, #FFFFFF       |
+| Bar colors        | `colors.success` / `warning` / `error` based on value vs range |
+
+**Pattern notes:** Full-screen modal (animationType="slide") for previewing the doctor report before sharing. Shares design patterns with Settings screens: same background, same surface cards with 14px radius, same section/spacing tokens. Stat rows mirror SettingsGroup row layout but with different content (label + value + count). Trend table is the only data-table component in the app — uses horizontal bars (min 4% width for visibility) with color-coded backgrounds. Bar width is proportional to `maxValue` (highest reading or 200, whichever is greater). Share button uses 12px radius (differs from standard 10px Button pattern — slightly rounder for the primary CTA). Disabled state uses 0.6 opacity (matches NotificationPermissionOverlay pattern). The share button is full-width (not a standard Button component) — matches the primary action button pattern from ApiKeyModal.
