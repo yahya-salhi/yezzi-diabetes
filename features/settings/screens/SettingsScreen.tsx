@@ -1,13 +1,11 @@
-import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet, ActivityIndicator } from "react-native";
+import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet } from "react-native";
 import { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { colors, spacing } from "@/theme/tokens";
 import { ChevronRightIcon } from "@/components/ui/Icons";
 import { useReminderSettings } from "@/features/reminders/hooks/useReminderSettings";
 import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
-import { BackupReminderCard } from "@/features/settings/components/BackupReminderCard";
-import { createBackup, writeBackup, shareBackup, updateLastBackupTimestamp, needsBackup } from "@/features/settings/services/backup";
-import { pickBackupFile, validateBackup, applyBackup } from "@/features/settings/services/restore";
+import { BackupSection } from "@/features/settings/components/BackupSection";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
 
@@ -26,8 +24,6 @@ export function SettingsScreen() {
   const [pickerTarget, setPickerTarget] = useState<string | null>(null);
   const [pickerDate, setPickerDate] = useState(new Date());
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
-  const [backupLoading, setBackupLoading] = useState(false);
-  const [restoreLoading, setRestoreLoading] = useState(false);
 
   const handleToggle = async (id: string, enabled: boolean) => {
     if (!enabled) {
@@ -77,56 +73,6 @@ export function SettingsScreen() {
       await save({ id: pickerTarget, hour: pickerDate.getHours(), minute: pickerDate.getMinutes() });
     }
     setPickerTarget(null);
-  };
-
-  const handleBackup = async () => {
-    setBackupLoading(true);
-    try {
-      const backup = await createBackup();
-      const uri = writeBackup(backup);
-      await updateLastBackupTimestamp();
-      await shareBackup(uri);
-    } catch (err: any) {
-      Alert.alert("Backup failed", err?.message ?? "Something went wrong.");
-    } finally {
-      setBackupLoading(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    Alert.alert(
-      "Restore from backup",
-      "This will replace all current data with the backup. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Restore",
-          style: "destructive",
-          onPress: async () => {
-            setRestoreLoading(true);
-            try {
-              const backup = await pickBackupFile();
-              if (!backup) {
-                setRestoreLoading(false);
-                return;
-              }
-              const error = validateBackup(backup);
-              if (error) {
-                Alert.alert("Invalid backup", error);
-                setRestoreLoading(false);
-                return;
-              }
-              await applyBackup(backup);
-              Alert.alert("Restore complete", "Your data has been restored.");
-            } catch (err: any) {
-              Alert.alert("Restore failed", err?.message ?? "Something went wrong.");
-            } finally {
-              setRestoreLoading(false);
-            }
-          },
-        },
-      ],
-    );
   };
 
   function formatTime(hour: number | null, minute: number | null): string {
@@ -236,28 +182,11 @@ export function SettingsScreen() {
         />
       )}
 
+      <BackupSection />
+
       <View>
         <Text style={styles.sectionHeader}>DATA</Text>
-        <BackupReminderCard onBackupMade={handleBackup} />
         <View style={styles.group}>
-          <TouchableOpacity style={styles.row} onPress={handleBackup} disabled={backupLoading}>
-            <Text style={styles.label}>Back up my data</Text>
-            {backupLoading ? (
-              <ActivityIndicator size="small" color={colors.accent} />
-            ) : (
-              <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
-            )}
-          </TouchableOpacity>
-          <View style={styles.divider} />
-          <TouchableOpacity style={styles.row} onPress={handleRestore} disabled={restoreLoading}>
-            <Text style={styles.label}>Restore from backup</Text>
-            {restoreLoading ? (
-              <ActivityIndicator size="small" color={colors.accent} />
-            ) : (
-              <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
-            )}
-          </TouchableOpacity>
-          <View style={styles.divider} />
           <View style={styles.row}>
             <Text style={styles.label}>Clear all data</Text>
             <Text style={styles.valueDanger}>Delete</Text>
