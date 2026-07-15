@@ -138,7 +138,7 @@ function escapeSql(value: unknown): string {
   if (value === null || value === undefined) return "NULL";
   if (typeof value === "number") return String(value);
   if (typeof value === "string") return `'${value.replace(/'/g, "''")}'`;
-  return "NULL";
+  throw new Error(`Unexpected type in backup value: ${typeof value}`);
 }
 
 function buildBatchInsert(

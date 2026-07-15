@@ -15,8 +15,8 @@ export function BackupSection() {
     try {
       const backup = await createBackup();
       const uri = writeBackup(backup);
-      await updateLastBackupTimestamp();
       await shareBackup(uri);
+      await updateLastBackupTimestamp();
     } catch (err: any) {
       Alert.alert("Backup failed", err?.message ?? "Something went wrong.");
     } finally {
@@ -62,7 +62,6 @@ export function BackupSection() {
 
   return (
     <View>
-      <Text style={styles.sectionHeader}>DATA</Text>
       <BackupReminderCard onBackupMade={handleBackup} />
       <View style={styles.group}>
         <TouchableOpacity style={styles.row} onPress={handleBackup} disabled={backupLoading}>
@@ -88,14 +87,6 @@ export function BackupSection() {
 }
 
 const styles = StyleSheet.create({
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: colors.textMuted,
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
   group: {
     backgroundColor: colors.surface,
     borderRadius: 14,
