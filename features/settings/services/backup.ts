@@ -70,13 +70,15 @@ function getBackupFilename(): string {
   return `yezzi-backup-${date}.json`;
 }
 
-export async function saveBackupFile(backup: BackupData): Promise<void> {
+export function writeBackup(backup: BackupData): string {
   const filename = getBackupFilename();
   const file = new File(Paths.document, filename);
   file.write(JSON.stringify(backup, null, 2));
-  await updateLastBackupTimestamp();
+  return file.uri;
+}
 
-  await Sharing.shareAsync(file.uri, {
+export async function shareBackup(uri: string): Promise<void> {
+  await Sharing.shareAsync(uri, {
     mimeType: "application/json",
     dialogTitle: "Back up your YeZZi data",
   });
