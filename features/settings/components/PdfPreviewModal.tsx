@@ -7,8 +7,8 @@ import {
   computeAverages,
   buildTrendRows,
   formatDateShort as formatDate,
-  type PdfPreferences,
 } from "@/features/settings/services/reportUtils";
+import type { UserPreferences } from "@/features/onboarding/services/preferences";
 
 type Props = {
   visible: boolean;
@@ -17,7 +17,7 @@ type Props = {
   onShare: () => void;
   onClose: () => void;
   loading: boolean;
-  prefs: PdfPreferences;
+  prefs: UserPreferences;
 };
 
 function inRangeColor(value: number, low: number, high: number): string {

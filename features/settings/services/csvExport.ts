@@ -56,17 +56,22 @@ export async function getReadingsForRange(
 ): Promise<GlucoseReading[]> {
   const adapter = db ?? getDbAdapter();
 
-  if (range === "all") {
-    return adapter.getAllAsync<GlucoseReading>(
-      "SELECT * FROM glucose_readings ORDER BY date DESC, time DESC",
-    );
-  }
+  try {
+    if (range === "all") {
+      return adapter.getAllAsync<GlucoseReading>(
+        "SELECT * FROM glucose_readings ORDER BY date DESC, time DESC",
+      );
+    }
 
-  const days = parseInt(range, 10);
-  return adapter.getAllAsync<GlucoseReading>(
-    "SELECT * FROM glucose_readings WHERE date >= date('now', '-' || ? || ' days') ORDER BY date DESC, time DESC",
-    [String(days)],
-  );
+    const days = parseInt(range, 10);
+    return adapter.getAllAsync<GlucoseReading>(
+      "SELECT * FROM glucose_readings WHERE date >= date('now', '-' || ? || ' days') ORDER BY date DESC, time DESC",
+      [String(days)],
+    );
+  } catch (err) {
+    console.error("[csvExport] getReadingsForRange failed", err);
+    return [];
+  }
 }
 
 function getCsvFilename(): string {

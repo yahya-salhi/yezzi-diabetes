@@ -1,12 +1,7 @@
 import type { GlucoseReading } from "@/features/glucose/types";
+import type { UserPreferences } from "@/features/onboarding/services/preferences";
 
-export type PdfPreferences = {
-  unit: "mg/dL" | "mmol/L";
-  fasting_target_low: number;
-  fasting_target_high: number;
-  postmeal_target_low: number;
-  postmeal_target_high: number;
-};
+export type { UserPreferences as PdfPreferences };
 
 export function round(value: number): string {
   return Math.round(value).toString();

@@ -9,7 +9,7 @@ export type UserPreferences = {
   postmeal_target_high: number;
 };
 
-const DEFAULTS: UserPreferences = {
+export const DEFAULTS: UserPreferences = {
   unit: "mg/dL",
   fasting_target_low: 70,
   fasting_target_high: 100,

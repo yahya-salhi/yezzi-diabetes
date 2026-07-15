@@ -1,34 +1,26 @@
 import { View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { colors, spacing } from "@/theme/tokens";
 import { ChevronRightIcon } from "@/components/ui/Icons";
 import { ExportRangePicker } from "./ExportRangePicker";
 import { PdfPreviewModal } from "./PdfPreviewModal";
 import {
+  RANGE_LABELS,
   generateCsv,
   getReadingsForRange,
   writeCsvFile,
   shareCsvFile,
+  type ExportRange,
 } from "@/features/settings/services/csvExport";
 import {
   generateReportHtml,
   generatePdfFile,
   sharePdfFile,
 } from "@/features/settings/services/pdfReport";
-import { getPreferences } from "@/features/onboarding/services/preferences";
-import { RANGE_LABELS, type ExportRange } from "@/features/settings/services/csvExport";
+import { getPreferences, DEFAULTS, type UserPreferences } from "@/features/onboarding/services/preferences";
 import type { GlucoseReading } from "@/features/glucose/types";
-import type { PdfPreferences } from "@/features/settings/services/reportUtils";
 
 type ExportType = "csv" | "pdf";
-
-const DEFAULT_PREFS: PdfPreferences = {
-  unit: "mg/dL",
-  fasting_target_low: 70,
-  fasting_target_high: 100,
-  postmeal_target_low: 70,
-  postmeal_target_high: 140,
-};
 
 export function ExportSection() {
   const [rangePickerVisible, setRangePickerVisible] = useState(false);
@@ -40,22 +32,23 @@ export function ExportSection() {
   const [pdfRangeLabel, setPdfRangeLabel] = useState("");
   const [pdfHtml, setPdfHtml] = useState("");
   const [pdfShareLoading, setPdfShareLoading] = useState(false);
-  const [pdfPrefs, setPdfPrefs] = useState<PdfPreferences>(DEFAULT_PREFS);
+  const [pdfPrefs, setPdfPrefs] = useState<UserPreferences>(DEFAULTS);
+  const pendingTypeRef = useRef<ExportType | null>(null);
 
   const handleExportPress = useCallback((type: ExportType) => {
-    setPendingExportType(type);
+    pendingTypeRef.current = type;
     setRangePickerVisible(true);
   }, []);
 
   const handleRangeSelect = useCallback(async (range: ExportRange) => {
     setRangePickerVisible(false);
 
-    if (pendingExportType === "csv") {
+    if (pendingTypeRef.current === "csv") {
       setCsvLoading(true);
       try {
         const readings = await getReadingsForRange(range);
         if (readings.length === 0) {
-          setPendingExportType(null);
+          pendingTypeRef.current = null;
           Alert.alert("No data", "No readings found for the selected date range.");
           return;
         }
@@ -67,17 +60,17 @@ export function ExportSection() {
       } finally {
         setCsvLoading(false);
       }
-    } else if (pendingExportType === "pdf") {
+    } else if (pendingTypeRef.current === "pdf") {
       setPdfLoading(true);
       try {
         const readings = await getReadingsForRange(range);
         if (readings.length === 0) {
-          setPendingExportType(null);
+          pendingTypeRef.current = null;
           Alert.alert("No data", "No readings found for the selected date range.");
           return;
         }
         const prefs = await getPreferences();
-        const resolvedPrefs: PdfPreferences = prefs ?? DEFAULT_PREFS;
+        const resolvedPrefs: UserPreferences = prefs ?? DEFAULTS;
         const html = generateReportHtml(readings, resolvedPrefs, range);
         setPdfReadings(readings);
         setPdfPrefs(resolvedPrefs);
@@ -91,12 +84,12 @@ export function ExportSection() {
       }
     }
 
-    setPendingExportType(null);
-  }, [pendingExportType]);
+    pendingTypeRef.current = null;
+  }, []);
 
   const handleRangeCancel = useCallback(() => {
     setRangePickerVisible(false);
-    setPendingExportType(null);
+    pendingTypeRef.current = null;
   }, []);
 
   const handlePdfShare = useCallback(async () => {
