@@ -2,39 +2,12 @@ import { Paths, File } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
+import type { GlucoseReading } from "@/features/glucose/types";
+import type { FoodLog } from "@/features/food/types";
 
 export const BACKUP_VERSION = 1;
 
-type GlucoseReading = {
-  id: string;
-  value: number;
-  unit: "mg/dL" | "mmol/L";
-  type: "fasting" | "pre_meal" | "post_meal" | "bedtime" | "other";
-  date: string;
-  time: string;
-  food_log_id: string | null;
-  workout_session_id: string | null;
-  notes: string | null;
-  created_at: string;
-};
-
-type FoodLog = {
-  id: string;
-  meal_type: "breakfast" | "lunch" | "dinner" | "snack";
-  date: string;
-  time: string;
-  photo_uri: string | null;
-  food_name: string;
-  carbs_g: number;
-  protein_g: number | null;
-  fat_g: number | null;
-  calories: number;
-  estimated_impact: number;
-  notes: string | null;
-  created_at: string;
-};
-
-type UserPreference = {
+export type UserPreferenceRow = {
   id: string;
   unit: "mg/dL" | "mmol/L";
   fasting_target_low: number;
@@ -46,7 +19,7 @@ type UserPreference = {
   updated_at: string;
 };
 
-type ReminderPreference = {
+export type ReminderPreferenceRow = {
   id: string;
   reminder_type:
     | "fasting"
@@ -68,8 +41,8 @@ export type BackupData = {
   tables: {
     glucose_readings: GlucoseReading[];
     food_log: FoodLog[];
-    user_preferences: UserPreference[];
-    reminder_preferences: ReminderPreference[];
+    user_preferences: UserPreferenceRow[];
+    reminder_preferences: ReminderPreferenceRow[];
   };
 };
 
@@ -80,8 +53,8 @@ export async function createBackup(db?: DatabasePort): Promise<BackupData> {
     await Promise.all([
       adapter.getAllAsync("SELECT * FROM glucose_readings") as Promise<GlucoseReading[]>,
       adapter.getAllAsync("SELECT * FROM food_log") as Promise<FoodLog[]>,
-      adapter.getAllAsync("SELECT * FROM user_preferences") as Promise<UserPreference[]>,
-      adapter.getAllAsync("SELECT * FROM reminder_preferences") as Promise<ReminderPreference[]>,
+      adapter.getAllAsync("SELECT * FROM user_preferences") as Promise<UserPreferenceRow[]>,
+      adapter.getAllAsync("SELECT * FROM reminder_preferences") as Promise<ReminderPreferenceRow[]>,
     ]);
 
   return {
