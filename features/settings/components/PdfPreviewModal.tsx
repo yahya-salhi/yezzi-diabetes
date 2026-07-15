@@ -1,6 +1,14 @@
 import { View, Text, Modal, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { colors, spacing } from "@/theme/tokens";
 import type { GlucoseReading } from "@/features/glucose/types";
+import {
+  round,
+  barWidth,
+  computeAverages,
+  buildTrendRows,
+  formatDateShort as formatDate,
+  type PdfPreferences,
+} from "@/features/settings/services/reportUtils";
 
 type Props = {
   visible: boolean;
@@ -9,11 +17,8 @@ type Props = {
   onShare: () => void;
   onClose: () => void;
   loading: boolean;
+  prefs: PdfPreferences;
 };
-
-function round(value: number): string {
-  return Math.round(value).toString();
-}
 
 function inRangeColor(value: number, low: number, high: number): string {
   if (value < low) return colors.warning;
@@ -21,56 +26,9 @@ function inRangeColor(value: number, low: number, high: number): string {
   return colors.success;
 }
 
-function barWidth(value: number, max: number): number {
-  return Math.max(4, Math.min(100, (value / max) * 100));
-}
-
-function computeStats(readings: GlucoseReading[]) {
-  const fasting = readings.filter((r) => r.type === "fasting");
-  const postMeal = readings.filter((r) => r.type === "post_meal");
-
-  const avg = (arr: GlucoseReading[]): number | null => {
-    if (arr.length === 0) return null;
-    return arr.reduce((sum, r) => sum + r.value, 0) / arr.length;
-  };
-
-  return {
-    fastingAvg: avg(fasting),
-    postMealAvg: avg(postMeal),
-    overallAvg: avg(readings),
-    fastingCount: fasting.length,
-    postMealCount: postMeal.length,
-    totalCount: readings.length,
-  };
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function buildTrendData(readings: GlucoseReading[]) {
-  const byDate = new Map<string, { fasting: number | null; postMeal: number | null }>();
-
-  for (const r of readings) {
-    const existing = byDate.get(r.date) ?? { fasting: null, postMeal: null };
-    if (r.type === "fasting" && existing.fasting === null) {
-      existing.fasting = r.value;
-    }
-    if (r.type === "post_meal" && existing.postMeal === null) {
-      existing.postMeal = r.value;
-    }
-    byDate.set(r.date, existing);
-  }
-
-  return Array.from(byDate.entries())
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([date, vals]) => ({ date, ...vals }));
-}
-
-export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClose, loading }: Props) {
-  const stats = computeStats(readings);
-  const trendData = buildTrendData(readings);
+export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClose, loading, prefs }: Props) {
+  const stats = computeAverages(readings);
+  const trendData = buildTrendRows(readings);
   const maxValue = Math.max(...readings.map((r) => r.value), 200);
 
   const now = new Date();
@@ -127,7 +85,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
               {trendData.slice(0, 14).map((row, idx) => (
                 <View key={row.date} style={[styles.tableRow, idx < trendData.length - 1 && styles.tableRowBorder]}>
                   <Text style={[styles.tableCell, { flex: 1.2 }]}>{formatDate(row.date)}</Text>
-                  <View style={[styles.viewCell, { flex: 2 }]}>
+                  <View style={{ flex: 2 }}>
                     {row.fasting !== null ? (
                       <View style={styles.barRow}>
                         <View
@@ -135,7 +93,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                             styles.bar,
                             {
                               width: `${barWidth(row.fasting, maxValue)}%`,
-                              backgroundColor: inRangeColor(row.fasting, 70, 100),
+                              backgroundColor: inRangeColor(row.fasting, prefs.fasting_target_low, prefs.fasting_target_high),
                             },
                           ]}
                         />
@@ -145,7 +103,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                       <Text style={styles.emptyValue}>—</Text>
                     )}
                   </View>
-                  <View style={[styles.viewCell, { flex: 2 }]}>
+                  <View style={{ flex: 2 }}>
                     {row.postMeal !== null ? (
                       <View style={styles.barRow}>
                         <View
@@ -153,7 +111,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                             styles.bar,
                             {
                               width: `${barWidth(row.postMeal, maxValue)}%`,
-                              backgroundColor: inRangeColor(row.postMeal, 70, 140),
+                              backgroundColor: inRangeColor(row.postMeal, prefs.postmeal_target_low, prefs.postmeal_target_high),
                             },
                           ]}
                         />
@@ -305,9 +263,6 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 13,
     color: colors.textSecondary,
-  },
-  viewCell: {
-    // no text styles — used on View containers
   },
   barRow: {
     flexDirection: "row",

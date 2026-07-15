@@ -18,8 +18,17 @@ import {
 import { getPreferences } from "@/features/onboarding/services/preferences";
 import type { ExportRange } from "@/features/settings/services/csvExport";
 import type { GlucoseReading } from "@/features/glucose/types";
+import type { PdfPreferences } from "@/features/settings/services/reportUtils";
 
 type ExportType = "csv" | "pdf";
+
+const DEFAULT_PREFS: PdfPreferences = {
+  unit: "mg/dL",
+  fasting_target_low: 70,
+  fasting_target_high: 100,
+  postmeal_target_low: 70,
+  postmeal_target_high: 140,
+};
 
 export function ExportSection() {
   const [rangePickerVisible, setRangePickerVisible] = useState(false);
@@ -31,6 +40,7 @@ export function ExportSection() {
   const [pdfRangeLabel, setPdfRangeLabel] = useState("");
   const [pdfHtml, setPdfHtml] = useState("");
   const [pdfShareLoading, setPdfShareLoading] = useState(false);
+  const [pdfPrefs, setPdfPrefs] = useState<PdfPreferences>(DEFAULT_PREFS);
 
   const handleExportPress = useCallback((type: ExportType) => {
     setPendingExportType(type);
@@ -45,6 +55,7 @@ export function ExportSection() {
       try {
         const readings = await getReadingsForRange(range);
         if (readings.length === 0) {
+          setPendingExportType(null);
           Alert.alert("No data", "No readings found for the selected date range.");
           return;
         }
@@ -63,18 +74,15 @@ export function ExportSection() {
       try {
         const readings = await getReadingsForRange(range);
         if (readings.length === 0) {
+          setPendingExportType(null);
           Alert.alert("No data", "No readings found for the selected date range.");
           return;
         }
         const prefs = await getPreferences();
-        const html = generateReportHtml(readings, prefs ?? {
-          unit: "mg/dL",
-          fasting_target_low: 70,
-          fasting_target_high: 100,
-          postmeal_target_low: 70,
-          postmeal_target_high: 140,
-        }, range);
+        const resolvedPrefs: PdfPreferences = prefs ?? DEFAULT_PREFS;
+        const html = generateReportHtml(readings, resolvedPrefs, range);
         setPdfReadings(readings);
+        setPdfPrefs(resolvedPrefs);
         setPdfRangeLabel(
           range === "all" ? "All Time" : `Last ${range} Days`,
         );
@@ -161,6 +169,7 @@ export function ExportSection() {
         onShare={handlePdfShare}
         onClose={handlePdfClose}
         loading={pdfShareLoading}
+        prefs={pdfPrefs}
       />
     </View>
   );
