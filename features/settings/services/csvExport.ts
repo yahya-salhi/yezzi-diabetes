@@ -82,7 +82,7 @@ function getCsvFilename(): string {
 
 export async function writeCsvFile(csvString: string): Promise<{ uri: string; filename: string }> {
   const filename = getCsvFilename();
-  const file = new File(Paths.document, filename);
+  const file = new File(Paths.cache, filename);
   file.write(csvString);
   return { uri: file.uri, filename };
 }
@@ -92,8 +92,16 @@ export async function shareCsvFile(uri: string): Promise<void> {
   if (!isAvailable) {
     throw new Error("Sharing is not available on this device.");
   }
-  await Sharing.shareAsync(uri, {
+
+  const shared = Sharing.shareAsync(uri, {
     mimeType: "text/csv",
+    UTI: "public.comma-separated-values-text",
     dialogTitle: "Export glucose readings",
   });
+
+  const timeout = new Promise<void>((_, reject) =>
+    setTimeout(() => reject(new Error("Share timed out")), 8000),
+  );
+
+  await Promise.race([shared, timeout]);
 }
