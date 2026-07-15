@@ -57,12 +57,12 @@ function generatePdfHtml(
     year: "numeric",
   });
 
-  const avgRow = (label: string, value: number | null, count: number) => {
+  const avgRow = (label: string, value: number | null, count: number, isFasting: boolean) => {
     if (value === null) return "";
     const color = inRangeColor(
       value,
-      label === "Fasting" ? prefs.fasting_target_low : prefs.postmeal_target_low,
-      label === "Fasting" ? prefs.fasting_target_high : prefs.postmeal_target_high,
+      isFasting ? prefs.fasting_target_low : prefs.postmeal_target_low,
+      isFasting ? prefs.fasting_target_high : prefs.postmeal_target_high,
     );
     return `
       <tr>
@@ -122,9 +122,9 @@ function generatePdfHtml(
       <div style="margin-bottom:28px;">
         <h2 style="font-size:17px;font-weight:600;margin:0 0 12px 0;color:#1A1D1C;border-bottom:1px solid #EDEAE4;padding-bottom:8px;">Averages</h2>
         <table style="width:100%;border-collapse:collapse;">
-          ${avgRow("Fasting", averages.fastingAvg, averages.fastingCount)}
-          ${avgRow("Post-Meal", averages.postMealAvg, averages.postMealCount)}
-          ${avgRow("Overall", averages.overallAvg, averages.totalCount)}
+          ${avgRow("Fasting", averages.fastingAvg, averages.fastingCount, true)}
+          ${avgRow("Post-Meal", averages.postMealAvg, averages.postMealCount, false)}
+          ${avgRow("Overall", averages.overallAvg, averages.totalCount, false)}
         </table>
       </div>
 

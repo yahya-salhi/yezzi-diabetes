@@ -75,7 +75,12 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Trend</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Trend</Text>
+              {trendData.length > 14 && (
+                <Text style={styles.sectionNote}>Showing last 14 days</Text>
+              )}
+            </View>
             <View style={styles.card}>
               <View style={styles.tableHeader}>
                 <Text style={[styles.tableHeaderText, { flex: 1.2 }]}>Date</Text>
@@ -207,6 +212,15 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  sectionNote: {
+    fontSize: 12,
+    color: colors.textMuted,
   },
   card: {
     backgroundColor: colors.surface,

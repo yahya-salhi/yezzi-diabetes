@@ -16,7 +16,7 @@ import {
   sharePdfFile,
 } from "@/features/settings/services/pdfReport";
 import { getPreferences } from "@/features/onboarding/services/preferences";
-import type { ExportRange } from "@/features/settings/services/csvExport";
+import { RANGE_LABELS, type ExportRange } from "@/features/settings/services/csvExport";
 import type { GlucoseReading } from "@/features/glucose/types";
 import type { PdfPreferences } from "@/features/settings/services/reportUtils";
 
@@ -67,9 +67,7 @@ export function ExportSection() {
       } finally {
         setCsvLoading(false);
       }
-    }
-
-    if (pendingExportType === "pdf") {
+    } else if (pendingExportType === "pdf") {
       setPdfLoading(true);
       try {
         const readings = await getReadingsForRange(range);
@@ -83,9 +81,7 @@ export function ExportSection() {
         const html = generateReportHtml(readings, resolvedPrefs, range);
         setPdfReadings(readings);
         setPdfPrefs(resolvedPrefs);
-        setPdfRangeLabel(
-          range === "all" ? "All Time" : `Last ${range} Days`,
-        );
+        setPdfRangeLabel(RANGE_LABELS[range]);
         setPdfHtml(html);
         setPdfPreviewVisible(true);
       } catch (err: any) {
