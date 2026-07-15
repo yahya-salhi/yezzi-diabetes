@@ -8,6 +8,8 @@ import { ReadingCard } from "@/features/glucose/components/ReadingCard";
 import { DecisionCard } from "@/features/glucose/components/DecisionCard";
 import { useDashboardData } from "@/features/glucose/hooks/useDashboardData";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
+import { useLoggingStreak } from "@/features/glucose/hooks/useLoggingStreak";
+import { StreakBadge } from "@/features/glucose/components/StreakBadge";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { GlucoseStackParamList } from "@/navigation/types";
@@ -22,6 +24,7 @@ export function DashboardScreen() {
   const today = format(new Date(), "yyyy-MM-dd");
   const { preferences } = usePreferences();
   const { readings, dailyAverage, alerts, loading } = useDashboardData(today, preferences);
+  const { streak, milestones } = useLoggingStreak();
   const displayDate = format(new Date(), "EEEE, MMM d");
 
   const thresholds = preferences ? thresholdsFromPreferences(preferences) : undefined;
@@ -76,6 +79,8 @@ export function DashboardScreen() {
       {alerts.slice(0, 2).map((alert, i) => (
         <DecisionCard key={i} alert={alert} actionLabel="View History" onAction={() => navigation.navigate("History")} />
       ))}
+
+      <StreakBadge streak={streak} milestones={milestones} />
 
       <View>
         <Text style={styles.sectionTitle}>Today's Readings</Text>

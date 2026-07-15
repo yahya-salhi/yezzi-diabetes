@@ -609,3 +609,27 @@ Last updated: 2026-07-10
 | Content gap      | `spacing.lg` (16px)                |
 
 **Pattern notes:** Full-screen permission overlay matching the CameraView permission pattern (same background, title, message, button, and skip link tokens). Used when a user enables notifications but hasn't granted OS-level permission. The icon circle (64px accentLight with rounded corners) is the only visual addition over the camera pattern. Button is full-width (not centered like CameraView) to match mobile permission dialog conventions. Skip link uses standard muted text and sits below the button with `marginTop: spacing.sm`. Disabled state uses 0.6 opacity on the button.
+
+---
+
+### StreakBadge
+
+File: `features/glucose/components/StreakBadge.tsx`
+Last updated: 2026-07-15
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | `colors.surface`                   |
+| Border           | none                               |
+| Border radius    | 14                                 |
+| Inner padding    | `spacing.xl` (20px)                |
+| Arc outer        | 64px circle, 1.5px dashed `colors.border` |
+| Arc inner        | 1px solid `colors.border`          |
+| Badge inner      | 48px circle, `colors.accentLight`  |
+| Icon             | FlameIcon 20px, `colors.accent`    |
+| Streak number    | 18px / 700, `colors.textPrimary`   |
+| Streak label     | 10px / 400, `colors.textMuted`     |
+| Milestone pill   | 999px radius, `colors.surfaceSecondary` bg, 12px / 500, `colors.textMuted` |
+| Milestone reached| `colors.accentLight` bg, `colors.accent` text |
+
+**Pattern notes:** Dashboard streak card. Dotted arc accent (per design bible decorative asset #1) frames a 48px accent-light circle with the FlameIcon and streak count. Three milestone pills (7/30/90) sit in a row; reached milestones switch to accentLight bg + accent text. Calm presentation — no confetti, no guilt copy. Empty state shows "0" with all milestones unreached.

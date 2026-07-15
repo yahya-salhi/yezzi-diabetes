@@ -1,10 +1,8 @@
 import { useState, useCallback } from "react";
 import { randomUUID } from "expo-crypto";
 import { format } from "date-fns";
-import { createSqliteFoodLog } from "../services/foodLog";
+import { useFoodLogRepo } from "@/features/repos/RepoContext";
 import type { FoodLog, MealType } from "../types";
-
-const foodLogRepo = createSqliteFoodLog();
 
 export type SaveMealParams = {
   meal_type: MealType;
@@ -26,6 +24,7 @@ type UseFoodLogResult = {
 };
 
 export function useFoodLog(): UseFoodLogResult {
+  const foodLogRepo = useFoodLogRepo();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
