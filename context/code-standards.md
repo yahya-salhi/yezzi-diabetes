@@ -259,5 +259,8 @@ Approved dependencies for this project:
 - `date-fns` — Date formatting and calculations
 - `uuid` — UUID generation for IDs
 - `openai` — GPT-4o Vision via OpenRouter for food recognition + estimation
+- `expo-sharing` — System share sheet for backup export
+- `expo-document-picker` — File picker for backup restore
+- `expo-notifications` — Local notifications for reading reminders
 
 Do not install any other packages without updating this list first.

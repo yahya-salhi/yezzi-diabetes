@@ -633,3 +633,26 @@ Last updated: 2026-07-15
 | Milestone reached| `colors.accentLight` bg, `colors.accent` text |
 
 **Pattern notes:** Dashboard streak card. Dotted arc accent (per design bible decorative asset #1) frames a 48px accent-light circle with the FlameIcon and streak count. Three milestone pills (7/30/90) sit in a row; reached milestones switch to accentLight bg + accent text. Calm presentation — no confetti, no guilt copy. Empty state shows "0" with all milestones unreached.
+
+---
+
+### BackupReminderCard
+
+File: `features/settings/components/BackupReminderCard.tsx`
+Last updated: 2026-07-15
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | `colors.accentLight`               |
+| Border           | none                               |
+| Border radius    | 14                                 |
+| Title            | 15px, 600, `colors.accent`         |
+| Body             | 14px, 400, `colors.textSecondary`, lineHeight 20 |
+| Button bg        | `colors.accent`                    |
+| Button radius    | 8                                  |
+| Button padding   | `spacing.sm` (8px) vertical, `spacing.lg` (16px) horizontal |
+| Button text      | 14px, 600, #FFFFFF                 |
+| Spacing          | `spacing.xl` (20px) padding, `spacing.sm` (8px) gap |
+| Shadow           | none                               |
+
+**Pattern notes:** Alert-style reminder card with accentLight background. Only appears when user has 30+ days of data and no backup ever made. Title uses accent color (not textPrimary) to visually tie to the accent background. Button is inline TouchableOpacity — not using the shared Button component. Button radius is 8px (differs from standard 10px Button pattern). Consider using the Button component in future iterations for consistency.

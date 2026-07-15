@@ -45,6 +45,7 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       fasting_target_high REAL DEFAULT 100,
       postmeal_target_low REAL DEFAULT 70,
       postmeal_target_high REAL DEFAULT 140,
+      last_backup_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -59,4 +60,13 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Add last_backup_at column if it doesn't exist (for existing databases)
+  try {
+    await db.execAsync(`
+      ALTER TABLE user_preferences ADD COLUMN last_backup_at TEXT;
+    `);
+  } catch {
+    // Column already exists — ignore
+  }
 }

@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 3 — Store Readiness & v1 Launch
-**Last completed:** 18 Logging Streak
-**Next:** 19 Backup & Restore (Phase 3)
+**Last completed:** 19 Backup & Restore
+**Next:** 20 CSV Export + PDF Doctor Report (Phase 3)
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -47,7 +47,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] Spec: Store Readiness & Growth Design Doc
 - [X] 17 Reading Reminders
 - [X] 18 Logging Streak
-- [ ] 19 Backup & Restore
+- [X] 19 Backup & Restore
 - [ ] 20 CSV Export + PDF Doctor Report
 - [ ] 21 AI Proxy + Scan Quota
 - [ ] 22 YeZZi Plus — Subscription + Paywall

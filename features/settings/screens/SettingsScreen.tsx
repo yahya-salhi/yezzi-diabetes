@@ -1,10 +1,11 @@
-import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, StyleSheet } from "react-native";
+import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet } from "react-native";
 import { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { colors, spacing } from "@/theme/tokens";
 import { ChevronRightIcon } from "@/components/ui/Icons";
 import { useReminderSettings } from "@/features/reminders/hooks/useReminderSettings";
 import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
+import { BackupSection } from "@/features/settings/components/BackupSection";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
 
@@ -181,14 +182,11 @@ export function SettingsScreen() {
         />
       )}
 
+      <BackupSection />
+
       <View>
         <Text style={styles.sectionHeader}>DATA</Text>
         <View style={styles.group}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Export readings</Text>
-            <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
-          </View>
-          <View style={styles.divider} />
           <View style={styles.row}>
             <Text style={styles.label}>Clear all data</Text>
             <Text style={styles.valueDanger}>Delete</Text>
