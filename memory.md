@@ -42,6 +42,25 @@ Last updated: 2026-07-15
 - Zero TypeScript errors, lint passes
 - Memory updated to reflect this session
 
+## Active bugs
+
+### CSV export hangs on iOS — `Sharing.shareAsync` never resolves
+
+**Symptom:** "Export CSV" shows loading spinner indefinitely. PDF export (which uses the same `shareAsync` with `application/pdf`) works fine. After adding an 8s timeout, user sees "Export failed: Share timed out".
+
+**Root cause:** Still unknown. PDF shares via `Print.printToFileAsync` (expo-print → temp file). CSV shares via `expo-file-system` v19 `File` API (`new File(Paths.cache, filename).write()` → `file.uri`). `shareAsync` hangs when given a URI from the `File` API but works fine with URIs from `Print.printToFileAsync`.
+
+**Attempted fixes (all failed):**
+1. Check `Sharing.isAvailableAsync()` before sharing — returns true
+2. Write to `Paths.cache` instead of `Paths.document` — no change
+3. Verify file exists (`file.exists`) and content matches (`await file.text()`) — passes, file is written correctly
+4. Remove `mimeType: "text/csv"` and `UTI` — let iOS auto-detect from `.csv` extension — no change
+5. Added 8s `Promise.race` timeout as safety net — timeout fires, confirming `shareAsync` hangs
+
+**Next steps:**
+- Root cause likely: `file.uri` from expo-file-system v19 `File` returns a URI that `expo-sharing` v14 can't handle (wrong format, missing `file://` prefix, or incompatible path)
+- Try: construct URI manually, or copy file via `expo-file-system` to a known-good temp path, or try `file.base64()` + data URI approach, or fall back to `react-native-share` library
+
 ## Next session starts with
 
 **Feature 22 — AI Proxy + Scan Quota** (build-plan item 21)
@@ -52,4 +71,4 @@ Last updated: 2026-07-15
 
 ## Open questions
 
-- None
+- Why does `Sharing.shareAsync` hang with `file.uri` from `expo-file-system` v19 `File` but work with URIs from `expo-print`?
