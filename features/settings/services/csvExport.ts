@@ -84,6 +84,11 @@ export async function writeCsvFile(csvString: string): Promise<{ uri: string; fi
   const filename = getCsvFilename();
   const file = new File(Paths.cache, filename);
   file.write(csvString);
+
+  if (!file.exists) {
+    throw new Error("CSV file was not created on disk.");
+  }
+
   return { uri: file.uri, filename };
 }
 
