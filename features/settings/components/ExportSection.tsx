@@ -53,7 +53,7 @@ export function ExportSection() {
           return;
         }
         const csv = generateCsv(readings);
-        const uri = writeCsvFile(csv);
+        const { uri } = await writeCsvFile(csv);
         await shareCsvFile(uri);
       } catch (err: any) {
         Alert.alert("Export failed", err?.message ?? "Something went wrong.");

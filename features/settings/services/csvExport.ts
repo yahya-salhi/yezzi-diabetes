@@ -80,14 +80,18 @@ function getCsvFilename(): string {
   return `yezzi-readings-${date}.csv`;
 }
 
-export function writeCsvFile(csvString: string): string {
+export async function writeCsvFile(csvString: string): Promise<{ uri: string; filename: string }> {
   const filename = getCsvFilename();
   const file = new File(Paths.document, filename);
   file.write(csvString);
-  return file.uri;
+  return { uri: file.uri, filename };
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
+  const isAvailable = await Sharing.isAvailableAsync();
+  if (!isAvailable) {
+    throw new Error("Sharing is not available on this device.");
+  }
   await Sharing.shareAsync(uri, {
     mimeType: "text/csv",
     dialogTitle: "Export glucose readings",
