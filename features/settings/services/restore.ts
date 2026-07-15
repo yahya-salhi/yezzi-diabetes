@@ -19,20 +19,26 @@ export async function pickBackupFile(): Promise<BackupData | null> {
 
   if (result.canceled || !result.assets?.[0]) return null;
 
-  const content = await fetch(result.assets[0].uri);
-  const text = await content.text();
-  return JSON.parse(text) as BackupData;
+  try {
+    const content = await fetch(result.assets[0].uri);
+    const text = await content.text();
+    return JSON.parse(text) as BackupData;
+  } catch {
+    return null;
+  }
 }
 
-export function validateBackup(backup: any): string | null {
+export function validateBackup(backup: unknown): string | null {
   if (!backup || typeof backup !== "object") return "Invalid backup file";
-  if (typeof backup.version !== "number") return "Missing backup version";
-  if (backup.version > BACKUP_VERSION) return "Backup version not supported by this app version";
-  if (!backup.tables || typeof backup.tables !== "object")
+  const b = backup as Record<string, unknown>;
+  if (typeof b.version !== "number") return "Missing backup version";
+  if (b.version > BACKUP_VERSION) return "Backup version not supported by this app version";
+  if (!b.tables || typeof b.tables !== "object")
     return "Missing backup tables";
 
+  const tables = b.tables as Record<string, unknown>;
   for (const table of EXPECTED_TABLES) {
-    if (!Array.isArray(backup.tables[table]))
+    if (!Array.isArray(tables[table]))
       return `Missing table: ${table}`;
   }
 
@@ -48,9 +54,10 @@ export async function applyBackup(
 
   await adapter.runAsync("BEGIN TRANSACTION");
   try {
-    for (const table of EXPECTED_TABLES) {
-      await adapter.runAsync(`DELETE FROM ${table}`);
-    }
+    await adapter.runAsync("DELETE FROM glucose_readings");
+    await adapter.runAsync("DELETE FROM food_log");
+    await adapter.runAsync("DELETE FROM user_preferences");
+    await adapter.runAsync("DELETE FROM reminder_preferences");
 
     for (const row of tables.glucose_readings) {
       await adapter.runAsync(
