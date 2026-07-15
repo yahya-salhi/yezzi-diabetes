@@ -104,8 +104,6 @@ export async function shareCsvFile(uri: string): Promise<void> {
   }
 
   const shared = Sharing.shareAsync(uri, {
-    mimeType: "text/csv",
-    UTI: "public.comma-separated-values-text",
     dialogTitle: "Export glucose readings",
   });
 
