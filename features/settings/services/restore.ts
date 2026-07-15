@@ -2,6 +2,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 import type { BackupData } from "./backup";
+import { BACKUP_VERSION } from "./backup";
 
 const EXPECTED_TABLES = [
   "glucose_readings",
@@ -26,6 +27,7 @@ export async function pickBackupFile(): Promise<BackupData | null> {
 export function validateBackup(backup: any): string | null {
   if (!backup || typeof backup !== "object") return "Invalid backup file";
   if (typeof backup.version !== "number") return "Missing backup version";
+  if (backup.version > BACKUP_VERSION) return "Backup version not supported by this app version";
   if (!backup.tables || typeof backup.tables !== "object")
     return "Missing backup tables";
 
@@ -127,7 +129,11 @@ export async function applyBackup(
 
     await adapter.runAsync("COMMIT");
   } catch (err) {
-    await adapter.runAsync("ROLLBACK");
+    try {
+      await adapter.runAsync("ROLLBACK");
+    } catch {
+      // rollback failed — original error is more informative
+    }
     throw err;
   }
 }

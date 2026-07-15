@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { getDbAdapter } from "@/db/instance";
+import { needsBackup } from "@/features/settings/services/backup";
 import { colors, spacing } from "@/theme/tokens";
 
 type Props = {
@@ -17,21 +17,8 @@ export function BackupReminderCard({ onBackupMade }: Props) {
 
       const check = async () => {
         try {
-          const db = getDbAdapter();
-          const prefs = await db.getFirstAsync<{ last_backup_at: string | null }>(
-            "SELECT last_backup_at FROM user_preferences WHERE id = 'default'",
-          );
-
-          if (prefs?.last_backup_at) {
-            if (!cancelled) setVisible(false);
-            return;
-          }
-
-          const row = await db.getFirstAsync<{ count: number }>(
-            `SELECT COUNT(DISTINCT date) as count FROM glucose_readings`,
-          );
-
-          if (!cancelled) setVisible((row?.count ?? 0) >= 30);
+          const show = await needsBackup();
+          if (!cancelled) setVisible(show);
         } catch {
           if (!cancelled) setVisible(false);
         }

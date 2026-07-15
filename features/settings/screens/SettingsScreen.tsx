@@ -6,7 +6,7 @@ import { ChevronRightIcon } from "@/components/ui/Icons";
 import { useReminderSettings } from "@/features/reminders/hooks/useReminderSettings";
 import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
 import { BackupReminderCard } from "@/features/settings/components/BackupReminderCard";
-import { createBackup, saveBackupFile, updateLastBackupTimestamp } from "@/features/settings/services/backup";
+import { createBackup, saveBackupFile, needsBackup } from "@/features/settings/services/backup";
 import { pickBackupFile, validateBackup, applyBackup } from "@/features/settings/services/restore";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
@@ -84,7 +84,6 @@ export function SettingsScreen() {
     try {
       const backup = await createBackup();
       await saveBackupFile(backup);
-      await updateLastBackupTimestamp();
     } catch (err: any) {
       Alert.alert("Backup failed", err?.message ?? "Something went wrong.");
     } finally {

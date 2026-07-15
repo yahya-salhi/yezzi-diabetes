@@ -3,7 +3,7 @@ import * as Sharing from "expo-sharing";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 
-const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 1;
 
 type GlucoseReading = {
   id: string;
@@ -101,6 +101,7 @@ export async function saveBackupFile(backup: BackupData): Promise<void> {
   const filename = getBackupFilename();
   const file = new File(Paths.document, filename);
   file.write(JSON.stringify(backup, null, 2));
+  await updateLastBackupTimestamp();
 
   await Sharing.shareAsync(file.uri, {
     mimeType: "application/json",
@@ -113,4 +114,17 @@ export async function updateLastBackupTimestamp(db?: DatabasePort): Promise<void
   await adapter.runAsync(
     `UPDATE user_preferences SET last_backup_at = datetime('now'), updated_at = datetime('now') WHERE id = 'default'`,
   );
+}
+
+export async function needsBackup(db?: DatabasePort): Promise<boolean> {
+  const adapter = db ?? getDbAdapter();
+  const prefs = await adapter.getFirstAsync<{ last_backup_at: string | null }>(
+    "SELECT last_backup_at FROM user_preferences WHERE id = 'default'",
+  );
+  if (prefs?.last_backup_at) return false;
+
+  const row = await adapter.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(DISTINCT date) as count FROM glucose_readings",
+  );
+  return (row?.count ?? 0) >= 30;
 }
