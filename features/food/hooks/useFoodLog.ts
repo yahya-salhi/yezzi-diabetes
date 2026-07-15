@@ -55,7 +55,7 @@ export function useFoodLog(): UseFoodLogResult {
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [foodLogRepo]);
 
   const getTodaysMeals = useCallback(async (): Promise<FoodLog[]> => {
     try {
@@ -63,7 +63,7 @@ export function useFoodLog(): UseFoodLogResult {
     } catch {
       return [];
     }
-  }, []);
+  }, [foodLogRepo]);
 
   return { saving, error, saveMeal, getTodaysMeals };
 }

@@ -1,54 +1,45 @@
-# Memory — Phase 3: Reading Reminders
+# Memory — Phase 3: Logging Streak
 
-Last updated: 2026-07-10
+Last updated: 2026-07-15
 
 ## What was built
 
-### Feature 18 — Reading Reminders
-- **Installed deps**: `expo-notifications` + `@react-native-community/datetimepicker`, added both to `app.json` plugins
-- **Added `reminder_preferences` table to `db/migrations.ts`** — 6 rows (fasting, pre_meal, post_meal, bedtime, other, weekly_summary), each with enabled INTEGER, hour, minute
-- **Created `features/reminders/types.ts`** — `ReminderType` (5 reading types + weekly_summary), `ReminderPreference`
-- **Created `features/reminders/services/reminderStorage.ts`** — `createSqliteReminderStorage` with `getAll()` (auto-seeds defaults) and `save()`; includes `createFakeReminderStorage()` for testing
-- **Created `features/reminders/services/notificationScheduler.ts`** — `scheduleAll()` cancels existing + schedules daily repeating triggers; `createSkipHandler()` returns the notification handler that suppresses per-type reminders when that reading is already logged today, and restricts weekly summary to Monday only
-- **Created `features/reminders/services/weeklySummary.ts`** — `getDaysInRange()` queries readings grouped by date, counts days where every reading was in range per IDF thresholds
-- **Created `features/reminders/hooks/useReminderSettings.ts`** — standard `{data, loading, error, save, refresh}` pattern, auto-reschedules notifications on save
-- **Created `features/reminders/hooks/useNotificationPermissions.ts`** — wraps `getPermissionsAsync`/`requestPermissionsAsync`
-- **Created `features/reminders/components/NotificationPermissionOverlay.tsx`** — full-screen permission explainer (icon circle + title + message + Grant Access button + Not now link), follows CameraView permission pattern
-- **Updated `App.tsx`** — `NotificationInit` component inside `RepoProvider` sets up Android notification channel, registers notification handler via `createSkipHandler()`, loads prefs and schedules all on mount
-- **Updated `features/onboarding/screens/OnboardingScreen.tsx`** — Step 2 soft-ask: "Want a nudge for your morning reading?" with "Yes, remind me at 07:00" / "No, skip"; checks notification permission before saving; shows overlay if not granted
-- **Updated `features/settings/screens/SettingsScreen.tsx`** — REMINDERS section with per-type Switch + tappable native time picker (DateTimePicker), weekly summary toggle; permission overlay shown on first enable
-- **Updated `ui-registry.md`** — imprinted `NotificationPermissionOverlay` entry
+### Feature 19 — Logging Streak
+- **Created `features/glucose/services/streaks.ts`** — `getLoggingStreak()` counts consecutive days with ≥1 reading (sorts unique dates descending, walks back from today); `getMilestones()` returns 7/30/90-day badges with `reached` flag
+- **Created `features/glucose/hooks/useLoggingStreak.ts`** — loads 200 recent readings from repo, computes streak + milestones; standard `{streak, milestones, loading}` pattern
+- **Created `features/glucose/components/StreakBadge.tsx`** — 64px dashed arc outer (`colors.border`), 48px accent-light inner circle with FlameIcon + streak count, 3 milestone pills (7/30/90); reached milestones get accentLight bg + accent text
+- **Updated `features/glucose/screens/DashboardScreen.tsx`** — added StreakBadge between alerts and today's readings list; imported `useLoggingStreak` + `StreakBadge`
+- **Updated `context/ui-registry.md`** — imprinted StreakBadge entry
+- **Updated `context/progress-tracker.md`** — marked Feature 18 (Reading Reminders) and Feature 19 (Logging Streak) complete; updated "Last completed" and "Next" fields
 
 ## Decisions made
 
-- **Skip-if-logged**: checked at notification fire time via `setNotificationHandler`, not at schedule time. Allows repeating daily triggers to work regardless of app state — the handler dynamically suppresses when a reading is already logged that calendar day
-- **Weekly summary fires daily but only shows Monday**: repeating daily trigger at 09:00, handler suppresses on non-Monday. Avoids stale pre-calculated content and reschedule logic
-- **Notification permission overlay**: follows CameraView permission pattern (same background, button, skip link tokens) with added icon circle. Full-width grant button (vs CameraView's centered) for mobile convention
-- **All 5 reading types + weekly_summary get reminders**, not just the 3 listed in the spec (fasting/post-meal/bedtime)
+- **Streak counts consecutive calendar days from today backwards**, not rolling 24h windows. If latest reading is yesterday, streak = 0. Clearer mental model.
+- **StreakBadge sits between alerts and readings list** on Dashboard — visible without scrolling past hero card, but doesn't compete with the hero reading.
+- **Milestone pills are purely visual** — no actions, no animation. Calm presentation per design bible.
+- **Loads 200 readings for streak calculation** — enough for 6+ months of data without performance concern. Streak logic only needs unique dates.
 
 ## Problems solved
 
-- **Empty reminders section** — `useReminderSettings` hook defined `refresh` but never called it on mount. Added `useEffect` to call `refresh()` on initial render
-- **Type mismatch with expo-notifications** — trigger type requires `SchedulableTriggerInputTypes.DAILY` enum, not string `'daily'`. `NotificationBehavior` requires `shouldShowBanner`/`shouldShowList` instead of deprecated `shouldShowAlert`
+- None this session — implementation was straightforward.
 
 ## Current state
 
-- **Phase 3 — Feature 18 (Reading Reminders) complete**
-- All 6 reminder preferences stored in SQLite with auto-seeded defaults
-- Onboarding shows soft-ask step for fasting reminder (07:00 default)
-- Settings has full REMINDERS section with per-type toggles + time pickers
-- Permission overlay shown on first enable (explains purpose before OS dialog)
-- Weekly summary fires daily at configured time, only shows on Monday
-- Per-type reminders auto-suppressed when that reading type is already logged today
+- **Phase 3 — Features 15–19 complete** (Onboarding, AI Photo, Food DB, Reading Reminders, Logging Streak)
+- Dashboard shows streak badge with flame icon, count, and 7/30/90 milestone pills
+- Streak auto-suppresses at 0 when no reading logged today (latest date > today → streak = 0)
 - Zero TypeScript errors
+- progress-tracker.md: Feature 18 = Reading Reminders, Feature 19 = Logging Streak (build-plan has offset +1)
 
 ## Next session starts with
 
-**Phase 3 — Feature 19: Logging Streak** (build-plan line 331):
-- Dashboard streak counter — consecutive days with ≥1 reading, milestones at 7/30/90 days
-- `features/glucose/services/streaks.ts` — `getLoggingStreak()`, `getMilestones()`
-- Calm presentation per design bible — no confetti, no guilt copy
+**Phase 3 — Feature 20: Backup & Restore** (build-plan line 344):
+- Settings → "Back up my data" and "Restore from backup"
+- Gentle reminder card after 30 days of data with no backup ever made
+- Serialize all tables + preferences to one versioned JSON file → system share sheet (expo-sharing)
+- Restore validates schema version before import
+- Verification: backup → fresh install → restore round-trip yields identical data
 
 ## Open questions
 
-- progress-tracker.md numbering offset remains (-1 vs build-plan). Feature 18 is #17 in progress-tracker. Should reconcile eventually.
+- progress-tracker.md numbering offset remains (-1 vs build-plan). Feature 19 is #18 in progress-tracker. Should reconcile eventually.
