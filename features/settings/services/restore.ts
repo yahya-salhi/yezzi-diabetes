@@ -134,6 +134,46 @@ export function validateBackup(backup: unknown): string | null {
   return null;
 }
 
+function escapeSql(value: unknown): string {
+  if (value === null || value === undefined) return "NULL";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return `'${value.replace(/'/g, "''")}'`;
+  return "NULL";
+}
+
+function buildBatchInsert(
+  table: string,
+  columns: string[],
+  rows: Record<string, unknown>[],
+): string {
+  if (rows.length === 0) return "";
+  const values = rows.map(
+    (row) => `(${columns.map((col) => escapeSql(row[col])).join(", ")})`,
+  );
+  return `INSERT INTO ${table} (${columns.join(", ")}) VALUES ${values.join(", ")}`;
+}
+
+const TABLE_COLUMNS: Record<string, string[]> = {
+  glucose_readings: [
+    "id", "value", "unit", "type", "date", "time",
+    "food_log_id", "workout_session_id", "notes", "created_at",
+  ],
+  food_log: [
+    "id", "meal_type", "date", "time", "photo_uri", "food_name",
+    "carbs_g", "protein_g", "fat_g", "calories", "estimated_impact",
+    "notes", "created_at",
+  ],
+  user_preferences: [
+    "id", "unit", "fasting_target_low", "fasting_target_high",
+    "postmeal_target_low", "postmeal_target_high", "last_backup_at",
+    "created_at", "updated_at",
+  ],
+  reminder_preferences: [
+    "id", "reminder_type", "enabled", "hour", "minute",
+    "created_at", "updated_at",
+  ],
+};
+
 export async function applyBackup(
   backup: BackupData,
   db?: DatabasePort,
@@ -148,79 +188,11 @@ export async function applyBackup(
     await adapter.runAsync("DELETE FROM user_preferences");
     await adapter.runAsync("DELETE FROM reminder_preferences");
 
-    for (const row of tables.glucose_readings) {
-      await adapter.runAsync(
-        `INSERT INTO glucose_readings (id, value, unit, type, date, time, food_log_id, workout_session_id, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          row.id,
-          row.value,
-          row.unit,
-          row.type,
-          row.date,
-          row.time,
-          row.food_log_id ?? null,
-          row.workout_session_id ?? null,
-          row.notes ?? null,
-          row.created_at,
-        ],
-      );
-    }
-
-    for (const row of tables.food_log) {
-      await adapter.runAsync(
-        `INSERT INTO food_log (id, meal_type, date, time, photo_uri, food_name, carbs_g, protein_g, fat_g, calories, estimated_impact, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          row.id,
-          row.meal_type,
-          row.date,
-          row.time,
-          row.photo_uri ?? null,
-          row.food_name,
-          row.carbs_g,
-          row.protein_g ?? null,
-          row.fat_g ?? null,
-          row.calories,
-          row.estimated_impact,
-          row.notes ?? null,
-          row.created_at,
-        ],
-      );
-    }
-
-    for (const row of tables.user_preferences) {
-      await adapter.runAsync(
-        `INSERT INTO user_preferences (id, unit, fasting_target_low, fasting_target_high, postmeal_target_low, postmeal_target_high, last_backup_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          row.id,
-          row.unit,
-          row.fasting_target_low,
-          row.fasting_target_high,
-          row.postmeal_target_low,
-          row.postmeal_target_high,
-          row.last_backup_at ?? null,
-          row.created_at,
-          row.updated_at,
-        ],
-      );
-    }
-
-    for (const row of tables.reminder_preferences) {
-      await adapter.runAsync(
-        `INSERT INTO reminder_preferences (id, reminder_type, enabled, hour, minute, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          row.id,
-          row.reminder_type,
-          row.enabled,
-          row.hour ?? null,
-          row.minute ?? null,
-          row.created_at,
-          row.updated_at,
-        ],
-      );
+    for (const table of EXPECTED_TABLES) {
+      const rows = tables[table];
+      if (rows.length === 0) continue;
+      const sql = buildBatchInsert(table, TABLE_COLUMNS[table], rows);
+      await adapter.execAsync(sql);
     }
 
     await adapter.runAsync("COMMIT");
