@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 2 — Food Tracking
-**Last completed:** 16 Meal Insights Dashboard
-**Next:** 17 Reading Reminders (Phase 3)
+**Phase:** Phase 3 — Store Readiness & v1 Launch
+**Last completed:** 18 Logging Streak
+**Next:** 19 Backup & Restore (Phase 3)
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -45,8 +45,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 3 — Store Readiness & v1 Launch
 
 - [X] Spec: Store Readiness & Growth Design Doc
-- [ ] 17 Reading Reminders
-- [ ] 18 Logging Streak
+- [X] 17 Reading Reminders
+- [X] 18 Logging Streak
 - [ ] 19 Backup & Restore
 - [ ] 20 CSV Export + PDF Doctor Report
 - [ ] 21 AI Proxy + Scan Quota
