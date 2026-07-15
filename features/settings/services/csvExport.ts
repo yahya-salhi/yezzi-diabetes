@@ -89,6 +89,11 @@ export async function writeCsvFile(csvString: string): Promise<{ uri: string; fi
     throw new Error("CSV file was not created on disk.");
   }
 
+  const written = await file.text();
+  if (written.length !== csvString.length) {
+    throw new Error(`CSV file content mismatch (expected ${csvString.length} bytes, got ${written.length}).`);
+  }
+
   return { uri: file.uri, filename };
 }
 
