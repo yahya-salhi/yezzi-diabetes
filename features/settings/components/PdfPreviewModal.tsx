@@ -43,7 +43,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
     return (
       <View style={styles.statRow}>
         <Text style={styles.statLabel}>{label}</Text>
-        <Text style={[styles.statValue, { color: colors.textPrimary }]}>{round(value)} mg/dL</Text>
+        <Text style={[styles.statValue, { color: colors.textPrimary }]}>{round(value)} {prefs.unit}</Text>
         <Text style={styles.statCount}>{count} readings</Text>
       </View>
     );
@@ -88,7 +88,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                 <Text style={[styles.tableHeaderText, { flex: 2 }]}>Post-Meal</Text>
               </View>
               {trendData.slice(0, 14).map((row, idx) => (
-                <View key={row.date} style={[styles.tableRow, idx < trendData.length - 1 && styles.tableRowBorder]}>
+                <View key={row.date} style={[styles.tableRow, idx < Math.min(trendData.length, 14) - 1 && styles.tableRowBorder]}>
                   <Text style={[styles.tableCell, { flex: 1.2 }]}>{formatDate(row.date)}</Text>
                   <View style={{ flex: 2 }}>
                     {row.fasting !== null ? (

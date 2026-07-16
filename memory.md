@@ -6,7 +6,7 @@ Last updated: 2026-07-16
 
 ### Feature 21 — CSV Export + PDF Doctor Report
 
-- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` uses `expo-print.printToFileAsync()` to write CSV as `<pre>` HTML to a temp file; `shareCsvFile()` shares via expo-sharing
+- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` uses `expo-file-system/legacy` `writeAsStringAsync` to write CSV to document directory; `shareCsvFile()` shares via expo-sharing with mimeType text/csv
 - **Created `features/settings/services/pdfReport.ts`** — `generateReportHtml()` builds a clinical HTML document with averages section (fasting/post-meal/overall avg + count), in-range summary, and trend table with color-coded horizontal bars; `generatePdfFile()` calls `expo-print.printToFileAsync()`; `sharePdfFile()` shares via expo-sharing with application/pdf mime type
 - **Created `features/settings/components/ExportRangePicker.tsx`** — centered card modal with 4 options (Last 7/30/90 Days, All Time), matches MealLinkPicker overlay pattern
 - **Created `features/settings/components/PdfPreviewModal.tsx`** — full-screen slide modal with header, scrollable preview of averages + trend table with color-coded in-range bars, full-width share button at bottom
@@ -37,7 +37,7 @@ Last updated: 2026-07-16
 - **TS5103 ignoreDeprecations** — reverted `"6.0"` to `"5.0"`; TS 5.9.3 only accepts `"5.0"` (the deprecation warning about baseUrl is for TS 7.0, not an error)
 - **View/Text style conflict in PdfPreviewModal** — `tableCell` style with font properties cannot be applied to `<View>`; extracted `viewCell` for container usage
 - **null preferences handling** — `getPreferences()` can return null; provided IDF default values as fallback in ExportSection
-- **CSV export hang on iOS** — `Sharing.shareAsync` never resolved with `file.uri` from expo-file-system v19 `File` API. Root cause: URI format incompatibility between expo-file-system v19 and expo-sharing. Fix: replaced `expo-file-system` with `expo-print.printToFileAsync()` in `writeCsvFile()` — same approach that makes PDF export work. Removed 8s timeout hack. Zero TS errors after fix.
+- **CSV export hang on iOS** — `Sharing.shareAsync` never resolved with `file.uri` from expo-file-system v19 `File` API. Root cause: URI format incompatibility between expo-file-system v19 and expo-sharing. Fix: replaced new `File` API with `expo-file-system/legacy` `writeAsStringAsync` which returns proper `file://` URIs. Added mimeType and UTI to share call. Removed 8s timeout hack.
 
 ## Current state
 
