@@ -3,6 +3,18 @@ import type { UserPreferences } from "@/features/onboarding/services/preferences
 
 export type { UserPreferences as PdfPreferences };
 
+export type GlucoseStatus = "low" | "normal" | "high";
+
+export function classifyGlucoseStatus(
+  value: number,
+  low: number,
+  high: number,
+): GlucoseStatus {
+  if (value < low) return "low";
+  if (value > high) return "high";
+  return "normal";
+}
+
 export function round(value: number): string {
   return Math.round(value).toString();
 }

@@ -8,14 +8,20 @@ import {
   barWidth,
   computeAverages,
   buildTrendRows,
+  classifyGlucoseStatus,
   formatDateLong as formatDate,
   type PdfPreferences,
+  type GlucoseStatus,
 } from "./reportUtils";
 
-function inRangeColor(value: number, low: number, high: number): string {
-  if (value < low) return "#B8860B";
-  if (value > high) return "#C5304B";
-  return "#1B8A5A";
+const CSS_COLORS: Record<GlucoseStatus, string> = {
+  low: "#B8860B",
+  normal: "#1B8A5A",
+  high: "#C5304B",
+};
+
+function statusColor(value: number, low: number, high: number): string {
+  return CSS_COLORS[classifyGlucoseStatus(value, low, high)];
 }
 
 function computeInRange(
@@ -59,7 +65,7 @@ function generatePdfHtml(
 
   const avgRow = (label: string, value: number | null, count: number, isFasting: boolean) => {
     if (value === null) return "";
-    const color = inRangeColor(
+    const color = statusColor(
       value,
       isFasting ? prefs.fasting_target_low : prefs.postmeal_target_low,
       isFasting ? prefs.fasting_target_high : prefs.postmeal_target_high,
@@ -87,14 +93,14 @@ function generatePdfHtml(
     .map((row) => {
       const fastingBar = row.fasting !== null
         ? `<div style="display:flex;align-items:center;gap:6px;">
-             <div style="width:${barWidth(row.fasting, maxValue)}%;height:8px;background:${inRangeColor(row.fasting, prefs.fasting_target_low, prefs.fasting_target_high)};border-radius:4px;"></div>
+             <div style="width:${barWidth(row.fasting, maxValue)}%;height:8px;background:${statusColor(row.fasting, prefs.fasting_target_low, prefs.fasting_target_high)};border-radius:4px;"></div>
              <span style="font-size:12px;color:#1A1D1C;font-weight:500;">${round(row.fasting)}</span>
            </div>`
         : '<span style="font-size:12px;color:#A1A4A3;">—</span>';
 
       const postMealBar = row.postMeal !== null
         ? `<div style="display:flex;align-items:center;gap:6px;">
-             <div style="width:${barWidth(row.postMeal, maxValue)}%;height:8px;background:${inRangeColor(row.postMeal, prefs.postmeal_target_low, prefs.postmeal_target_high)};border-radius:4px;"></div>
+             <div style="width:${barWidth(row.postMeal, maxValue)}%;height:8px;background:${statusColor(row.postMeal, prefs.postmeal_target_low, prefs.postmeal_target_high)};border-radius:4px;"></div>
              <span style="font-size:12px;color:#1A1D1C;font-weight:500;">${round(row.postMeal)}</span>
            </div>`
         : '<span style="font-size:12px;color:#A1A4A3;">—</span>';

@@ -6,9 +6,21 @@ import {
   barWidth,
   computeAverages,
   buildTrendRows,
+  classifyGlucoseStatus,
   formatDateShort as formatDate,
+  type GlucoseStatus,
 } from "@/features/settings/services/reportUtils";
 import type { UserPreferences } from "@/features/onboarding/services/preferences";
+
+const RN_COLORS: Record<GlucoseStatus, string> = {
+  low: colors.warning,
+  normal: colors.success,
+  high: colors.error,
+};
+
+function statusColor(value: number, low: number, high: number): string {
+  return RN_COLORS[classifyGlucoseStatus(value, low, high)];
+}
 
 type Props = {
   visible: boolean;
@@ -19,12 +31,6 @@ type Props = {
   loading: boolean;
   prefs: UserPreferences;
 };
-
-function inRangeColor(value: number, low: number, high: number): string {
-  if (value < low) return colors.warning;
-  if (value > high) return colors.error;
-  return colors.success;
-}
 
 export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClose, loading, prefs }: Props) {
   const stats = computeAverages(readings);
@@ -98,7 +104,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                             styles.bar,
                             {
                               width: `${barWidth(row.fasting, maxValue)}%`,
-                              backgroundColor: inRangeColor(row.fasting, prefs.fasting_target_low, prefs.fasting_target_high),
+                              backgroundColor: statusColor(row.fasting, prefs.fasting_target_low, prefs.fasting_target_high),
                             },
                           ]}
                         />
@@ -116,7 +122,7 @@ export function PdfPreviewModal({ visible, readings, rangeLabel, onShare, onClos
                             styles.bar,
                             {
                               width: `${barWidth(row.postMeal, maxValue)}%`,
-                              backgroundColor: inRangeColor(row.postMeal, prefs.postmeal_target_low, prefs.postmeal_target_high),
+                              backgroundColor: statusColor(row.postMeal, prefs.postmeal_target_low, prefs.postmeal_target_high),
                             },
                           ]}
                         />
