@@ -1,5 +1,5 @@
 import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
+import { dispatchDocument } from "./documentDispatcher";
 import type { GlucoseReading } from "@/features/glucose/types";
 import type { ExportRange } from "./csvExport";
 import { RANGE_LABELS } from "./csvExport";
@@ -174,7 +174,7 @@ export async function generatePdfFile(html: string): Promise<string> {
 }
 
 export async function sharePdfFile(uri: string): Promise<void> {
-  await Sharing.shareAsync(uri, {
+  await dispatchDocument(uri, {
     mimeType: "application/pdf",
     dialogTitle: "Share glucose report",
   });

@@ -1,5 +1,5 @@
 import { Paths, File } from "expo-file-system";
-import * as Sharing from "expo-sharing";
+import { dispatchDocument } from "./documentDispatcher";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 import type { GlucoseReading } from "@/features/glucose/types";
@@ -78,7 +78,7 @@ export function writeBackup(backup: BackupData): string {
 }
 
 export async function shareBackup(uri: string): Promise<void> {
-  await Sharing.shareAsync(uri, {
+  await dispatchDocument(uri, {
     mimeType: "application/json",
     dialogTitle: "Back up your YeZZi data",
   });

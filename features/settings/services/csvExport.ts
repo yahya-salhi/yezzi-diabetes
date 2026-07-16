@@ -1,5 +1,5 @@
 import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
+import { dispatchDocument } from "./documentDispatcher";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 import type { GlucoseReading, ReadingType } from "@/features/glucose/types";
@@ -86,12 +86,7 @@ export async function writeCsvFile(csvString: string): Promise<string> {
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
-  const isAvailable = await Sharing.isAvailableAsync();
-  if (!isAvailable) {
-    throw new Error("Sharing is not available on this device.");
-  }
-
-  await Sharing.shareAsync(uri, {
+  await dispatchDocument(uri, {
     mimeType: "text/csv",
     UTI: "public.comma-separated-values-text",
     dialogTitle: "Export glucose readings",
