@@ -80,7 +80,7 @@ export async function writeCsvFile(csvString: string): Promise<string> {
   const filename = `yezzi-readings-${date}.csv`;
   const file = new File(Paths.document, filename);
   file.write(csvString);
-  return file.uri;
+  return `${Paths.document.uri}${filename}`;
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
