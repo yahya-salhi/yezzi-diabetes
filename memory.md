@@ -1,11 +1,12 @@
 # Memory — Feature 21: CSV Export + PDF Doctor Report
 
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 
 ## What was built
 
 ### Feature 21 — CSV Export + PDF Doctor Report
-- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` writes to `Paths.document` via expo-file-system v19 API; `shareCsvFile()` shares via expo-sharing with text/csv mime type
+
+- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` uses `expo-print.printToFileAsync()` to write CSV as `<pre>` HTML to a temp file; `shareCsvFile()` shares via expo-sharing
 - **Created `features/settings/services/pdfReport.ts`** — `generateReportHtml()` builds a clinical HTML document with averages section (fasting/post-meal/overall avg + count), in-range summary, and trend table with color-coded horizontal bars; `generatePdfFile()` calls `expo-print.printToFileAsync()`; `sharePdfFile()` shares via expo-sharing with application/pdf mime type
 - **Created `features/settings/components/ExportRangePicker.tsx`** — centered card modal with 4 options (Last 7/30/90 Days, All Time), matches MealLinkPicker overlay pattern
 - **Created `features/settings/components/PdfPreviewModal.tsx`** — full-screen slide modal with header, scrollable preview of averages + trend table with color-coded in-range bars, full-width share button at bottom
@@ -14,9 +15,11 @@ Last updated: 2026-07-15
 - **Added `expo-print` dependency** — via `npx expo install`
 
 ### Registry updates
+
 - **Updated `context/ui-registry.md`** — imprinted ExportSection, ExportRangePicker, PdfPreviewModal
 
 ### Progress tracking
+
 - **Updated `context/progress-tracker.md`** — marked Feature 21 complete, next is Feature 22 (AI Proxy + Scan Quota)
 
 ## Decisions made
@@ -34,41 +37,23 @@ Last updated: 2026-07-15
 - **TS5103 ignoreDeprecations** — reverted `"6.0"` to `"5.0"`; TS 5.9.3 only accepts `"5.0"` (the deprecation warning about baseUrl is for TS 7.0, not an error)
 - **View/Text style conflict in PdfPreviewModal** — `tableCell` style with font properties cannot be applied to `<View>`; extracted `viewCell` for container usage
 - **null preferences handling** — `getPreferences()` can return null; provided IDF default values as fallback in ExportSection
+- **CSV export hang on iOS** — `Sharing.shareAsync` never resolved with `file.uri` from expo-file-system v19 `File` API. Root cause: URI format incompatibility between expo-file-system v19 and expo-sharing. Fix: replaced `expo-file-system` with `expo-print.printToFileAsync()` in `writeCsvFile()` — same approach that makes PDF export work. Removed 8s timeout hack. Zero TS errors after fix.
 
 ## Current state
 
 - **Phase 3 — Features 1–21 complete** (Foundation through CSV Export + PDF Doctor Report)
 - Branch: `feat/csv-export-pdf-report`
 - Zero TypeScript errors, lint passes
+- CSV export bug resolved — uses expo-print for file writing
 - Memory updated to reflect this session
-
-## Active bugs
-
-### CSV export hangs on iOS — `Sharing.shareAsync` never resolves
-
-**Symptom:** "Export CSV" shows loading spinner indefinitely. PDF export (which uses the same `shareAsync` with `application/pdf`) works fine. After adding an 8s timeout, user sees "Export failed: Share timed out".
-
-**Root cause:** Still unknown. PDF shares via `Print.printToFileAsync` (expo-print → temp file). CSV shares via `expo-file-system` v19 `File` API (`new File(Paths.cache, filename).write()` → `file.uri`). `shareAsync` hangs when given a URI from the `File` API but works fine with URIs from `Print.printToFileAsync`.
-
-**Attempted fixes (all failed):**
-1. Check `Sharing.isAvailableAsync()` before sharing — returns true
-2. Write to `Paths.cache` instead of `Paths.document` — no change
-3. Verify file exists (`file.exists`) and content matches (`await file.text()`) — passes, file is written correctly
-4. Remove `mimeType: "text/csv"` and `UTI` — let iOS auto-detect from `.csv` extension — no change
-5. Added 8s `Promise.race` timeout as safety net — timeout fires, confirming `shareAsync` hangs
-
-**Next steps:**
-- Root cause likely: `file.uri` from expo-file-system v19 `File` returns a URI that `expo-sharing` v14 can't handle (wrong format, missing `file://` prefix, or incompatible path)
-- Try: construct URI manually, or copy file via `expo-file-system` to a known-good temp path, or try `file.base64()` + data URI approach, or fall back to `react-native-share` library
 
 ## Next session starts with
 
 **Feature 22 — AI Proxy + Scan Quota** (build-plan item 21)
+
 - Cloudflare Workers endpoint for OpenRouter proxy
 - Anonymous device UUID generation
 - Free tier: 10 scans/month
 - Manual entry always available even at 0 quota
 
 ## Open questions
-
-- Why does `Sharing.shareAsync` hang with `file.uri` from `expo-file-system` v19 `File` but work with URIs from `expo-print`?

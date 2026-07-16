@@ -1,4 +1,4 @@
-import { Paths, File } from "expo-file-system";
+import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
@@ -74,27 +74,12 @@ export async function getReadingsForRange(
   }
 }
 
-function getCsvFilename(): string {
-  const d = new Date();
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  return `yezzi-readings-${date}.csv`;
-}
-
-export async function writeCsvFile(csvString: string): Promise<{ uri: string; filename: string }> {
-  const filename = getCsvFilename();
-  const file = new File(Paths.cache, filename);
-  file.write(csvString);
-
-  if (!file.exists) {
-    throw new Error("CSV file was not created on disk.");
-  }
-
-  const written = await file.text();
-  if (written.length !== csvString.length) {
-    throw new Error(`CSV file content mismatch (expected ${csvString.length} bytes, got ${written.length}).`);
-  }
-
-  return { uri: file.uri, filename };
+export async function writeCsvFile(csvString: string): Promise<string> {
+  const result = await Print.printToFileAsync({
+    html: `<html><head><meta charset="utf-8"></head><body><pre style="font-family:monospace;font-size:12px;white-space:pre;">${csvString.replace(/</g, "&lt;")}</pre></body></html>`,
+    base64: false,
+  });
+  return result.uri;
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
@@ -103,13 +88,7 @@ export async function shareCsvFile(uri: string): Promise<void> {
     throw new Error("Sharing is not available on this device.");
   }
 
-  const shared = Sharing.shareAsync(uri, {
+  await Sharing.shareAsync(uri, {
     dialogTitle: "Export glucose readings",
   });
-
-  const timeout = new Promise<void>((_, reject) =>
-    setTimeout(() => reject(new Error("Share timed out")), 8000),
-  );
-
-  await Promise.race([shared, timeout]);
 }
