@@ -6,6 +6,7 @@ import { ChevronRightIcon } from "@/components/ui/Icons";
 import { useReminderSettings } from "@/features/reminders/hooks/useReminderSettings";
 import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
 import { BackupSection } from "@/features/settings/components/BackupSection";
+import { ExportSection } from "@/features/settings/components/ExportSection";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
 
@@ -183,6 +184,11 @@ export function SettingsScreen() {
       )}
 
       <BackupSection />
+
+      <View>
+        <Text style={styles.sectionHeader}>EXPORT</Text>
+        <ExportSection />
+      </View>
 
       <View>
         <Text style={styles.sectionHeader}>DATA</Text>

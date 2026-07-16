@@ -262,5 +262,6 @@ Approved dependencies for this project:
 - `expo-sharing` — System share sheet for backup export
 - `expo-document-picker` — File picker for backup restore
 - `expo-notifications` — Local notifications for reading reminders
+- `expo-print` — PDF generation for doctor reports
 
 Do not install any other packages without updating this list first.

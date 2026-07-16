@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 3 — Store Readiness & v1 Launch
-**Last completed:** 19 Backup & Restore
-**Next:** 20 CSV Export + PDF Doctor Report (Phase 3)
+**Last completed:** 20 CSV Export + PDF Doctor Report
+**Next:** 21 AI Proxy + Scan Quota (Phase 3)
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -48,7 +48,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 17 Reading Reminders
 - [X] 18 Logging Streak
 - [X] 19 Backup & Restore
-- [ ] 20 CSV Export + PDF Doctor Report
+- [X] 20 CSV Export + PDF Doctor Report
 - [ ] 21 AI Proxy + Scan Quota
 - [ ] 22 YeZZi Plus — Subscription + Paywall
 - [ ] 23 Compliance Pack
@@ -94,6 +94,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-08** — Meal-to-Reading Linking: separate `linkToMeal()` on GlucoseReadings (UPDATE, not modifying insert); `useMealLinking` hook orchestrates query + link; matching by time proximity on same day; single-meal shows MealLinkSuggestion dialog, multi-meal shows picker list
 - **2026-07-08** — Impact estimation: actual = closest prior baseline (fasting/pre_meal same day) subtracted from post_meal value; null baselines filtered out; `getTopSpikes()` returns top 3 descending
 - **2026-07-08** — Repository pattern: all data accessors use `getDbAdapter()` as default param + `createFake*()` factories for testability
+- **2026-07-15** — CSV Export + PDF Doctor Report: user picks date range (7/30/90/all) before export; CSV shares directly, PDF shows preview modal first; PDF trend as HTML table with colored bars (not chart); Plus badge on PDF row (gate deferred to paywall); EXPORT section in Settings between Backup and Data
 
 ---
 
