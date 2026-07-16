@@ -1,4 +1,4 @@
-import { Paths, File } from "expo-file-system";
+import * as Print from "expo-print";
 import { dispatchDocument } from "./documentDispatcher";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
@@ -75,18 +75,16 @@ export async function getReadingsForRange(
 }
 
 export async function writeCsvFile(csvString: string): Promise<string> {
-  const d = new Date();
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const filename = `yezzi-readings-${date}.csv`;
-  const file = new File(Paths.document, filename);
-  file.write(csvString);
-  return `${Paths.document.uri}${filename}`;
+  const result = await Print.printToFileAsync({
+    html: `<html><head><meta charset="utf-8"></head><body><pre style="font-family:monospace;font-size:11px;white-space:pre;">${csvString.replace(/</g, "&lt;")}</pre></body></html>`,
+    base64: false,
+  });
+  return result.uri;
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
   await dispatchDocument(uri, {
-    mimeType: "text/csv",
-    UTI: "public.comma-separated-values-text",
+    mimeType: "application/pdf",
     dialogTitle: "Export glucose readings",
   });
 }
