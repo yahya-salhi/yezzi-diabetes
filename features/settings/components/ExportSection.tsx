@@ -24,7 +24,6 @@ type ExportType = "csv" | "pdf";
 
 export function ExportSection() {
   const [rangePickerVisible, setRangePickerVisible] = useState(false);
-  const [pendingExportType, setPendingExportType] = useState<ExportType | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);

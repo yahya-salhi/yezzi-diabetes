@@ -1,4 +1,4 @@
-import * as Print from "expo-print";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
@@ -70,16 +70,19 @@ export async function getReadingsForRange(
     );
   } catch (err) {
     console.error("[csvExport] getReadingsForRange failed", err);
-    return [];
+    throw err;
   }
 }
 
 export async function writeCsvFile(csvString: string): Promise<string> {
-  const result = await Print.printToFileAsync({
-    html: `<html><head><meta charset="utf-8"></head><body><pre style="font-family:monospace;font-size:12px;white-space:pre;">${csvString.replace(/</g, "&lt;")}</pre></body></html>`,
-    base64: false,
-  });
-  return result.uri;
+  const d = new Date();
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const filename = `yezzi-readings-${date}.csv`;
+  const uri = FileSystem.documentDirectory + filename;
+
+  await FileSystem.writeAsStringAsync(uri, csvString);
+
+  return uri;
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
@@ -89,6 +92,8 @@ export async function shareCsvFile(uri: string): Promise<void> {
   }
 
   await Sharing.shareAsync(uri, {
+    mimeType: "text/csv",
+    UTI: "public.comma-separated-values-text",
     dialogTitle: "Export glucose readings",
   });
 }
