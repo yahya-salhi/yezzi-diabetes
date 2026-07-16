@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system/legacy";
+import { Paths, File } from "expo-file-system";
 import { dispatchDocument } from "./documentDispatcher";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
@@ -78,11 +78,9 @@ export async function writeCsvFile(csvString: string): Promise<string> {
   const d = new Date();
   const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const filename = `yezzi-readings-${date}.csv`;
-  const uri = FileSystem.documentDirectory + filename;
-
-  await FileSystem.writeAsStringAsync(uri, csvString);
-
-  return uri;
+  const file = new File(Paths.document, filename);
+  file.write(csvString);
+  return file.uri;
 }
 
 export async function shareCsvFile(uri: string): Promise<void> {
