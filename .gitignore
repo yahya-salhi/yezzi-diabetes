@@ -43,4 +43,7 @@ yarn-error.*
 /ios
 /android
 
+# Cloudflare Workers
+.wrangler/
+
 
