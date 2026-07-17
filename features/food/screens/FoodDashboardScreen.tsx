@@ -13,6 +13,7 @@ import { MealCard } from "@/features/food/components/MealCard";
 import { CameraIcon } from "@/components/ui/Icons";
 import { useInsights } from "@/features/food/hooks/useInsights";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
+import { useQuota } from "@/features/food/hooks/useQuota";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<FoodStackParamList>;
@@ -29,6 +30,7 @@ export function FoodDashboardScreen() {
   const today = format(new Date(), "EEEE, MMM d");
   const { topSpikes } = useInsights();
   const { getTodaysMeals } = useFoodLog();
+  const { quota } = useQuota();
   const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
 
   useFocusEffect(
@@ -49,6 +51,20 @@ export function FoodDashboardScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.screenTitle}>Food</Text>
         <Text style={styles.date}>{today}</Text>
+
+        {quota && (
+          <Text
+            style={[
+              styles.quotaLine,
+              quota.remaining <= 0 && styles.quotaLineExhausted,
+              quota.remaining > 0 && quota.remaining <= 3 && styles.quotaLineWarm,
+            ]}
+          >
+            {quota.remaining <= 0
+              ? "No AI scans left — enter meals manually"
+              : `${quota.remaining} AI scan${quota.remaining === 1 ? "" : "s"} left this month`}
+          </Text>
+        )}
 
         {!hasMeals && (
           <Card>
@@ -153,6 +169,18 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: colors.textMuted,
     marginTop: -spacing.md,
+  },
+  quotaLine: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.textMuted,
+    marginTop: -spacing.sm,
+  },
+  quotaLineWarm: {
+    color: colors.warning,
+  },
+  quotaLineExhausted: {
+    color: colors.error,
   },
   sectionTitle: {
     fontSize: 17,

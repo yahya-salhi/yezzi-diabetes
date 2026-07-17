@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { FoodStackParamList } from "@/navigation/types";
@@ -14,7 +14,7 @@ type ScreenMode = "camera" | "loading" | "review";
 
 export function SnapMealScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<FoodStackParamList>>();
-  const { analyzing, needsKey, analyzePhoto, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
+  const { analyzing, analyzePhoto } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
 
   const [mode, setMode] = useState<ScreenMode>("camera");
@@ -27,7 +27,6 @@ export function SnapMealScreen() {
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
-  const [keyInput, setKeyInput] = useState("");
 
   const handleCapture = async (uri: string) => {
     setPhotoUri(uri);
@@ -66,12 +65,6 @@ export function SnapMealScreen() {
     } catch {
       // saveError is set by the hook
     }
-  };
-
-  const handleProvideKey = async () => {
-    if (!keyInput.trim()) return;
-    await provideApiKey(keyInput.trim());
-    setKeyInput("");
   };
 
   if (mode === "camera") {
@@ -122,35 +115,6 @@ export function SnapMealScreen() {
         saving={saving}
         saveError={saveError}
       />
-
-      {needsKey && (
-        <View style={styles.overlay}>
-          <View style={styles.keyModal}>
-            <Text style={styles.keyTitle}>OpenRouter API Key Required</Text>
-            <Text style={styles.keyMessage}>
-              Enter your OpenRouter API key to analyze meals. Your key is stored securely on your device.
-            </Text>
-            <TextInput
-              style={styles.keyInput}
-              value={keyInput}
-              onChangeText={setKeyInput}
-              placeholder="sk-or-v1-..."
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry
-            />
-            <View style={styles.keyActions}>
-              <TouchableOpacity style={styles.keyButton} onPress={handleProvideKey}>
-                <Text style={styles.keyButtonText}>Save & Continue</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { dismissKeyPrompt(); navigation.goBack(); }}>
-                <Text style={styles.keyCancel}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -203,64 +167,5 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 10,
     backgroundColor: colors.borderLight,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: spacing.xxxl,
-  },
-  keyModal: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: spacing.xxl,
-    width: "100%",
-    gap: spacing.lg,
-  },
-  keyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.textPrimary,
-    textAlign: "center",
-  },
-  keyMessage: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: colors.textSecondary,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  keyInput: {
-    backgroundColor: colors.surfaceSecondary,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.lg,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  keyActions: {
-    gap: spacing.md,
-    alignItems: "center",
-  },
-  keyButton: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.xxl,
-    width: "100%",
-    alignItems: "center",
-  },
-  keyButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FFFFFF",
-  },
-  keyCancel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.textMuted,
   },
 });
