@@ -6,6 +6,7 @@ import { colors, spacing } from "@/theme/tokens";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
+import { useQuota } from "@/features/food/hooks/useQuota";
 import type { MealType } from "@/features/food/types";
 
 type Step = "input" | "loading" | "review";
@@ -13,8 +14,9 @@ type Step = "input" | "loading" | "review";
 export function ManualEntryScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<FoodStackParamList, "ManualEntry">>();
-  const { analyzing, needsKey, analyzeText, provideApiKey, dismissKeyPrompt } = useMealAnalysis();
+  const { analyzing, error: analysisError, analyzeText } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
+  const { quota } = useQuota();
 
   const [step, setStep] = useState<Step>("input");
   const [description, setDescription] = useState("");
@@ -26,10 +28,13 @@ export function ManualEntryScreen() {
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
-  const [keyInput, setKeyInput] = useState("");
+
+  const isUnlimited = quota?.remaining === -1;
+  const quotaRemaining = isUnlimited ? null : (quota?.remaining ?? null);
+  const isQuotaExhausted = quotaRemaining !== null && quotaRemaining <= 0;
 
   const handleAnalyze = async () => {
-    if (!description.trim()) return;
+    if (!description.trim() || isQuotaExhausted) return;
 
     setStep("loading");
     const result = await analyzeText(description.trim());
@@ -45,6 +50,16 @@ export function ManualEntryScreen() {
     } else {
       setStep("input");
     }
+  };
+
+  const handleSkipAI = () => {
+    setFoodName("");
+    setCalories("");
+    setCarbsG("");
+    setProteinG("");
+    setFatG("");
+    setEstimatedImpact(0);
+    setStep("review");
   };
 
   const handleSave = async () => {
@@ -95,18 +110,12 @@ export function ManualEntryScreen() {
         notes={notes}
         onNotesChange={setNotes}
         onSave={handleSave}
-        onCancel={() => navigation.goBack()}
+        onCancel={() => setStep("input")}
         saving={saving}
         saveError={saveError}
       />
     );
   }
-
-  const handleProvideKey = async () => {
-    if (!keyInput.trim()) return;
-    await provideApiKey(keyInput.trim());
-    setKeyInput("");
-  };
 
   return (
     <View style={styles.container}>
@@ -125,43 +134,56 @@ export function ManualEntryScreen() {
           textAlignVertical="top"
           autoFocus
         />
+
+        {quotaRemaining !== null && (
+          <Text style={styles.quotaText}>
+            {isQuotaExhausted
+              ? "No AI scans remaining this month"
+              : `${quotaRemaining} AI scan${quotaRemaining === 1 ? "" : "s"} remaining`}
+          </Text>
+        )}
+
+        {analysisError?.type === "quota_exhausted" && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>
+              You've used all 10 scans this month. Enter manually or try next month.
+            </Text>
+          </View>
+        )}
+
+        {analysisError?.type === "ai_service_error" && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>Analysis failed. Please try again.</Text>
+          </View>
+        )}
+
+        {analysisError?.type === "proxy_unavailable" && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>Service unavailable. Please try again.</Text>
+          </View>
+        )}
+
+        {analysisError?.type === "unknown" && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>{analysisError.message}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
-          style={[styles.analyzeButton, !description.trim() && styles.analyzeButtonDisabled]}
+          style={[
+            styles.analyzeButton,
+            (!description.trim() || isQuotaExhausted) && styles.analyzeButtonDisabled,
+          ]}
           onPress={handleAnalyze}
-          disabled={!description.trim()}
+          disabled={!description.trim() || isQuotaExhausted}
         >
-          <Text style={styles.analyzeButtonText}>Analyze Meal</Text>
+          <Text style={styles.analyzeButtonText}>Analyze with AI</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
+          <Text style={styles.skipButtonText}>Skip AI — enter manually</Text>
         </TouchableOpacity>
       </View>
-
-      {needsKey && (
-        <View style={styles.overlay}>
-          <View style={styles.keyModal}>
-            <Text style={styles.keyTitle}>OpenRouter API Key Required</Text>
-            <Text style={styles.keyMessage}>
-              Enter your OpenRouter API key to analyze meals. Your key is stored securely on your device.
-            </Text>
-            <TextInput
-              style={styles.keyInput}
-              value={keyInput}
-              onChangeText={setKeyInput}
-              placeholder="sk-or-v1-..."
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry
-            />
-            <View style={styles.keyActions}>
-              <TouchableOpacity style={styles.keyButton} onPress={handleProvideKey}>
-                <Text style={styles.keyButtonText}>Save & Continue</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { dismissKeyPrompt(); navigation.goBack(); }}>
-                <Text style={styles.keyCancel}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
     </View>
   );
 }
@@ -211,6 +233,24 @@ const styles = StyleSheet.create({
     minHeight: 140,
     lineHeight: 22,
   },
+  quotaText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.textMuted,
+    textAlign: "center",
+  },
+  errorBanner: {
+    backgroundColor: colors.errorLight,
+    borderRadius: 10,
+    padding: spacing.md,
+  },
+  errorText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.error,
+    textAlign: "center",
+    lineHeight: 20,
+  },
   analyzeButton: {
     backgroundColor: colors.accent,
     borderRadius: 10,
@@ -225,63 +265,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
+  skipButton: {
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: "center",
-    padding: spacing.xxxl,
-  },
-  keyModal: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: spacing.xxl,
-    width: "100%",
-    gap: spacing.lg,
-  },
-  keyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.textPrimary,
-    textAlign: "center",
-  },
-  keyMessage: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: colors.textSecondary,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  keyInput: {
-    backgroundColor: colors.surfaceSecondary,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.lg,
+  },
+  skipButtonText: {
     fontSize: 15,
-    color: colors.textPrimary,
-  },
-  keyActions: {
-    gap: spacing.md,
-    alignItems: "center",
-  },
-  keyButton: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.xxl,
-    width: "100%",
-    alignItems: "center",
-  },
-  keyButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FFFFFF",
-  },
-  keyCancel: {
-    fontSize: 14,
     fontWeight: "500",
-    color: colors.textMuted,
+    color: colors.textSecondary,
   },
 });

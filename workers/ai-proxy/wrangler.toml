@@ -1,0 +1,19 @@
+name = "ai-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-07-10"
+
+# KV namespace for quota enforcement
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "3d3f452d890f427396ec84d64b8a2533"
+
+# Staging environment
+# [env.staging]
+# name = "ai-proxy-staging"
+# [[kv_namespaces]]
+# binding = "QUOTA"
+# id = "<STAGING_QUOTA_NAMESPACE_ID>"
+
+# Secrets (set via wrangler secret put)
+# OPENROUTER_API_KEY — set in Cloudflare dashboard or:
+#   wrangler secret put OPENROUTER_API_KEY

@@ -1,12 +1,14 @@
 import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet } from "react-native";
 import { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Updates from "expo-updates";
 import { colors, spacing } from "@/theme/tokens";
 import { ChevronRightIcon } from "@/components/ui/Icons";
 import { useReminderSettings } from "@/features/reminders/hooks/useReminderSettings";
 import { NotificationPermissionOverlay } from "@/features/reminders/components/NotificationPermissionOverlay";
 import { BackupSection } from "@/features/settings/components/BackupSection";
 import { ExportSection } from "@/features/settings/components/ExportSection";
+import { deleteAllData } from "@/features/settings/services/dataWipe";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
 
@@ -48,6 +50,28 @@ export function SettingsScreen() {
 
   const handlePermissionDismissed = () => {
     setPendingToggle(null);
+  };
+
+  const handleDeleteAll = () => {
+    Alert.alert(
+      "Delete all data?",
+      "This will permanently remove all your readings, meals, reminders, and settings. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAllData();
+              Updates.reloadAsync();
+            } catch (err) {
+              console.error("[settings] deleteAllData failed", err);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleTimePress = (pref: { id: string; hour: number | null; minute: number | null }) => {
@@ -193,10 +217,10 @@ export function SettingsScreen() {
       <View>
         <Text style={styles.sectionHeader}>DATA</Text>
         <View style={styles.group}>
-          <View style={styles.row}>
+          <TouchableOpacity style={styles.row} onPress={handleDeleteAll}>
             <Text style={styles.label}>Clear all data</Text>
             <Text style={styles.valueDanger}>Delete</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 

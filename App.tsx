@@ -4,6 +4,7 @@ import * as Notifications from "expo-notifications";
 import { Platform, View, StyleSheet } from "react-native";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
 import { StatusBar } from "expo-status-bar";
+import { NavigationContainer } from "@react-navigation/native";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { OnboardingScreen } from "@/features/onboarding/screens/OnboardingScreen";
 import { getPreferences } from "@/features/onboarding/services/preferences";
@@ -79,15 +80,17 @@ export default function App() {
 
   return (
     <RepoProvider>
-      <NotificationInit />
-      <View style={styles.root} onLayout={onLayoutRootView}>
-        <StatusBar style="dark" />
-        {showOnboarding ? (
-          <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-        ) : (
-          <AppNavigator />
-        )}
-      </View>
+      <NavigationContainer>
+        <NotificationInit />
+        <View style={styles.root} onLayout={onLayoutRootView}>
+          <StatusBar style="dark" />
+          {showOnboarding ? (
+            <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+          ) : (
+            <AppNavigator />
+          )}
+        </View>
+      </NavigationContainer>
     </RepoProvider>
   );
 }

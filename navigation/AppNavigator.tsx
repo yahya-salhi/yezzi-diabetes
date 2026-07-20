@@ -1,4 +1,3 @@
-import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View, StyleSheet } from "react-native";
@@ -93,9 +92,8 @@ function DashboardStack() {
 
 export function AppNavigator() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
           headerShown: false,
           tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors.textMuted,
@@ -121,6 +119,5 @@ export function AppNavigator() {
         <Tab.Screen name="Workout" component={WorkoutDashboardScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
-    </NavigationContainer>
   );
 }

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { colors, spacing } from "@/theme/tokens";
 import { Button } from "@/components/ui/Button";
 import { usePreferences } from "@/features/onboarding/hooks/usePreferences";
@@ -25,10 +32,18 @@ export function OnboardingScreen({ onComplete }: Props) {
   const glucoseReadings = useGlucoseReadings();
   const [step, setStep] = useState(0);
   const [unit, setUnit] = useState<"mg/dL" | "mmol/L">("mg/dL");
-  const [fastingLow, setFastingLow] = useState(String(IDF_DEFAULTS.fasting_low));
-  const [fastingHigh, setFastingHigh] = useState(String(IDF_DEFAULTS.fasting_high));
-  const [postmealLow, setPostmealLow] = useState(String(IDF_DEFAULTS.postmeal_low));
-  const [postmealHigh, setPostmealHigh] = useState(String(IDF_DEFAULTS.postmeal_high));
+  const [fastingLow, setFastingLow] = useState(
+    String(IDF_DEFAULTS.fasting_low),
+  );
+  const [fastingHigh, setFastingHigh] = useState(
+    String(IDF_DEFAULTS.fasting_high),
+  );
+  const [postmealLow, setPostmealLow] = useState(
+    String(IDF_DEFAULTS.postmeal_low),
+  );
+  const [postmealHigh, setPostmealHigh] = useState(
+    String(IDF_DEFAULTS.postmeal_high),
+  );
   const [saving, setSaving] = useState(false);
   const [showPermissionOverlay, setShowPermissionOverlay] = useState(false);
 
@@ -78,129 +93,160 @@ export function OnboardingScreen({ onComplete }: Props) {
 
   return (
     <View style={styles.root}>
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {step === 0 && (
-        <View style={styles.step}>
-          <View style={styles.logoArea}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>Y</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+        {step === 0 && (
+          <View style={styles.step}>
+            <View style={styles.logoArea}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>Y</Text>
+              </View>
+              <Text style={styles.appName}>YeZZI</Text>
+              <Text style={styles.tagline}>Your diabetes companion</Text>
             </View>
-            <Text style={styles.appName}>YeZZ</Text>
-            <Text style={styles.tagline}>Your diabetes companion</Text>
-          </View>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Choose your unit</Text>
-            <Text style={styles.subtitle}>
-              All readings will be displayed in this unit.
-            </Text>
-            <View style={styles.unitRow}>
-              <TouchableOpacity
-                style={[styles.unitOption, unit === "mg/dL" && styles.unitSelected]}
-                onPress={() => setUnit("mg/dL")}
-              >
-                <Text style={[styles.unitValue, unit === "mg/dL" && styles.unitValueSelected]}>mg/dL</Text>
-                <Text style={styles.unitDesc}>Standard</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.unitOption, unit === "mmol/L" && styles.unitSelected]}
-                onPress={() => setUnit("mmol/L")}
-              >
-                <Text style={[styles.unitValue, unit === "mmol/L" && styles.unitValueSelected]}>mmol/L</Text>
-                <Text style={styles.unitDesc}>International</Text>
-              </TouchableOpacity>
+            <View style={styles.card}>
+              <Text style={styles.title}>Choose your unit</Text>
+              <Text style={styles.subtitle}>
+                All readings will be displayed in this unit.
+              </Text>
+              <View style={styles.unitRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.unitOption,
+                    unit === "mg/dL" && styles.unitSelected,
+                  ]}
+                  onPress={() => setUnit("mg/dL")}
+                >
+                  <Text
+                    style={[
+                      styles.unitValue,
+                      unit === "mg/dL" && styles.unitValueSelected,
+                    ]}
+                  >
+                    mg/dL
+                  </Text>
+                  <Text style={styles.unitDesc}>Standard</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.unitOption,
+                    unit === "mmol/L" && styles.unitSelected,
+                  ]}
+                  onPress={() => setUnit("mmol/L")}
+                >
+                  <Text
+                    style={[
+                      styles.unitValue,
+                      unit === "mmol/L" && styles.unitValueSelected,
+                    ]}
+                  >
+                    mmol/L
+                  </Text>
+                  <Text style={styles.unitDesc}>International</Text>
+                </TouchableOpacity>
+              </View>
+              <Button title="Continue" onPress={() => setStep(1)} />
             </View>
-            <Button title="Continue" onPress={() => setStep(1)} />
           </View>
-        </View>
-      )}
+        )}
 
-      {step === 1 && (
-        <View style={styles.step}>
-          <View style={styles.logoArea}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>Y</Text>
+        {step === 1 && (
+          <View style={styles.step}>
+            <View style={styles.logoArea}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>Y</Text>
+              </View>
+              <Text style={styles.appName}>YeZZI</Text>
             </View>
-            <Text style={styles.appName}>YeZZ</Text>
-          </View>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Set target ranges</Text>
-            <Text style={styles.subtitle}>
-              Pre-filled with IDF-recommended ranges. You can adjust these later.
-            </Text>
+            <View style={styles.card}>
+              <Text style={styles.title}>Set target ranges</Text>
+              <Text style={styles.subtitle}>
+                Pre-filled with IDF-recommended ranges. You can adjust these
+                later.
+              </Text>
 
-            <Text style={styles.fieldLabel}>Fasting — Low (mg/dL)</Text>
-            <TextInput
-              style={styles.input}
-              value={fastingLow}
-              onChangeText={setFastingLow}
-              keyboardType="numeric"
-            />
-            <Text style={styles.fieldLabel}>Fasting — High (mg/dL)</Text>
-            <TextInput
-              style={styles.input}
-              value={fastingHigh}
-              onChangeText={setFastingHigh}
-              keyboardType="numeric"
-            />
-            <Text style={styles.fieldLabel}>Post-meal — Low (mg/dL)</Text>
-            <TextInput
-              style={styles.input}
-              value={postmealLow}
-              onChangeText={setPostmealLow}
-              keyboardType="numeric"
-            />
-            <Text style={styles.fieldLabel}>Post-meal — High (mg/dL)</Text>
-            <TextInput
-              style={styles.input}
-              value={postmealHigh}
-              onChangeText={setPostmealHigh}
-              keyboardType="numeric"
-            />
-
-            <View style={styles.targetActions}>
-              <Button
-                title={saving ? "Saving..." : "Get Started"}
-                onPress={() => handleFinishTargets(false)}
-                disabled={saving}
+              <Text style={styles.fieldLabel}>Fasting — Low (mg/dL)</Text>
+              <TextInput
+                style={styles.input}
+                value={fastingLow}
+                onChangeText={setFastingLow}
+                keyboardType="numeric"
               />
-              <TouchableOpacity onPress={() => handleFinishTargets(true)} disabled={saving}>
-                <Text style={styles.skip}>Skip — use defaults</Text>
-              </TouchableOpacity>
+              <Text style={styles.fieldLabel}>Fasting — High (mg/dL)</Text>
+              <TextInput
+                style={styles.input}
+                value={fastingHigh}
+                onChangeText={setFastingHigh}
+                keyboardType="numeric"
+              />
+              <Text style={styles.fieldLabel}>Post-meal — Low (mg/dL)</Text>
+              <TextInput
+                style={styles.input}
+                value={postmealLow}
+                onChangeText={setPostmealLow}
+                keyboardType="numeric"
+              />
+              <Text style={styles.fieldLabel}>Post-meal — High (mg/dL)</Text>
+              <TextInput
+                style={styles.input}
+                value={postmealHigh}
+                onChangeText={setPostmealHigh}
+                keyboardType="numeric"
+              />
+
+              <View style={styles.targetActions}>
+                <Button
+                  title={saving ? "Saving..." : "Get Started"}
+                  onPress={() => handleFinishTargets(false)}
+                  disabled={saving}
+                />
+                <TouchableOpacity
+                  onPress={() => handleFinishTargets(true)}
+                  disabled={saving}
+                >
+                  <Text style={styles.skip}>Skip — use defaults</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {step === 2 && (
-        <View style={styles.step}>
-          <View style={styles.logoArea}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>Y</Text>
+        {step === 2 && (
+          <View style={styles.step}>
+            <View style={styles.logoArea}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>Y</Text>
+              </View>
+              <Text style={styles.appName}>YeZZI</Text>
             </View>
-            <Text style={styles.appName}>YeZZ</Text>
-          </View>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Morning reminder</Text>
-            <Text style={styles.subtitle}>
-              Want a nudge for your morning reading? We will remind you every day at 07:00.
-            </Text>
-            <Text style={styles.reminderNote}>
-              You can change the time or add more reminders later in Settings.
-            </Text>
+            <View style={styles.card}>
+              <Text style={styles.title}>Morning reminder</Text>
+              <Text style={styles.subtitle}>
+                Want a nudge for your morning reading? We will remind you every
+                day at 07:00.
+              </Text>
+              <Text style={styles.reminderNote}>
+                You can change the time or add more reminders later in Settings.
+              </Text>
 
-            <View style={styles.targetActions}>
-              <Button title="Yes, remind me at 07:00" onPress={() => handleReminderChoice(true)} />
-              <TouchableOpacity onPress={() => handleReminderChoice(false)}>
-                <Text style={styles.skip}>No, skip</Text>
-              </TouchableOpacity>
+              <View style={styles.targetActions}>
+                <Button
+                  title="Yes, remind me at 07:00"
+                  onPress={() => handleReminderChoice(true)}
+                />
+                <TouchableOpacity onPress={() => handleReminderChoice(false)}>
+                  <Text style={styles.skip}>No, skip</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
       {showPermissionOverlay && (
         <NotificationPermissionOverlay
           onGranted={finishWithReminder}
