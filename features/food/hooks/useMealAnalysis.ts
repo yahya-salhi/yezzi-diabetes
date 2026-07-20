@@ -2,12 +2,7 @@ import { useState, useCallback } from "react";
 import { Paths, File } from "expo-file-system";
 import { randomUUID } from "expo-crypto";
 import * as ImageManipulator from "expo-image-manipulator";
-import { callAnalyze } from "../services/proxy";
-import {
-  QuotaExhaustedError,
-  AiServiceError,
-  ProxyUnavailableError,
-} from "../services/proxy";
+import { callAnalyze, QuotaExhaustedError, AiServiceError, ProxyUnavailableError } from "../services/proxy";
 import type { MealAnalysisResult } from "../services/mealAnalysis";
 import type { QuotaInfo } from "../services/proxy";
 
@@ -26,6 +21,7 @@ type UseMealAnalysisResult = {
   analyzing: boolean;
   result: MealAnalysisResult | null;
   error: ProxyError | null;
+  lastQuota: QuotaInfo | null;
   analyzePhoto: (uri: string) => Promise<PhotoAnalysisResult | null>;
   analyzeText: (description: string) => Promise<MealAnalysisResult | null>;
 };
@@ -34,12 +30,14 @@ export function useMealAnalysis(): UseMealAnalysisResult {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<MealAnalysisResult | null>(null);
   const [error, setError] = useState<ProxyError | null>(null);
+  const [lastQuota, setLastQuota] = useState<QuotaInfo | null>(null);
 
   const analyzePhoto = useCallback(
     async (uri: string): Promise<PhotoAnalysisResult | null> => {
       setAnalyzing(true);
       setError(null);
       setResult(null);
+      setLastQuota(null);
 
       try {
         const manipulated = await ImageManipulator.manipulateAsync(
@@ -56,6 +54,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
         const response = await callAnalyze({ mode: "photo", image_base64: base64 });
 
         setResult(response.result);
+        setLastQuota(response.quota);
         return { analysis: response.result, photoPath: destFile.uri };
       } catch (err) {
         setError(classifyError(err));
@@ -72,10 +71,12 @@ export function useMealAnalysis(): UseMealAnalysisResult {
       setAnalyzing(true);
       setError(null);
       setResult(null);
+      setLastQuota(null);
 
       try {
         const response = await callAnalyze({ mode: "text", description });
         setResult(response.result);
+        setLastQuota(response.quota);
         return response.result;
       } catch (err) {
         setError(classifyError(err));
@@ -87,7 +88,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
     []
   );
 
-  return { analyzing, result, error, analyzePhoto, analyzeText };
+  return { analyzing, result, error, lastQuota, analyzePhoto, analyzeText };
 }
 
 function classifyError(err: unknown): ProxyError {
