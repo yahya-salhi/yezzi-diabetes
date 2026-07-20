@@ -8,7 +8,6 @@ import { CameraView } from "@/features/food/components/CameraView";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
-import { useQuota } from "@/features/food/hooks/useQuota";
 import type { MealType } from "@/features/food/types";
 
 type ScreenMode = "camera" | "loading" | "review";
@@ -17,7 +16,6 @@ export function SnapMealScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<FoodStackParamList>>();
   const { analyzing, analyzePhoto } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
-  const { refresh: refreshQuota } = useQuota();
 
   const [mode, setMode] = useState<ScreenMode>("camera");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -45,7 +43,6 @@ export function SnapMealScreen() {
       setFatG(result.analysis.fat_g !== null ? String(result.analysis.fat_g) : "");
       setEstimatedImpact(result.analysis.estimated_impact_mgdl);
       setMode("review");
-      refreshQuota();
     } else {
       navigation.navigate("ManualEntry", { photoUri: uri });
     }

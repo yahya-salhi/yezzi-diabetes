@@ -30,18 +30,17 @@ export function FoodDashboardScreen() {
   const today = format(new Date(), "EEEE, MMM d");
   const { topSpikes } = useInsights();
   const { getTodaysMeals } = useFoodLog();
-  const { quota, refresh: refreshQuota } = useQuota();
+  const { quota } = useQuota();
   const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      refreshQuota();
       getTodaysMeals().then((meals) => {
         if (!cancelled) setTodayMeals(meals);
       });
       return () => { cancelled = true; };
-    }, [getTodaysMeals, refreshQuota])
+    }, [getTodaysMeals])
   );
 
   const hasMeals = todayMeals.length > 0;

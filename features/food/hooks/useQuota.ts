@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getCachedQuota, syncQuota } from "../services/quota";
+import { QuotaStore } from "../services/quotaStore";
 import type { QuotaInfo } from "../services/proxy";
 
 type UseQuotaResult = {
@@ -10,13 +11,22 @@ type UseQuotaResult = {
 };
 
 export function useQuota(): UseQuotaResult {
-  const [quota, setQuota] = useState<QuotaInfo | null>(null);
+  const [quota, setQuota] = useState<QuotaInfo | null>(QuotaStore.get());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = QuotaStore.subscribe((q) => {
+      if (mountedRef.current) setQuota(q);
+    });
+    return unsubscribe;
   }, []);
 
   const refresh = useCallback(async () => {
@@ -24,7 +34,7 @@ export function useQuota(): UseQuotaResult {
     setError(null);
     try {
       const q = await syncQuota();
-      if (mountedRef.current) setQuota(q);
+      QuotaStore.set(q);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to sync quota";
       if (mountedRef.current) setError(msg);
@@ -38,8 +48,8 @@ export function useQuota(): UseQuotaResult {
 
     (async () => {
       const cached = await getCachedQuota();
-      if (!cancelled && cached) {
-        setQuota(cached);
+      if (!cancelled && cached && !QuotaStore.get()) {
+        QuotaStore.set(cached);
       }
       refresh();
     })();
