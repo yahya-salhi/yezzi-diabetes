@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   errorBanner: {
-    backgroundColor: "#FEF2F2",
+    backgroundColor: colors.errorLight,
     borderRadius: 10,
     padding: spacing.md,
   },

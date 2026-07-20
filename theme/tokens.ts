@@ -10,6 +10,7 @@ export const colors = {
   success: "#1B8A5A",
   warning: "#B8860B",
   error: "#C5304B",
+  errorLight: "#FEF2F2",
   info: "#4E7FA7",
   border: "#E3DFD8",
   borderLight: "#EDEAE4",
