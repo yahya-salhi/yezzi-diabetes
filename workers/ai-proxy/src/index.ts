@@ -177,6 +177,7 @@ interface AnalyzeBody {
   mode?: "photo" | "text";
   image_base64?: string;
   description?: string;
+  is_plus?: boolean;
 }
 
 async function handleAnalyze(request: Request, env: Env): Promise<Response> {
@@ -201,7 +202,7 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
   }
 
   const quota = await getQuota(env.QUOTA, deviceUuid);
-  if (quota.remaining <= 0) {
+  if (!body.is_plus && quota.remaining <= 0) {
     return json({ error: "quota_exhausted", quota }, 429);
   }
 
@@ -214,8 +215,12 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
 
   try {
     const result = await callOpenRouter(env.OPENROUTER_API_KEY, messages);
-    await incrementQuota(env.QUOTA, deviceUuid);
-    const updatedQuota = await getQuota(env.QUOTA, deviceUuid);
+    if (!body.is_plus) {
+      await incrementQuota(env.QUOTA, deviceUuid);
+    }
+    const updatedQuota = body.is_plus
+      ? { used: 0, limit: -1, remaining: -1, resets_at: "" }
+      : await getQuota(env.QUOTA, deviceUuid);
     return json({ result, quota: updatedQuota });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

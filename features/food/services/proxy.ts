@@ -40,6 +40,7 @@ export async function callAnalyze(payload: {
   mode: "photo" | "text";
   image_base64?: string;
   description?: string;
+  is_plus?: boolean;
 }): Promise<AnalyzeResponse> {
   const device_uuid = await getDeviceId();
 
