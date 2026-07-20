@@ -30,17 +30,18 @@ export function FoodDashboardScreen() {
   const today = format(new Date(), "EEEE, MMM d");
   const { topSpikes } = useInsights();
   const { getTodaysMeals } = useFoodLog();
-  const { quota } = useQuota();
+  const { quota, refresh: refreshQuota } = useQuota();
   const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
+      refreshQuota();
       getTodaysMeals().then((meals) => {
         if (!cancelled) setTodayMeals(meals);
       });
       return () => { cancelled = true; };
-    }, [getTodaysMeals])
+    }, [getTodaysMeals, refreshQuota])
   );
 
   const hasMeals = todayMeals.length > 0;
@@ -56,13 +57,15 @@ export function FoodDashboardScreen() {
           <Text
             style={[
               styles.quotaLine,
-              quota.remaining <= 0 && styles.quotaLineExhausted,
+              quota.remaining === 0 && styles.quotaLineExhausted,
               quota.remaining > 0 && quota.remaining <= 3 && styles.quotaLineWarm,
             ]}
           >
-            {quota.remaining <= 0
-              ? "No AI scans left — enter meals manually"
-              : `${quota.remaining} AI scan${quota.remaining === 1 ? "" : "s"} left this month`}
+            {quota.remaining === -1
+              ? "Unlimited AI scans"
+              : quota.remaining <= 0
+                ? "No AI scans left — enter meals manually"
+                : `${quota.remaining} AI scan${quota.remaining === 1 ? "" : "s"} left this month`}
           </Text>
         )}
 

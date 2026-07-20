@@ -14,9 +14,9 @@ type Step = "input" | "loading" | "review";
 export function ManualEntryScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<FoodStackParamList, "ManualEntry">>();
-  const { analyzing, error: analysisError, analyzeText } = useMealAnalysis();
+  const { analyzing, error: analysisError, analyzeText, lastQuota } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
-  const { quota } = useQuota();
+  const { quota, refresh: refreshQuota } = useQuota();
 
   const [step, setStep] = useState<Step>("input");
   const [description, setDescription] = useState("");
@@ -29,7 +29,9 @@ export function ManualEntryScreen() {
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
 
-  const quotaRemaining = quota?.remaining ?? null;
+  const effectiveQuota = lastQuota ?? quota;
+  const isUnlimited = effectiveQuota?.remaining === -1;
+  const quotaRemaining = isUnlimited ? null : (effectiveQuota?.remaining ?? null);
   const isQuotaExhausted = quotaRemaining !== null && quotaRemaining <= 0;
 
   const handleAnalyze = async () => {
@@ -46,6 +48,7 @@ export function ManualEntryScreen() {
       setFatG(result.fat_g !== null ? String(result.fat_g) : "");
       setEstimatedImpact(result.estimated_impact_mgdl);
       setStep("review");
+      refreshQuota();
     } else {
       setStep("input");
     }
