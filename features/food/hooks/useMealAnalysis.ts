@@ -2,10 +2,9 @@ import { useState, useCallback } from "react";
 import { Paths, File } from "expo-file-system";
 import { randomUUID } from "expo-crypto";
 import * as ImageManipulator from "expo-image-manipulator";
-import { callAnalyze, QuotaExhaustedError, AiServiceError, ProxyUnavailableError } from "../services/proxy";
-import { QuotaStore } from "../services/quotaStore";
+import { analyzeMeal, QuotaExhaustedError, AiServiceError, ProxyUnavailableError, QuotaStore } from "../services/aiProxy";
 import type { MealAnalysisResult } from "../services/mealAnalysis";
-import type { QuotaInfo } from "../services/proxy";
+import type { QuotaInfo } from "../services/aiProxy";
 
 export type PhotoAnalysisResult = {
   analysis: MealAnalysisResult;
@@ -49,7 +48,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
         new File(manipulated.uri).move(destFile);
 
         const base64 = await destFile.base64();
-        const response = await callAnalyze({ mode: "photo", image_base64: base64 });
+        const response = await analyzeMeal({ mode: "photo", image_base64: base64 });
 
         setResult(response.result);
         QuotaStore.set(response.quota);
@@ -71,7 +70,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
       setResult(null);
 
       try {
-        const response = await callAnalyze({ mode: "text", description });
+        const response = await analyzeMeal({ mode: "text", description });
         setResult(response.result);
         QuotaStore.set(response.quota);
         return response.result;

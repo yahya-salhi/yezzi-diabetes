@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getCachedQuota, syncQuota } from "../services/quota";
-import { QuotaStore } from "../services/quotaStore";
-import type { QuotaInfo } from "../services/proxy";
+import { fetchQuota, getCachedQuota, QuotaStore } from "../services/aiProxy";
+import type { QuotaInfo } from "../services/aiProxy";
 
 type UseQuotaResult = {
   quota: QuotaInfo | null;
@@ -33,7 +32,7 @@ export function useQuota(): UseQuotaResult {
     setLoading(true);
     setError(null);
     try {
-      const q = await syncQuota();
+      const q = await fetchQuota();
       QuotaStore.set(q);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to sync quota";
