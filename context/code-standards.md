@@ -263,5 +263,6 @@ Approved dependencies for this project:
 - `expo-document-picker` — File picker for backup restore
 - `expo-notifications` — Local notifications for reading reminders
 - `expo-print` — PDF generation for doctor reports
+- `expo-updates` — App reload after data wipe
 
 Do not install any other packages without updating this list first.

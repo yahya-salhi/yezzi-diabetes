@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 3 — Store Readiness & v1 Launch
-**Last completed:** 20 CSV Export + PDF Doctor Report
-**Next:** 21 AI Proxy + Scan Quota (Phase 3)
+**Last completed:** 21 AI Proxy + Scan Quota
+**Next:** 22 YeZZi Plus — Subscription + Paywall
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -49,7 +49,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 18 Logging Streak
 - [X] 19 Backup & Restore
 - [X] 20 CSV Export + PDF Doctor Report
-- [ ] 21 AI Proxy + Scan Quota
+- [X] 21 AI Proxy + Scan Quota
 - [ ] 22 YeZZi Plus — Subscription + Paywall
 - [ ] 23 Compliance Pack
 - [ ] 24 Store Listing + Launch
@@ -95,6 +95,10 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-08** — Impact estimation: actual = closest prior baseline (fasting/pre_meal same day) subtracted from post_meal value; null baselines filtered out; `getTopSpikes()` returns top 3 descending
 - **2026-07-08** — Repository pattern: all data accessors use `getDbAdapter()` as default param + `createFake*()` factories for testability
 - **2026-07-15** — CSV Export + PDF Doctor Report: user picks date range (7/30/90/all) before export; CSV shares directly, PDF shows preview modal first; PDF trend as HTML table with colored bars (not chart); Plus badge on PDF row (gate deferred to paywall); EXPORT section in Settings between Backup and Data
+- **2026-07-17** — AI Proxy + Scan Quota: Cloudflare Worker at ai-proxy.pcclub10.workers.dev proxies all OpenRouter calls; KV quota enforcement (10 scans/month per device UUID, calendar month UTC reset); device UUID via expo-crypto randomUUID in SecureStore; error contract: 429 (quota_exhausted), 502 (ai_service_error), 503 (proxy_unavailable); photo resized to 1024px via expo-image-manipulator before upload; ManualEntryScreen dual-path: "Analyze with AI" (quota'd) + "Skip AI" (free); FoodDashboardScreen quota indicator under date
+- **2026-07-20** — RevenueCat entitlement approach: client-trusted `is_plus` flag sent in proxy request body; proxy skips quota check + KV increment when `is_plus === true`; no server-side RevenueCat validation for v1 (spoofing risk acceptable at ~$0.01/scan cost)
+- **2026-07-20** — Delete-all data: wipes all SQLite tables (glucose_readings, food_log, reminder_preferences, user_preferences) + SecureStore keys (device_uuid, cached_quota); app reloads after wipe, onboarding re-shown
+- **2026-07-20** — Error banner token: extracted hardcoded `#FEF2F2` to `colors.errorLight` in theme/tokens.ts
 
 ---
 

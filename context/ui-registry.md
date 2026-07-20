@@ -745,3 +745,57 @@ Last updated: 2026-07-15
 | Bar colors        | `colors.success` / `warning` / `error` based on value vs range |
 
 **Pattern notes:** Full-screen modal (animationType="slide") for previewing the doctor report before sharing. Shares design patterns with Settings screens: same background, same surface cards with 14px radius, same section/spacing tokens. Stat rows mirror SettingsGroup row layout but with different content (label + value + count). Trend table is the only data-table component in the app — uses horizontal bars (min 4% width for visibility) with color-coded backgrounds. Bar width is proportional to `maxValue` (highest reading or 200, whichever is greater). Share button uses 12px radius (differs from standard 10px Button pattern — slightly rounder for the primary CTA). Disabled state uses 0.6 opacity (matches NotificationPermissionOverlay pattern). The share button is full-width (not a standard Button component) — matches the primary action button pattern from ApiKeyModal.
+
+---
+
+### ErrorBanner (inline pattern)
+
+File: `features/food/screens/ManualEntryScreen.tsx` (inline)
+Last updated: 2026-07-17
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | `colors.errorLight`                 |
+| Border           | none                               |
+| Border radius    | 10                                 |
+| Text             | 14px, 500, `colors.error`, center, lineHeight 20 |
+| Padding          | `spacing.md` (12px)                |
+| Shadow           | none                               |
+
+**Pattern notes:** Inline error banner for proxy/analysis errors. Used inside form screens to show transient errors. Background uses `colors.errorLight` token. Matches the 10px radius used for buttons and inputs. Text is always `colors.error` regardless of error type — the message content communicates severity.
+
+---
+
+### QuotaIndicator (inline pattern)
+
+File: `features/food/screens/ManualEntryScreen.tsx` and `features/food/screens/FoodDashboardScreen.tsx` (inline)
+Last updated: 2026-07-17
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | none (transparent)                 |
+| Text — default   | 13px, 500, `colors.textMuted`, center |
+| Text — warm      | 13px, 500, `colors.warning`, center |
+| Text — exhausted | 13px, 500, `colors.error`, center  |
+| Shadow           | none                               |
+
+**Pattern notes:** Compact quota status text shown below date or above action buttons. Three visual states: muted (normal), warning (≤3 remaining), error (0 remaining). Text is always centered. On FoodDashboardScreen uses `marginTop: -spacing.sm` to sit tight under the date. On ManualEntryScreen sits between textarea and action buttons. Always singular/plural aware ("1 AI scan" vs "2 AI scans").
+
+---
+
+### SkipButton (inline pattern)
+
+File: `features/food/screens/ManualEntryScreen.tsx` (inline)
+Last updated: 2026-07-17
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Background       | transparent                        |
+| Border           | 1px `colors.border`                |
+| Border radius    | 10                                 |
+| Text             | 15px, 500, `colors.textSecondary`  |
+| Padding          | 14px vertical                      |
+| Alignment        | center                             |
+| Shadow           | none                               |
+
+**Pattern notes:** Secondary outline action button used as an alternative to the primary action. Matches Button secondary variant but implemented as inline TouchableOpacity. Used when offering a "free" alternative to a quota-gated action. Always appears below the primary action button with no gap (natural spacing from padding).
