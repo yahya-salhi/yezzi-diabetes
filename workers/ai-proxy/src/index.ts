@@ -41,11 +41,21 @@ async function getQuota(
   };
 }
 
-async function incrementQuota(kv: KVNamespace, deviceUuid: string): Promise<void> {
+async function incrementAndGetQuota(
+  kv: KVNamespace,
+  deviceUuid: string
+): Promise<{ used: number; limit: number; remaining: number; resets_at: string }> {
   const key = quotaKVKey(deviceUuid);
   const raw = await kv.get(key);
   const current = raw ? parseInt(raw, 10) : 0;
-  await kv.put(key, String(current + 1));
+  const used = current + 1;
+  await kv.put(key, String(used));
+  return {
+    used,
+    limit: FREE_TIER_LIMIT,
+    remaining: Math.max(0, FREE_TIER_LIMIT - used),
+    resets_at: getNextMonthReset(),
+  };
 }
 
 interface NutritionResult {
@@ -181,7 +191,12 @@ interface AnalyzeBody {
 }
 
 async function handleAnalyze(request: Request, env: Env): Promise<Response> {
-  const body = await request.json<AnalyzeBody>();
+  let body: AnalyzeBody;
+  try {
+    body = await request.json<AnalyzeBody>();
+  } catch {
+    return json({ error: "invalid_json" }, 400);
+  }
   const deviceUuid = body?.device_uuid;
   const mode = body?.mode;
 
@@ -201,9 +216,11 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
     return json({ error: "missing_description" }, 400);
   }
 
-  const quota = await getQuota(env.QUOTA, deviceUuid);
-  if (!body.is_plus && quota.remaining <= 0) {
-    return json({ error: "quota_exhausted", quota }, 429);
+  if (!body.is_plus) {
+    const quota = await getQuota(env.QUOTA, deviceUuid);
+    if (quota.remaining <= 0) {
+      return json({ error: "quota_exhausted", quota }, 429);
+    }
   }
 
   let messages: unknown[];
@@ -215,12 +232,9 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
 
   try {
     const result = await callOpenRouter(env.OPENROUTER_API_KEY, messages);
-    if (!body.is_plus) {
-      await incrementQuota(env.QUOTA, deviceUuid);
-    }
     const updatedQuota = body.is_plus
       ? { used: 0, limit: -1, remaining: -1, resets_at: "" }
-      : await getQuota(env.QUOTA, deviceUuid);
+      : await incrementAndGetQuota(env.QUOTA, deviceUuid);
     return json({ result, quota: updatedQuota });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
