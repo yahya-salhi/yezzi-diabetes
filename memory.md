@@ -1,59 +1,91 @@
-# Memory — Feature 21: CSV Export + PDF Doctor Report
+# Memory — Feature 22: AI Proxy + Scan Quota
 
-Last updated: 2026-07-16
+Last updated: 2026-07-21
 
 ## What was built
 
-### Feature 21 — CSV Export + PDF Doctor Report
+### Feature 22 — AI Proxy + Scan Quota
 
-- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` uses `expo-file-system/legacy` `writeAsStringAsync` to write CSV to document directory; `shareCsvFile()` shares via expo-sharing with mimeType text/csv
-- **Created `features/settings/services/pdfReport.ts`** — `generateReportHtml()` builds a clinical HTML document with averages section (fasting/post-meal/overall avg + count), in-range summary, and trend table with color-coded horizontal bars; `generatePdfFile()` calls `expo-print.printToFileAsync()`; `sharePdfFile()` shares via expo-sharing with application/pdf mime type
-- **Created `features/settings/components/ExportRangePicker.tsx`** — centered card modal with 4 options (Last 7/30/90 Days, All Time), matches MealLinkPicker overlay pattern
-- **Created `features/settings/components/PdfPreviewModal.tsx`** — full-screen slide modal with header, scrollable preview of averages + trend table with color-coded in-range bars, full-width share button at bottom
-- **Created `features/settings/components/ExportSection.tsx`** — orchestrates both export flows with range picker → CSV direct share or PDF preview → share; Plus badge on PDF row
-- **Modified `features/settings/screens/SettingsScreen.tsx`** — added EXPORT section header + `<ExportSection />` between Backup and Data sections
-- **Added `expo-print` dependency** — via `npx expo install`
+**Cloudflare Worker:**
+- **Created `workers/ai-proxy/src/index.ts`** — Cloudflare Worker with two endpoints: `POST /analyze` (AI scan proxied to OpenRouter) and `GET /quota` (read-only quota sync). Routes: photo or text mode. KV quota enforcement via `quota:{device_uuid}:{YYYY-MM}` keys. 30s timeout. CORS headers. Error contract: 429 (quota_exhausted), 502 (ai_service_error), 503 (proxy_unavailable).
+- **Created `workers/ai-proxy/package.json`, `tsconfig.json`, `wrangler.toml`** — Worker config, KV namespace `QUOTA` bound, deployed to `ai-proxy.pcclub10.workers.dev`
+- **Secrets:** `OPENROUTER_API_KEY` set via `wrangler secret put` (never in code)
 
-### Registry updates
+**Client proxy infrastructure:**
+- **Created `features/food/services/aiProxy.ts`** — `getDeviceId()` (expo-crypto randomUUID, persisted in SecureStore), `analyzeMeal()` (POST to proxy), `fetchQuota()` (GET /quota with SecureStore caching), `QuotaStore` (shared observable pattern for cross-screen quota sync). Error classes: `QuotaExhaustedError`, `AiServiceError`, `ProxyUnavailableError`
+- **Created `features/food/hooks/useQuota.ts`** — `useQuota()` hook returns `{ quota, loading, error, refresh }` with mountedRef guard, subscribes to QuotaStore, hydrates cached quota on mount then syncs from server
 
-- **Updated `context/ui-registry.md`** — imprinted ExportSection, ExportRangePicker, PdfPreviewModal
+**Screen changes:**
+- **Modified `features/food/screens/ManualEntryScreen.tsx`** — dual-path UI: "Analyze with AI" primary button (quota-gated) + "Skip AI — enter manually" outline button (always free). Error banner for proxy errors. QuotaIndicator below textarea. Photo attachment from camera preserved at quota 0.
+- **Modified `features/food/screens/SnapMealScreen.tsx`** — proxy integration replacing direct OpenRouter call
+- **Modified `features/food/screens/FoodDashboardScreen.tsx`** — quota indicator line under date header with color states (muted/warning/error)
+- **Modified `features/food/hooks/useMealAnalysis.ts`** — proxy integration with `lastQuota` exposure for optimistic UI updates
 
-### Progress tracking
+**Data management:**
+- **Created `features/settings/services/dataWipe.ts`** — `deleteAllData()` wipes all tables (glucose_readings, food_log, reminder_preferences, user_preferences) and SecureStore keys (device_uuid, cached_quota)
+- **Modified `features/settings/screens/SettingsScreen.tsx`** — delete-all data button with confirmation flow
 
-- **Updated `context/progress-tracker.md`** — marked Feature 21 complete, next is Feature 22 (AI Proxy + Scan Quota)
+**Cleanup:**
+- **Deleted `features/food/services/mealAnalysis.ts`** — replaced by aiProxy.ts
+- **Deleted `features/food/services/apiConfig.ts`** — no longer needed (API key lives server-side)
+
+**Infrastructure & config:**
+- **Added `colors.errorLight` to `theme/tokens.ts`** — extracted from inline `#FEF2F2` for error banner usage
+- **Modified `App.tsx`** — moved `NavigationContainer` above onboarding conditional to fix navigation context error
+- **Added `.env` and `opencode.json` to `.gitignore`**
+- **Created `CONTEXT.md`** — domain glossary for AI proxy terms, quota contract, error contract, UX terminology
+
+**Documentation:**
+- **Created `docs/adr/0001-ai-proxy-scan-quota.md`** — full architecture decision record
+- **Updated `context/progress-tracker.md`** — marked Feature 22 complete
+- **Updated `context/ui-registry.md`** — imprinted ErrorBanner, QuotaIndicator, SkipButton patterns
+- **Updated `context/code-standards.md`** — added data wipe patterns
 
 ## Decisions made
 
-- **Date range picker first** — user selects 7/30/90/All before either export runs
-- **CSV direct share** — no preview, shares immediately via system share sheet
-- **PDF preview modal** — native RN preview (not WebView) with trend bars, share button generates the actual PDF via expo-print
-- **PDF trend = HTML table with colored bars** — no chart library, inline CSS width bars color-coded by in-range status (green/orange/red)
-- **Plus badge** — small accentLight tag on PDF row; Plus gating deferred to paywall feature
-- **EXPORT section** — new section in Settings between Backup and DATA, follows SettingsGroup pattern exactly
+- **Proxy-first architecture** — all production AI calls go through Cloudflare Worker; OpenRouter API key never ships in app binary
+- **KV quota enforcement** — 10 scans/month per device UUID, calendar month UTC reset, KV key format `quota:{uuid}:{YYYY-MM}`
+- **Device UUID** — random v4 via expo-crypto, stored in SecureStore, created on first launch, no personal data link
+- **Error contract** — three distinct HTTP statuses (429 quota, 502 AI error, 503 proxy) with typed client errors
+- **Photo resize** — 1024px max edge via expo-image-manipulator before upload to proxy
+- **Client-trusted `is_plus` flag** — sent in proxy request body; proxy skips quota check + KV increment when true; no server-side RevenueCat validation for v1 (spoofing risk acceptable at ~$0.01/scan cost)
+- **Delete-all wipes** — all SQLite tables + SecureStore keys (device_uuid, cached_quota); app reloads, onboarding re-shown
+- **QuotaStore shared observable** — cross-screen quota sync without prop drilling; single source of truth for quota state
+- **Cached quota in SecureStore** — avoids splash on every screen mount; server always authoritative on /analyze
+- **Calendar month reset** — UTC-based, resets on 1st of each month; key includes YYYY-MM
+- **`is_plus` sent in /analyze body** — proxy skips quota increment for Plus users (prepares for Feature 23)
 
 ## Problems solved
 
-- **expo-print not installed** — added via `npx expo install expo-print`
-- **TS5103 ignoreDeprecations** — reverted `"6.0"` to `"5.0"`; TS 5.9.3 only accepts `"5.0"` (the deprecation warning about baseUrl is for TS 7.0, not an error)
-- **View/Text style conflict in PdfPreviewModal** — `tableCell` style with font properties cannot be applied to `<View>`; extracted `viewCell` for container usage
-- **null preferences handling** — `getPreferences()` can return null; provided IDF default values as fallback in ExportSection
-- **CSV export hang on iOS** — `Sharing.shareAsync` never resolved with `file.uri` from expo-file-system v19 `File` API. Root cause: URI format incompatibility between expo-file-system v19 and expo-sharing. Fix: replaced new `File` API with `expo-file-system/legacy` `writeAsStringAsync` which returns proper `file://` URIs. Added mimeType and UTI to share call. Removed 8s timeout hack.
+- **Navigation context error** — `NavigationContainer` was below an early return for onboarding, causing `useNavigation()` to throw. Fixed by moving container above the conditional.
+- **Quota store racing** — `useQuota` was setting state after unmount on fast navigation. Fixed with `mountedRef` guard pattern.
+- **Invalid JSON from proxy** — empty body or non-JSON responses threw unhandled errors. Added try/catch with 400 return.
+- **Direct OpenRouter dead code** — removed `mealAnalysis.ts` and `apiConfig.ts` after migration to proxy. Removed production BYOK UI (kept `__DEV__` escape hatch only).
+- **`errorLight` token extraction** — inline `#FEF2F2` hardcoded in ManualEntryScreen error banner was the only remaining hardcoded hex in the app. Extracted to `colors.errorLight`.
+- **Onboarding screen formatting** — reformatted long lines, fixed app name from "YeZZ" to "YeZZI" in OnboardingScreen copy.
 
 ## Current state
 
-- **Phase 3 — Features 1–21 complete** (Foundation through CSV Export + PDF Doctor Report)
-- Branch: `feat/csv-export-pdf-report`
+- **Phase 3 — Features 1–22 complete** (Foundation through AI Proxy + Scan Quota)
+- Branch: `main` (feat/ai-proxy-scan-quota merged via PR #10)
 - Zero TypeScript errors, lint passes
-- CSV export bug resolved — uses expo-print for file writing
-- Memory updated to reflect this session
+- Cloudflare Worker deployed at `ai-proxy.pcclub10.workers.dev`
+- OpenRouter API key set as Cloudflare secret
+- All context files (progress-tracker, ui-registry, code-standards, architecture, CONTEXT.md) synced
 
 ## Next session starts with
 
-**Feature 22 — AI Proxy + Scan Quota** (build-plan item 21)
+**Feature 23 — YeZZi Plus: Subscription + Paywall** (build-plan item 22)
 
-- Cloudflare Workers endpoint for OpenRouter proxy
-- Anonymous device UUID generation
-- Free tier: 10 scans/month
-- Manual entry always available even at 0 quota
+- RevenueCat SDK integration with `react-native-purchases`
+- Google Play products: $2.99/month, $19.99/year
+- Entitlement: `is_plus` grants unlimited scans + PDF reports
+- Paywall shown at natural moments only (quota exhausted, PDF export) — never at launch
+- Wire `is_plus` flag from RevenueCat → proxy `/analyze` calls
+- See `docs/superpowers/specs/` for store readiness design doc
 
 ## Open questions
+
+- RevenueCat entitlement key / Google Play product IDs need to be configured (not yet set up)
+- Plus badge on PDF ExportSection row — gating logic needs Feature 23 to wire (currently cosmetic only)
+- OpenRouter key rotation / monitoring plan not yet established
