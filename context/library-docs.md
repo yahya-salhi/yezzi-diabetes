@@ -379,3 +379,22 @@ export default function App() {
 - Always load Inter on app start — never use system fonts
 - Font weights require separate font files — never use `fontWeight` without loading the matching font
 - Hide splash screen only after fonts are loaded
+
+---
+
+## react-native-purchases (RevenueCat)
+
+**Check first:** Read the official RevenueCat React Native docs before implementation.
+
+YeZZi Plus subscription decisions are locked in `CONTEXT.md` and
+`docs/adr/0002-yezzi-plus-subscription-paywall.md`.
+
+**Project contract:**
+
+- Entitlement key: `is_plus`
+- Google Play product IDs: `yezzi_plus_monthly`, `yezzi_plus_yearly`
+- RevenueCat customer info is the on-device purchase source of truth for v1
+- Settings must include a visible YeZZi Plus row and restore purchases action
+- Paywall appears only at natural gated moments: quota exhausted or PDF export
+- Quota exhausted must offer both Upgrade and Enter manually
+- v1 sends client-trusted `is_plus` to the AI proxy; server-side RevenueCat validation is deferred post-launch

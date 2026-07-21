@@ -99,6 +99,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-20** — RevenueCat entitlement approach: client-trusted `is_plus` flag sent in proxy request body; proxy skips quota check + KV increment when `is_plus === true`; no server-side RevenueCat validation for v1 (spoofing risk acceptable at ~$0.01/scan cost)
 - **2026-07-20** — Delete-all data: wipes all SQLite tables (glucose_readings, food_log, reminder_preferences, user_preferences) + SecureStore keys (device_uuid, cached_quota); app reloads after wipe, onboarding re-shown
 - **2026-07-20** — Error banner token: extracted hardcoded `#FEF2F2` to `colors.errorLight` in theme/tokens.ts
+- **2026-07-21** — ADR 0002 locked YeZZi Plus subscription decisions: RevenueCat entitlement key `is_plus`; Google Play product IDs `yezzi_plus_monthly` and `yezzi_plus_yearly`; visible Settings Plus row; quota exhausted offers Upgrade + Enter manually; paywall only at natural gated moments; v1 uses client-trusted `is_plus` with server-side RevenueCat validation deferred post-launch
 
 ---
 

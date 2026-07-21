@@ -164,6 +164,8 @@ Nutrition JSON returned to app — photo processed, never stored server-side
 
 - Device UUID: random, generated on first launch, no personal data
 - RevenueCat entitlement distinguishes free (quota) from Plus (unlimited)
+- v1 proxy trusts the client-sent `is_plus` flag; server-side RevenueCat validation is deferred post-launch
+- YeZZi Plus implementation details are locked in `CONTEXT.md` and `docs/adr/0002-yezzi-plus-subscription-paywall.md`
 - Backup/export: local file via system share sheet — no servers hold user data
 
 ---

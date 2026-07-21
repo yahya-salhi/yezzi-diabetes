@@ -265,4 +265,6 @@ Approved dependencies for this project:
 - `expo-print` — PDF generation for doctor reports
 - `expo-updates` — App reload after data wipe
 
+- `react-native-purchases` — RevenueCat subscriptions for YeZZi Plus
+
 Do not install any other packages without updating this list first.

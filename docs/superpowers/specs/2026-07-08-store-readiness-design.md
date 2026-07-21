@@ -49,6 +49,9 @@ French + Arabic).
 
 ## Monetization Mechanics
 
+Detailed YeZZi Plus decisions are locked in `CONTEXT.md` and
+`docs/adr/0002-yezzi-plus-subscription-paywall.md`.
+
 - **Free tier:** 10 AI scans/month, resets monthly. Remaining count shown quietly
   on the Food screen. Manual meal entry always available — logging is never blocked.
 - **YeZZi Plus:** launch prices $2.99/month and $19.99/year (Play Console local
