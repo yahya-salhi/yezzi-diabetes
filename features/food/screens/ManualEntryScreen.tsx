@@ -7,7 +7,7 @@ import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import { useScanAccess } from "@/features/food/services/scanAccess";
-import { PaywallScreen } from "@/features/plus/screens/PaywallScreen";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
 import type { MealType } from "@/features/food/types";
 
 type Step = "input" | "loading" | "review";
@@ -29,7 +29,7 @@ export function ManualEntryScreen() {
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const { showPaywall } = usePaywall();
 
   const handleAnalyze = async () => {
     if (!description.trim() || !access.canAnalyze) return;
@@ -167,7 +167,7 @@ export function ManualEntryScreen() {
           <>
             <TouchableOpacity
               style={styles.analyzeButton}
-              onPress={() => setShowPaywall(true)}
+              onPress={showPaywall}
               activeOpacity={0.8}
             >
               <Text style={styles.analyzeButtonText}>Upgrade to Plus</Text>
@@ -194,8 +194,6 @@ export function ManualEntryScreen() {
           </>
         )}
       </View>
-
-      <PaywallScreen visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </View>
   );
 }

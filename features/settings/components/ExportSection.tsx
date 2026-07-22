@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { colors, spacing } from "@/theme/tokens";
 import { ChevronRightIcon } from "@/components/ui/Icons";
@@ -6,11 +5,11 @@ import { ExportRangePicker } from "./ExportRangePicker";
 import { PdfPreviewModal } from "./PdfPreviewModal";
 import { useExportWorkflow } from "../hooks/useExportWorkflow";
 import { usePlus } from "@/features/plus/hooks/usePlus";
-import { PaywallScreen } from "@/features/plus/screens/PaywallScreen";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
 
 export function ExportSection() {
   const { isPlus } = usePlus();
-  const [showPaywall, setShowPaywall] = useState(false);
+  const { showPaywall } = usePaywall();
   const {
     rangePickerVisible,
     csvLoading,
@@ -49,7 +48,7 @@ export function ExportSection() {
             if (isPlus) {
               handleExportPress("pdf");
             } else {
-              setShowPaywall(true);
+              showPaywall();
             }
           }}
           disabled={pdfLoading}
@@ -83,8 +82,6 @@ export function ExportSection() {
         loading={pdfShareLoading}
         prefs={pdfPrefs}
       />
-
-      <PaywallScreen visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </View>
   );
 }

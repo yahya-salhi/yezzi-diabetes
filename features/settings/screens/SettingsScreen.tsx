@@ -10,7 +10,7 @@ import { BackupSection } from "@/features/settings/components/BackupSection";
 import { ExportSection } from "@/features/settings/components/ExportSection";
 import { deleteAllData } from "@/features/settings/services/dataWipe";
 import { usePlus } from "@/features/plus/hooks/usePlus";
-import { PaywallScreen } from "@/features/plus/screens/PaywallScreen";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
 import { restorePurchases } from "@/features/plus/services/entitlement";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
@@ -31,8 +31,8 @@ export function SettingsScreen() {
   const [pickerTarget, setPickerTarget] = useState<string | null>(null);
   const [pickerDate, setPickerDate] = useState(new Date());
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
-  const [showPaywall, setShowPaywall] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const { showPaywall: triggerPaywall } = usePaywall();
 
   const handleToggle = async (id: string, enabled: boolean) => {
     if (!enabled) {
@@ -161,7 +161,7 @@ export function SettingsScreen() {
               <View style={styles.divider} />
               <TouchableOpacity
                 style={styles.row}
-                onPress={() => setShowPaywall(true)}
+                onPress={triggerPaywall}
                 activeOpacity={0.7}
               >
                 <Text style={styles.label}>Upgrade to Plus</Text>
@@ -174,7 +174,7 @@ export function SettingsScreen() {
               <View style={styles.divider} />
               <TouchableOpacity
                 style={styles.row}
-                onPress={() => setShowPaywall(true)}
+                onPress={triggerPaywall}
                 activeOpacity={0.7}
               >
                 <Text style={styles.label}>Manage subscription</Text>
@@ -317,7 +317,6 @@ export function SettingsScreen() {
           onDismiss={handlePermissionDismissed}
         />
       )}
-      <PaywallScreen visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </View>
   );
 }

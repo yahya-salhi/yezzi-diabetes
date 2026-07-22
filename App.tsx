@@ -15,6 +15,7 @@ import { colors } from "@/theme/tokens";
 import { REVENUECAT_API_KEY } from "@/config";
 import { setSubscriptionService } from "@/features/plus/services/subscription";
 import { createRevenueCatAdapter } from "@/features/plus/services/revenueCatAdapter";
+import { PaywallProvider } from "@/features/plus/components/PaywallProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -89,14 +90,16 @@ export default function App() {
     <RepoProvider>
       <NavigationContainer>
         <NotificationInit />
-        <View style={styles.root} onLayout={onLayoutRootView}>
-          <StatusBar style="dark" />
-          {showOnboarding ? (
-            <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-          ) : (
-            <AppNavigator />
-          )}
-        </View>
+        <PaywallProvider>
+          <View style={styles.root} onLayout={onLayoutRootView}>
+            <StatusBar style="dark" />
+            {showOnboarding ? (
+              <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+            ) : (
+              <AppNavigator />
+            )}
+          </View>
+        </PaywallProvider>
       </NavigationContainer>
     </RepoProvider>
   );
