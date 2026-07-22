@@ -37,7 +37,7 @@ export const PlusStore = {
 };
 
 function deriveIsPlus(customerInfo: CustomerInfo): boolean {
-  return typeof customerInfo.entitlements.active[ENTITLEMENT_KEY] !== "undefined";
+  return customerInfo.entitlements.active[ENTITLEMENT_KEY]?.isActive ?? false;
 }
 
 export async function checkEntitlement(): Promise<boolean> {
@@ -77,16 +77,16 @@ export async function purchasePackage(pkg: PurchasesPackage): Promise<PurchaseRe
     PlusStore.set({ isPlus });
     return { success: true, isPlus };
   } catch (err: any) {
-    if (err.code === 1 || err.message?.includes("cancelled")) {
+    if (err.code === 1 || err.code === "1" || err.message?.includes("cancelled")) {
       return { success: false, error: { type: "cancelled" } };
     }
-    if (err.code === 2 || err.message?.includes("payment")) {
+    if (err.code === 2 || err.code === "2" || err.message?.includes("payment")) {
       return {
         success: false,
         error: { type: "payment_failed", message: err.message ?? "Payment failed" },
       };
     }
-    if (err.code === 3 || err.message?.includes("network")) {
+    if (err.code === 10 || err.code === "10" || err.code === 35 || err.code === "35" || err.message?.includes("network") || err.message?.includes("offline")) {
       return {
         success: false,
         error: { type: "network", message: err.message ?? "Network error" },
