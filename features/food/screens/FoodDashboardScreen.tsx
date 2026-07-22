@@ -13,8 +13,7 @@ import { MealCard } from "@/features/food/components/MealCard";
 import { CameraIcon } from "@/components/ui/Icons";
 import { useInsights } from "@/features/food/hooks/useInsights";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
-import { useQuota } from "@/features/food/hooks/useQuota";
-import { usePlus } from "@/features/plus/hooks/usePlus";
+import { useScanAccess } from "@/features/food/services/scanAccess";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<FoodStackParamList>;
@@ -31,8 +30,7 @@ export function FoodDashboardScreen() {
   const today = format(new Date(), "EEEE, MMM d");
   const { topSpikes } = useInsights();
   const { getTodaysMeals } = useFoodLog();
-  const { quota } = useQuota();
-  const { isPlus } = usePlus();
+  const access = useScanAccess();
   const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
 
   useFocusEffect(
@@ -54,21 +52,15 @@ export function FoodDashboardScreen() {
         <Text style={styles.screenTitle}>Food</Text>
         <Text style={styles.date}>{today}</Text>
 
-        {isPlus ? (
-          <Text style={styles.quotaLine}>Unlimited AI scans</Text>
-        ) : quota ? (
+        {access.statusText ? (
           <Text
             style={[
               styles.quotaLine,
-              quota.remaining === 0 && styles.quotaLineExhausted,
-              quota.remaining > 0 && quota.remaining <= 3 && styles.quotaLineWarm,
+              access.statusVariant === "warning" && styles.quotaLineWarm,
+              access.statusVariant === "error" && styles.quotaLineExhausted,
             ]}
           >
-            {quota.remaining === -1
-              ? "Unlimited AI scans"
-              : quota.remaining <= 0
-                ? "No AI scans left — enter meals manually"
-                : `${quota.remaining} AI scan${quota.remaining === 1 ? "" : "s"} left this month`}
+            {access.statusText}
           </Text>
         ) : null}
 
