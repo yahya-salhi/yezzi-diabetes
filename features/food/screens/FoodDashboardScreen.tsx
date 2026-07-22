@@ -14,6 +14,7 @@ import { CameraIcon } from "@/components/ui/Icons";
 import { useInsights } from "@/features/food/hooks/useInsights";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import { useQuota } from "@/features/food/hooks/useQuota";
+import { usePlus } from "@/features/plus/hooks/usePlus";
 import type { FoodLog } from "@/features/food/types";
 
 type Nav = NativeStackNavigationProp<FoodStackParamList>;
@@ -31,6 +32,7 @@ export function FoodDashboardScreen() {
   const { topSpikes } = useInsights();
   const { getTodaysMeals } = useFoodLog();
   const { quota } = useQuota();
+  const { isPlus } = usePlus();
   const [todayMeals, setTodayMeals] = useState<FoodLog[]>([]);
 
   useFocusEffect(
@@ -52,7 +54,9 @@ export function FoodDashboardScreen() {
         <Text style={styles.screenTitle}>Food</Text>
         <Text style={styles.date}>{today}</Text>
 
-        {quota && (
+        {isPlus ? (
+          <Text style={styles.quotaLine}>Unlimited AI scans</Text>
+        ) : quota ? (
           <Text
             style={[
               styles.quotaLine,
@@ -66,7 +70,7 @@ export function FoodDashboardScreen() {
                 ? "No AI scans left — enter meals manually"
                 : `${quota.remaining} AI scan${quota.remaining === 1 ? "" : "s"} left this month`}
           </Text>
-        )}
+        ) : null}
 
         {!hasMeals && (
           <Card>

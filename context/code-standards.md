@@ -268,3 +268,18 @@ Approved dependencies for this project:
 - `react-native-purchases` — RevenueCat subscriptions for YeZZi Plus
 
 Do not install any other packages without updating this list first.
+
+---
+
+## Subscription & Entitlement Patterns
+
+- Entitlement state uses observable pattern (PlusStore) — same as QuotaStore
+- Never call `Purchases.getCustomerInfo()` directly in components — always use `usePlus()` hook
+- Paywall is a React Native `Modal`, not a React Navigation screen
+- Each screen manages its own `{ showPaywall, setShowPaywall }` state
+- `is_plus` is passed to proxy calls via `PlusStore.get().isPlus` at call time
+- RevenueCat API key is public — safe to ship in binary, lives in `config.ts`
+- `Purchases.configure()` is called once in `App.tsx` init — never call it again
+- `Purchases.logOut()` is called during data wipe — best-effort, won't block the wipe
+- Purchase errors are classified: `cancelled`, `payment_failed`, `network`, `unknown`
+- Cancelled purchases never show an error — the paywall simply stays open

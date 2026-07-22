@@ -7,6 +7,8 @@ import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
 import { useQuota } from "@/features/food/hooks/useQuota";
+import { usePlus } from "@/features/plus/hooks/usePlus";
+import { PaywallScreen } from "@/features/plus/screens/PaywallScreen";
 import type { MealType } from "@/features/food/types";
 
 type Step = "input" | "loading" | "review";
@@ -17,6 +19,7 @@ export function ManualEntryScreen() {
   const { analyzing, error: analysisError, analyzeText } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
   const { quota } = useQuota();
+  const { isPlus } = usePlus();
 
   const [step, setStep] = useState<Step>("input");
   const [description, setDescription] = useState("");
@@ -28,10 +31,11 @@ export function ManualEntryScreen() {
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
 
-  const isUnlimited = quota?.remaining === -1;
+  const isUnlimited = isPlus || quota?.remaining === -1;
   const quotaRemaining = isUnlimited ? null : (quota?.remaining ?? null);
-  const isQuotaExhausted = quotaRemaining !== null && quotaRemaining <= 0;
+  const isQuotaExhausted = !isPlus && quotaRemaining !== null && quotaRemaining <= 0;
 
   const handleAnalyze = async () => {
     if (!description.trim() || isQuotaExhausted) return;
@@ -135,7 +139,7 @@ export function ManualEntryScreen() {
           autoFocus
         />
 
-        {quotaRemaining !== null && (
+        {!isPlus && quotaRemaining !== null && (
           <Text style={styles.quotaText}>
             {isQuotaExhausted
               ? "No AI scans remaining this month"
@@ -143,7 +147,7 @@ export function ManualEntryScreen() {
           </Text>
         )}
 
-        {analysisError?.type === "quota_exhausted" && (
+        {analysisError?.type === "quota_exhausted" && !isQuotaExhausted && (
           <View style={styles.errorBanner}>
             <Text style={styles.errorText}>
               You've used all 10 scans this month. Enter manually or try next month.
@@ -169,21 +173,39 @@ export function ManualEntryScreen() {
           </View>
         )}
 
-        <TouchableOpacity
-          style={[
-            styles.analyzeButton,
-            (!description.trim() || isQuotaExhausted) && styles.analyzeButtonDisabled,
-          ]}
-          onPress={handleAnalyze}
-          disabled={!description.trim() || isQuotaExhausted}
-        >
-          <Text style={styles.analyzeButtonText}>Analyze with AI</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
-          <Text style={styles.skipButtonText}>Skip AI — enter manually</Text>
-        </TouchableOpacity>
+        {isQuotaExhausted ? (
+          <>
+            <TouchableOpacity
+              style={styles.analyzeButton}
+              onPress={() => setShowPaywall(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.analyzeButtonText}>Upgrade to Plus</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
+              <Text style={styles.skipButtonText}>Enter manually</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.analyzeButton,
+                !description.trim() && styles.analyzeButtonDisabled,
+              ]}
+              onPress={handleAnalyze}
+              disabled={!description.trim()}
+            >
+              <Text style={styles.analyzeButtonText}>Analyze with AI</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
+              <Text style={styles.skipButtonText}>Skip AI — enter manually</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
+
+      <PaywallScreen visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </View>
   );
 }

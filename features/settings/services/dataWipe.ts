@@ -1,4 +1,5 @@
 import * as SecureStore from "expo-secure-store";
+import Purchases from "react-native-purchases";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
 
@@ -20,5 +21,11 @@ export async function deleteAllData(db?: DatabasePort): Promise<void> {
 
   for (const key of SECURE_STORE_KEYS) {
     await SecureStore.deleteItemAsync(key);
+  }
+
+  try {
+    await Purchases.logOut();
+  } catch {
+    // RevenueCat logOut is best-effort — local data wipe is the priority
   }
 }

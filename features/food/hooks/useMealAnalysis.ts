@@ -5,6 +5,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { analyzeMeal, QuotaExhaustedError, AiServiceError, ProxyUnavailableError, QuotaStore } from "../services/aiProxy";
 import type { MealAnalysisResult } from "../services/mealAnalysis";
 import type { QuotaInfo } from "../services/aiProxy";
+import { PlusStore } from "@/features/plus/services/entitlement";
 
 export type PhotoAnalysisResult = {
   analysis: MealAnalysisResult;
@@ -48,7 +49,11 @@ export function useMealAnalysis(): UseMealAnalysisResult {
         new File(manipulated.uri).move(destFile);
 
         const base64 = await destFile.base64();
-        const response = await analyzeMeal({ mode: "photo", image_base64: base64 });
+        const response = await analyzeMeal({
+          mode: "photo",
+          image_base64: base64,
+          is_plus: PlusStore.get().isPlus,
+        });
 
         setResult(response.result);
         QuotaStore.set(response.quota);
@@ -70,7 +75,11 @@ export function useMealAnalysis(): UseMealAnalysisResult {
       setResult(null);
 
       try {
-        const response = await analyzeMeal({ mode: "text", description });
+        const response = await analyzeMeal({
+          mode: "text",
+          description,
+          is_plus: PlusStore.get().isPlus,
+        });
         setResult(response.result);
         QuotaStore.set(response.quota);
         return response.result;
