@@ -5,7 +5,6 @@ import { Platform, View, StyleSheet } from "react-native";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
-import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { OnboardingScreen } from "@/features/onboarding/screens/OnboardingScreen";
 import { getPreferences } from "@/features/onboarding/services/preferences";
@@ -14,6 +13,8 @@ import { createSqliteReminderStorage } from "@/features/reminders/services/remin
 import { createNotificationScheduler, createSkipHandler } from "@/features/reminders/services/notificationScheduler";
 import { colors } from "@/theme/tokens";
 import { REVENUECAT_API_KEY } from "@/config";
+import { setSubscriptionService } from "@/features/plus/services/subscription";
+import { createRevenueCatAdapter } from "@/features/plus/services/revenueCatAdapter";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -60,12 +61,9 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
-        if (__DEV__) {
-          Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-        }
-        Purchases.configure({
-          apiKey: Platform.OS === "ios" ? REVENUECAT_API_KEY.ios : REVENUECAT_API_KEY.android,
-        });
+        const apiKey = Platform.OS === "ios" ? REVENUECAT_API_KEY.ios : REVENUECAT_API_KEY.android;
+        const adapter = createRevenueCatAdapter(apiKey, __DEV__);
+        setSubscriptionService(adapter);
 
         const prefs = await getPreferences();
         setShowOnboarding(!prefs);

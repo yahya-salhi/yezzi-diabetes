@@ -1,9 +1,6 @@
-import Purchases, {
-  type PurchasesPackage,
-  type CustomerInfo,
-} from "react-native-purchases";
-
-const ENTITLEMENT_KEY = "is_plus";
+import type { SubscriptionPackage } from "./subscription";
+import { getSubscriptionService } from "./subscription";
+export type { SubscriptionPackage, PurchaseResult, PurchaseError } from "./subscription";
 
 export interface PlusState {
   isPlus: boolean;
@@ -36,14 +33,9 @@ export const PlusStore = {
   },
 };
 
-function deriveIsPlus(customerInfo: CustomerInfo): boolean {
-  return customerInfo.entitlements.active[ENTITLEMENT_KEY]?.isActive ?? false;
-}
-
 export async function checkEntitlement(): Promise<boolean> {
   try {
-    const info = await Purchases.getCustomerInfo();
-    const isPlus = deriveIsPlus(info);
+    const isPlus = await getSubscriptionService().checkEntitlement();
     PlusStore.set({ isPlus });
     return isPlus;
   } catch {
@@ -51,58 +43,25 @@ export async function checkEntitlement(): Promise<boolean> {
   }
 }
 
-export async function getOfferings(): Promise<PurchasesPackage[]> {
+export async function getOfferings(): Promise<SubscriptionPackage[]> {
   try {
-    const offerings = await Purchases.getOfferings();
-    return offerings.current?.availablePackages ?? [];
+    return await getSubscriptionService().getOfferings();
   } catch {
     return [];
   }
 }
 
-export type PurchaseResult =
-  | { success: true; isPlus: boolean }
-  | { success: false; error: PurchaseError };
-
-export type PurchaseError =
-  | { type: "cancelled" }
-  | { type: "payment_failed"; message: string }
-  | { type: "network"; message: string }
-  | { type: "unknown"; message: string };
-
-export async function purchasePackage(pkg: PurchasesPackage): Promise<PurchaseResult> {
-  try {
-    const { customerInfo } = await Purchases.purchasePackage(pkg);
-    const isPlus = deriveIsPlus(customerInfo);
-    PlusStore.set({ isPlus });
-    return { success: true, isPlus };
-  } catch (err: any) {
-    if (err.code === 1 || err.code === "1" || err.message?.includes("cancelled")) {
-      return { success: false, error: { type: "cancelled" } };
-    }
-    if (err.code === 2 || err.code === "2" || err.message?.includes("payment")) {
-      return {
-        success: false,
-        error: { type: "payment_failed", message: err.message ?? "Payment failed" },
-      };
-    }
-    if (err.code === 10 || err.code === "10" || err.code === 35 || err.code === "35" || err.message?.includes("network") || err.message?.includes("offline")) {
-      return {
-        success: false,
-        error: { type: "network", message: err.message ?? "Network error" },
-      };
-    }
-    return {
-      success: false,
-      error: { type: "unknown", message: err.message ?? "Purchase failed" },
-    };
+export async function purchasePackage(pkg: SubscriptionPackage) {
+  const result = await getSubscriptionService().purchasePackage(pkg);
+  if (result.success) {
+    PlusStore.set({ isPlus: result.isPlus });
   }
+  return result;
 }
 
 export async function restorePurchases(): Promise<boolean> {
   try {
-    const info = await Purchases.restorePurchases();
-    const isPlus = deriveIsPlus(info);
+    const isPlus = await getSubscriptionService().restorePurchases();
     PlusStore.set({ isPlus });
     return isPlus;
   } catch {

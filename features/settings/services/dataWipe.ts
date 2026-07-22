@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
-import Purchases from "react-native-purchases";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
+import { getSubscriptionService } from "@/features/plus/services/subscription";
 
 const TABLES = [
   "glucose_readings",
@@ -24,8 +24,8 @@ export async function deleteAllData(db?: DatabasePort): Promise<void> {
   }
 
   try {
-    await Purchases.logOut();
+    await getSubscriptionService().logout();
   } catch {
-    // RevenueCat logOut is best-effort — local data wipe is the priority
+    // logout is best-effort — local data wipe is the priority
   }
 }

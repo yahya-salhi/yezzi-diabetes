@@ -7,10 +7,9 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import type { PurchasesPackage } from "react-native-purchases";
 import { colors, spacing } from "@/theme/tokens";
 import { getOfferings, purchasePackage, restorePurchases } from "../services/entitlement";
-import type { PurchaseError } from "../services/entitlement";
+import type { SubscriptionPackage, PurchaseError } from "../services/entitlement";
 
 type Props = {
   visible: boolean;
@@ -18,7 +17,7 @@ type Props = {
 };
 
 export function PaywallScreen({ visible, onClose }: Props) {
-  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [packages, setPackages] = useState<SubscriptionPackage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loadingOfferings, setLoadingOfferings] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
@@ -82,18 +81,15 @@ export function PaywallScreen({ visible, onClose }: Props) {
     setRestoring(false);
   };
 
-  const formatPrice = (pkg: PurchasesPackage): string => {
-    const price = pkg.product.priceString;
-    const period = pkg.product.subscriptionPeriod;
-    if (period === "P1M") return `${price}/mo`;
-    if (period === "P1Y") return `${price}/yr`;
-    return price;
+  const formatPrice = (pkg: SubscriptionPackage): string => {
+    if (pkg.subscriptionPeriod === "P1M") return `${pkg.priceString}/mo`;
+    if (pkg.subscriptionPeriod === "P1Y") return `${pkg.priceString}/yr`;
+    return pkg.priceString;
   };
 
-  const getPeriodLabel = (pkg: PurchasesPackage): string => {
-    const period = pkg.product.subscriptionPeriod;
-    if (period === "P1M") return "per month";
-    if (period === "P1Y") return "per year";
+  const getPeriodLabel = (pkg: SubscriptionPackage): string => {
+    if (pkg.subscriptionPeriod === "P1M") return "per month";
+    if (pkg.subscriptionPeriod === "P1Y") return "per year";
     return "";
   };
 
