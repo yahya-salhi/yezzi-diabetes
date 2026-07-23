@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 3 — Store Readiness & v1 Launch
-**Last completed:** 21 AI Proxy + Scan Quota
-**Next:** 22 YeZZi Plus — Subscription + Paywall
+**Last completed:** 22 YeZZi Plus — Subscription + Paywall
+**Next:** 23 Compliance Pack
 
 **Roadmap re-prioritized 2026-07-08** per store-readiness spec: new Phase 3 (Store Readiness & v1 Launch) inserted before exercise; exercise moved to Phase 4 (v1.1, post-launch).
 
@@ -50,7 +50,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [X] 19 Backup & Restore
 - [X] 20 CSV Export + PDF Doctor Report
 - [X] 21 AI Proxy + Scan Quota
-- [ ] 22 YeZZi Plus — Subscription + Paywall
+- [X] 22 YeZZi Plus — Subscription + Paywall
 - [ ] 23 Compliance Pack
 - [ ] 24 Store Listing + Launch
 
@@ -99,6 +99,11 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-20** — RevenueCat entitlement approach: client-trusted `is_plus` flag sent in proxy request body; proxy skips quota check + KV increment when `is_plus === true`; no server-side RevenueCat validation for v1 (spoofing risk acceptable at ~$0.01/scan cost)
 - **2026-07-20** — Delete-all data: wipes all SQLite tables (glucose_readings, food_log, reminder_preferences, user_preferences) + SecureStore keys (device_uuid, cached_quota); app reloads after wipe, onboarding re-shown
 - **2026-07-20** — Error banner token: extracted hardcoded `#FEF2F2` to `colors.errorLight` in theme/tokens.ts
+- **2026-07-21** — ADR 0002 locked YeZZi Plus subscription decisions: RevenueCat entitlement key `is_plus`; Google Play product IDs `yezzi_plus_monthly` and `yezzi_plus_yearly`; visible Settings Plus row; quota exhausted offers Upgrade + Enter manually; paywall only at natural gated moments; v1 uses client-trusted `is_plus` with server-side RevenueCat validation deferred post-launch
+- **2026-07-22** — Feature 23 built: RevenueCat SDK (`react-native-purchases` v10.4.4) integrated; PlusStore observable pattern (matches QuotaStore); PaywallScreen as React Native Modal (monthly + yearly cards); `is_plus` wired into proxy calls via `useMealAnalysis`; quota indicator overridden for Plus users; ManualEntryScreen quota-exhausted offers Upgrade + Enter manually; Settings YeZZi Plus section with status/upgrade/restore; PDF export gated behind `is_plus`; data wipe logs out of RevenueCat
+- **2026-07-22** — Subscription Provider Seam introduced: `subscription.ts` defines abstract `SubscriptionService` interface + service locator; `revenueCatAdapter.ts` isolates native SDK inside one adapter; `entitlement.ts` delegates to seam; `dataWipe.ts` uses seam instead of direct RevenueCat import; `App.tsx` configures via adapter; `PaywallScreen.tsx` uses abstract `SubscriptionPackage` type
+- **2026-07-22** — Scanning Access Controller: `scanAccess.ts` consolidates usage limits + subscription into unified `useScanAccess()` hook; `useMealAnalysis.ts` uses `useIsPlusRef` from controller instead of `PlusStore.get()`; `FoodDashboardScreen` and `ManualEntryScreen` replaced `useQuota` + `usePlus` with single `useScanAccess()` call
+- **2026-07-22** — Paywall Seam: `PaywallProvider.tsx` centralizes paywall modal rendering via context + `usePaywall()` hook; `ManualEntryScreen`, `SettingsScreen`, `ExportSection` removed duplicated `<PaywallScreen>` tags and `showPaywall` state; `App.tsx` wraps content with `<PaywallProvider>`
 
 ---
 

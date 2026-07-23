@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet } from "react-native";
+import { ScrollView, View, Text, Switch, TouchableOpacity, Platform, Alert, StyleSheet, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Updates from "expo-updates";
@@ -9,6 +9,9 @@ import { NotificationPermissionOverlay } from "@/features/reminders/components/N
 import { BackupSection } from "@/features/settings/components/BackupSection";
 import { ExportSection } from "@/features/settings/components/ExportSection";
 import { deleteAllData } from "@/features/settings/services/dataWipe";
+import { usePlus } from "@/features/plus/hooks/usePlus";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
+import { restorePurchases } from "@/features/plus/services/entitlement";
 import type { ReminderType } from "@/features/reminders/types";
 import * as Notifications from "expo-notifications";
 
@@ -24,9 +27,12 @@ const REMINDER_LABELS: Record<string, string> = {
 export function SettingsScreen() {
   const [appearanceDark, setAppearanceDark] = useState(false);
   const { preferences, save, loading } = useReminderSettings();
+  const { isPlus } = usePlus();
   const [pickerTarget, setPickerTarget] = useState<string | null>(null);
   const [pickerDate, setPickerDate] = useState(new Date());
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const { showPaywall: triggerPaywall } = usePaywall();
 
   const handleToggle = async (id: string, enabled: boolean) => {
     if (!enabled) {
@@ -50,6 +56,16 @@ export function SettingsScreen() {
 
   const handlePermissionDismissed = () => {
     setPendingToggle(null);
+  };
+
+  const handleRestore = async () => {
+    if (restoring) return;
+    setRestoring(true);
+    const result = await restorePurchases();
+    setRestoring(false);
+    if (!result) {
+      Alert.alert("No subscription found", "No active subscription was found to restore.");
+    }
   };
 
   const handleDeleteAll = () => {
@@ -128,6 +144,58 @@ export function SettingsScreen() {
               <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
             </View>
           </View>
+        </View>
+      </View>
+
+      <View>
+        <Text style={styles.sectionHeader}>YEZZI PLUS</Text>
+        <View style={styles.group}>
+          <View style={styles.row}>
+            <Text style={styles.label}>YeZZi Plus</Text>
+            <Text style={[styles.value, isPlus && styles.valuePlus]}>
+              {isPlus ? "Plus" : "Free"}
+            </Text>
+          </View>
+          {!isPlus && (
+            <>
+              <View style={styles.divider} />
+              <TouchableOpacity
+                style={styles.row}
+                onPress={triggerPaywall}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.label}>Upgrade to Plus</Text>
+                <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
+              </TouchableOpacity>
+            </>
+          )}
+          {isPlus && (
+            <>
+              <View style={styles.divider} />
+              <TouchableOpacity
+                style={styles.row}
+                onPress={triggerPaywall}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.label}>Manage subscription</Text>
+                <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
+              </TouchableOpacity>
+            </>
+          )}
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={handleRestore}
+            disabled={restoring}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.label}>Restore purchases</Text>
+            {restoring ? (
+              <ActivityIndicator size="small" color={colors.accent} />
+            ) : (
+              <ChevronRightIcon size={18} color={colors.textMuted} strokeWidth={1.8} />
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -307,6 +375,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: colors.textSecondary,
+  },
+  valuePlus: {
+    color: colors.accent,
   },
   valueDanger: {
     fontSize: 15,

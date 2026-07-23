@@ -6,7 +6,8 @@ import { colors, spacing } from "@/theme/tokens";
 import { MealReviewForm } from "@/features/food/components/MealReviewForm";
 import { useMealAnalysis } from "@/features/food/hooks/useMealAnalysis";
 import { useFoodLog } from "@/features/food/hooks/useFoodLog";
-import { useQuota } from "@/features/food/hooks/useQuota";
+import { useScanAccess } from "@/features/food/services/scanAccess";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
 import type { MealType } from "@/features/food/types";
 
 type Step = "input" | "loading" | "review";
@@ -16,7 +17,7 @@ export function ManualEntryScreen() {
   const route = useRoute<RouteProp<FoodStackParamList, "ManualEntry">>();
   const { analyzing, error: analysisError, analyzeText } = useMealAnalysis();
   const { saving, error: saveError, saveMeal } = useFoodLog();
-  const { quota } = useQuota();
+  const access = useScanAccess();
 
   const [step, setStep] = useState<Step>("input");
   const [description, setDescription] = useState("");
@@ -28,13 +29,10 @@ export function ManualEntryScreen() {
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [notes, setNotes] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState(0);
-
-  const isUnlimited = quota?.remaining === -1;
-  const quotaRemaining = isUnlimited ? null : (quota?.remaining ?? null);
-  const isQuotaExhausted = quotaRemaining !== null && quotaRemaining <= 0;
+  const { showPaywall } = usePaywall();
 
   const handleAnalyze = async () => {
-    if (!description.trim() || isQuotaExhausted) return;
+    if (!description.trim() || !access.canAnalyze) return;
 
     setStep("loading");
     const result = await analyzeText(description.trim());
@@ -135,15 +133,11 @@ export function ManualEntryScreen() {
           autoFocus
         />
 
-        {quotaRemaining !== null && (
-          <Text style={styles.quotaText}>
-            {isQuotaExhausted
-              ? "No AI scans remaining this month"
-              : `${quotaRemaining} AI scan${quotaRemaining === 1 ? "" : "s"} remaining`}
-          </Text>
-        )}
+        {access.statusText ? (
+          <Text style={styles.quotaText}>{access.statusText}</Text>
+        ) : null}
 
-        {analysisError?.type === "quota_exhausted" && (
+        {analysisError?.type === "quota_exhausted" && !access.isQuotaExhausted && (
           <View style={styles.errorBanner}>
             <Text style={styles.errorText}>
               You've used all 10 scans this month. Enter manually or try next month.
@@ -169,20 +163,36 @@ export function ManualEntryScreen() {
           </View>
         )}
 
-        <TouchableOpacity
-          style={[
-            styles.analyzeButton,
-            (!description.trim() || isQuotaExhausted) && styles.analyzeButtonDisabled,
-          ]}
-          onPress={handleAnalyze}
-          disabled={!description.trim() || isQuotaExhausted}
-        >
-          <Text style={styles.analyzeButtonText}>Analyze with AI</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
-          <Text style={styles.skipButtonText}>Skip AI — enter manually</Text>
-        </TouchableOpacity>
+        {access.isQuotaExhausted ? (
+          <>
+            <TouchableOpacity
+              style={styles.analyzeButton}
+              onPress={showPaywall}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.analyzeButtonText}>Upgrade to Plus</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
+              <Text style={styles.skipButtonText}>Enter manually</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.analyzeButton,
+                !description.trim() && styles.analyzeButtonDisabled,
+              ]}
+              onPress={handleAnalyze}
+              disabled={!description.trim()}
+            >
+              <Text style={styles.analyzeButtonText}>Analyze with AI</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipAI}>
+              <Text style={styles.skipButtonText}>Skip AI — enter manually</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );

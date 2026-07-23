@@ -384,10 +384,17 @@ Move the OpenRouter call behind a server proxy — the API key never ships in th
 
 ### 23 YeZZi Plus — Subscription + Paywall
 
+Before implementation, read `CONTEXT.md` and `docs/adr/0002-yezzi-plus-subscription-paywall.md`.
+
 **Logic:**
 - RevenueCat SDK, Google Play products: $2.99/month, $19.99/year
+- Product IDs: `yezzi_plus_monthly`, `yezzi_plus_yearly`
+- Entitlement key: `is_plus`
 - Entitlement grants unlimited scans (checked by proxy) + PDF reports
 - Paywall shown only at natural moments: quota exhausted, PDF export — never at launch
+- Settings includes a visible YeZZi Plus row for status, upgrade access, and restore purchases
+- Quota exhausted flow offers two choices: Upgrade and Enter manually
+- v1 proxy trusts client-sent `is_plus`; server-side RevenueCat validation is deferred post-launch
 
 **Verification:** Sandbox purchase unlocks unlimited scans and PDF. Cancellation returns to free tier cleanly.
 

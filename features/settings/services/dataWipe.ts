@@ -1,6 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { getDbAdapter } from "@/db/instance";
 import type { DatabasePort } from "@/db/port";
+import { getSubscriptionService } from "@/features/plus/services/subscription";
 
 const TABLES = [
   "glucose_readings",
@@ -20,5 +21,11 @@ export async function deleteAllData(db?: DatabasePort): Promise<void> {
 
   for (const key of SECURE_STORE_KEYS) {
     await SecureStore.deleteItemAsync(key);
+  }
+
+  try {
+    await getSubscriptionService().logout();
+  } catch {
+    // logout is best-effort — local data wipe is the priority
   }
 }

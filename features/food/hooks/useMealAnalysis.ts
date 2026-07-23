@@ -5,6 +5,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { analyzeMeal, QuotaExhaustedError, AiServiceError, ProxyUnavailableError, QuotaStore } from "../services/aiProxy";
 import type { MealAnalysisResult } from "../services/mealAnalysis";
 import type { QuotaInfo } from "../services/aiProxy";
+import { useIsPlusRef } from "../services/scanAccess";
 
 export type PhotoAnalysisResult = {
   analysis: MealAnalysisResult;
@@ -29,6 +30,7 @@ export function useMealAnalysis(): UseMealAnalysisResult {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<MealAnalysisResult | null>(null);
   const [error, setError] = useState<ProxyError | null>(null);
+  const isPlusRef = useIsPlusRef();
 
   const analyzePhoto = useCallback(
     async (uri: string): Promise<PhotoAnalysisResult | null> => {
@@ -48,7 +50,11 @@ export function useMealAnalysis(): UseMealAnalysisResult {
         new File(manipulated.uri).move(destFile);
 
         const base64 = await destFile.base64();
-        const response = await analyzeMeal({ mode: "photo", image_base64: base64 });
+        const response = await analyzeMeal({
+          mode: "photo",
+          image_base64: base64,
+          is_plus: isPlusRef.current,
+        });
 
         setResult(response.result);
         QuotaStore.set(response.quota);
@@ -70,7 +76,11 @@ export function useMealAnalysis(): UseMealAnalysisResult {
       setResult(null);
 
       try {
-        const response = await analyzeMeal({ mode: "text", description });
+        const response = await analyzeMeal({
+          mode: "text",
+          description,
+          is_plus: isPlusRef.current,
+        });
         setResult(response.result);
         QuotaStore.set(response.quota);
         return response.result;

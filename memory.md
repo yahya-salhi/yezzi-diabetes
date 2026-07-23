@@ -1,59 +1,66 @@
-# Memory — Feature 21: CSV Export + PDF Doctor Report
+# Memory — Feature 22 (cont): YeZZi Plus RevenueCat Setup & Android Fixes
 
-Last updated: 2026-07-16
+Last updated: 2026-07-22
 
 ## What was built
 
-### Feature 21 — CSV Export + PDF Doctor Report
+- **RevenueCat project configured via API v2:**
+  - Created `is_plus` entitlement (lookup_key: `is_plus`)
+  - Created products: `yezzi_plus_monthly` (P1M, id: `prodd6a91f11e0`) and `yezzi_plus_yearly` (P1Y, id: `prod780715f0a9`) under Test Store app
+  - Attached both products to `is_plus` entitlement
+  - Replaced default test store products in existing `$rc_monthly` / `$rc_annual` packages with our products
+  - Removed old test store products (Monthly, Yearly, Lifetime), Lifetime package, and archived old `yezzi Pro` entitlement
+  - Default offering now has 2 packages: Monthly → yeazi_plus_monthly, Yearly → yeazzi_plus_yearly
 
-- **Created `features/settings/services/csvExport.ts`** — `generateCsv()` produces CSV string with headers Type/Date/Time/Value/Unit/Notes from `GlucoseReading[]`; `getReadingsForRange(range)` queries glucose_readings filtered by 7/30/90/all days; `writeCsvFile()` uses `expo-file-system/legacy` `writeAsStringAsync` to write CSV to document directory; `shareCsvFile()` shares via expo-sharing with mimeType text/csv
-- **Created `features/settings/services/pdfReport.ts`** — `generateReportHtml()` builds a clinical HTML document with averages section (fasting/post-meal/overall avg + count), in-range summary, and trend table with color-coded horizontal bars; `generatePdfFile()` calls `expo-print.printToFileAsync()`; `sharePdfFile()` shares via expo-sharing with application/pdf mime type
-- **Created `features/settings/components/ExportRangePicker.tsx`** — centered card modal with 4 options (Last 7/30/90 Days, All Time), matches MealLinkPicker overlay pattern
-- **Created `features/settings/components/PdfPreviewModal.tsx`** — full-screen slide modal with header, scrollable preview of averages + trend table with color-coded in-range bars, full-width share button at bottom
-- **Created `features/settings/components/ExportSection.tsx`** — orchestrates both export flows with range picker → CSV direct share or PDF preview → share; Plus badge on PDF row
-- **Modified `features/settings/screens/SettingsScreen.tsx`** — added EXPORT section header + `<ExportSection />` between Backup and Data sections
-- **Added `expo-print` dependency** — via `npx expo install`
+- **Code fixes applied:**
+  - `features/plus/screens/PaywallScreen.tsx` — identifier checks now include `"annual"` to match `$rc_annual` package
+  - `features/plus/services/entitlement.ts`:
+    - `deriveIsPlus` uses `?.isActive` instead of `typeof` key existence check
+    - Error codes corrected: code 3 → codes 10 (NetworkError) / 35 (OfflineConnectionError)
+    - Added string variant checks (`"10"`, `"35"`) for cross-platform Android/iOS bridge compatibility
 
-### Registry updates
-
-- **Updated `context/ui-registry.md`** — imprinted ExportSection, ExportRangePicker, PdfPreviewModal
-
-### Progress tracking
-
-- **Updated `context/progress-tracker.md`** — marked Feature 21 complete, next is Feature 22 (AI Proxy + Scan Quota)
+- **Git history (branch `feat/yezzi-plus-paywall`):**
+  - `f0e445f` — feat(plus): add RevenueCat SDK, PlusStore, PaywallScreen, and API config
+  - `736da0f` — feat: wire is_plus entitlement into food analysis, settings, and data wipe
+  - `773dd54` — fix(plus): correct RevenueCat error codes and deriveIsPlus check
 
 ## Decisions made
 
-- **Date range picker first** — user selects 7/30/90/All before either export runs
-- **CSV direct share** — no preview, shares immediately via system share sheet
-- **PDF preview modal** — native RN preview (not WebView) with trend bars, share button generates the actual PDF via expo-print
-- **PDF trend = HTML table with colored bars** — no chart library, inline CSS width bars color-coded by in-range status (green/orange/red)
-- **Plus badge** — small accentLight tag on PDF row; Plus gating deferred to paywall feature
-- **EXPORT section** — new section in Settings between Backup and DATA, follows SettingsGroup pattern exactly
+- **Test Store products for dev** — products live under RevenueCat's Test Store app since no iOS/Play Store app credentials are configured. Store identifiers match what the app code expects (`yezzi_plus_monthly`, `yezzi_plus_yearly`). When real stores are set up later, products can be imported and packages re-linked.
+- **$rc_annual identifier** — RevenueCat's default yearly package uses `$rc_annual` (not `$rc_yearly`). Code patched to check both `"yearly"` and `"annual"`.
+- **Cross-platform error codes** — RevenueCat error enums are strings (`"1"`) but native bridge may return numbers (`1`). Both variants checked defensively.
 
 ## Problems solved
 
-- **expo-print not installed** — added via `npx expo install expo-print`
-- **TS5103 ignoreDeprecations** — reverted `"6.0"` to `"5.0"`; TS 5.9.3 only accepts `"5.0"` (the deprecation warning about baseUrl is for TS 7.0, not an error)
-- **View/Text style conflict in PdfPreviewModal** — `tableCell` style with font properties cannot be applied to `<View>`; extracted `viewCell` for container usage
-- **null preferences handling** — `getPreferences()` can return null; provided IDF default values as fallback in ExportSection
-- **CSV export hang on iOS** — `Sharing.shareAsync` never resolved with `file.uri` from expo-file-system v19 `File` API. Root cause: URI format incompatibility between expo-file-system v19 and expo-sharing. Fix: replaced new `File` API with `expo-file-system/legacy` `writeAsStringAsync` which returns proper `file://` URIs. Added mimeType and UTI to share call. Removed 8s timeout hack.
+- **RevenueCat error code 3 → 10/35** — code 3 is `PurchaseNotAllowedError` (parental controls, not signed in), not a network error. Correct network codes are 10 (`NetworkError`) and 35 (`OfflineConnectionError`).
+- **deriveIsPlus fragility** — old `typeof` check would false-positive if RevenueCat ever included inactive entitlements in the `active` map. `?.isActive` is the documented API.
+- **PaywallScreen yearly detection** — `$rc_annual` doesn't contain "yearly". Added `"annual"` fallback to find the yearly package.
 
 ## Current state
 
-- **Phase 3 — Features 1–21 complete** (Foundation through CSV Export + PDF Doctor Report)
-- Branch: `feat/csv-export-pdf-report`
-- Zero TypeScript errors, lint passes
-- CSV export bug resolved — uses expo-print for file writing
-- Memory updated to reflect this session
+- RevenueCat project `proj8d60c761` is configured for Android/test development:
+  - `is_plus` entitlement → `yezzi_plus_monthly` + `yezzi_plus_yearly` products
+  - Default offering with 2 packages, currently active
+  - Test Store public API key (`test_SztDywCDNyzKAgAfHdypxGqxYZQ`) in `config.ts` — works for Android
+- iOS app not set up in RevenueCat (couldn't create — API key lacked `apps:read_write`)
+- MCP config updated with write-enabled key for future RevenueCat API access
+- 3 commits on branch `feat/yezzi-plus-paywall`, unpushed
 
 ## Next session starts with
 
-**Feature 22 — AI Proxy + Scan Quota** (build-plan item 21)
+**Feature 23 — Compliance Pack** (Phase 3, Store Readiness & v1 Launch)
 
-- Cloudflare Workers endpoint for OpenRouter proxy
-- Anonymous device UUID generation
-- Free tier: 10 scans/month
-- Manual entry always available even at 0 quota
+From progress-tracker: privacy policy, terms of service, consent flows, data retention, and any store-required legal screens. Google Play requires this before listing.
+
+Check `docs/superpowers/specs/` for the store readiness design doc.
+
+**Also pending:**
+- `git push origin feat/yezzi-plus-paywall` and open PR to `main`
+- Run `npm run android` (requires Android emulator) to verify RevenueCat offerings load and purchase flow works end-to-end
 
 ## Open questions
+
+- Feature 23 Compliance Pack scope not yet reviewed — needs spec read
+- iOS App Store app not configured in RevenueCat — user focused on Android only for now
+- iOS SDK API key (`appl_...`) still a placeholder in `config.ts` — needs iOS app setup first
+- Branch `feat/yezzi-plus-paywall` not yet pushed or merged

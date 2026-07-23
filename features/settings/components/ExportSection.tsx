@@ -4,8 +4,12 @@ import { ChevronRightIcon } from "@/components/ui/Icons";
 import { ExportRangePicker } from "./ExportRangePicker";
 import { PdfPreviewModal } from "./PdfPreviewModal";
 import { useExportWorkflow } from "../hooks/useExportWorkflow";
+import { usePlus } from "@/features/plus/hooks/usePlus";
+import { usePaywall } from "@/features/plus/components/PaywallProvider";
 
 export function ExportSection() {
+  const { isPlus } = usePlus();
+  const { showPaywall } = usePaywall();
   const {
     rangePickerVisible,
     csvLoading,
@@ -40,7 +44,13 @@ export function ExportSection() {
         <View style={styles.divider} />
         <TouchableOpacity
           style={styles.row}
-          onPress={() => handleExportPress("pdf")}
+          onPress={() => {
+            if (isPlus) {
+              handleExportPress("pdf");
+            } else {
+              showPaywall();
+            }
+          }}
           disabled={pdfLoading}
         >
           <Text style={styles.label}>Export PDF report</Text>

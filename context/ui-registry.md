@@ -799,3 +799,60 @@ Last updated: 2026-07-17
 | Shadow           | none                               |
 
 **Pattern notes:** Secondary outline action button used as an alternative to the primary action. Matches Button secondary variant but implemented as inline TouchableOpacity. Used when offering a "free" alternative to a quota-gated action. Always appears below the primary action button with no gap (natural spacing from padding).
+
+---
+
+### PaywallScreen
+
+File: `features/plus/screens/PaywallScreen.tsx`
+Last updated: 2026-07-22
+
+| Property          | Value                              |
+| ----------------- | ---------------------------------- |
+| Presentation      | React Native `Modal`, `animationType="slide"`, `presentationStyle="pageSheet"` |
+| Container bg      | `colors.background`                |
+| Close text        | 15px, 500, `colors.textMuted`, right-aligned |
+| Title             | 28px, 700, `colors.textPrimary`    |
+| Subtitle          | 15px, 400, `colors.textSecondary`, lineHeight 22, marginTop -spacing.lg |
+| Benefit dot       | 6px circle, `colors.accent`        |
+| Benefit text      | 15px, 400, `colors.textPrimary`    |
+| Package card bg   | `colors.surface`                   |
+| Package card border | 1.5px `colors.border`            |
+| Package card selected | 1.5px `colors.accent`, `colors.accentLight` bg |
+| Package label     | 17px, 600, `colors.textPrimary` (selected: `colors.accent`) |
+| Package period    | 13px, 400, `colors.textMuted` (selected: `colors.textSecondary`) |
+| Package price     | 20px, 700, `colors.textPrimary` (selected: `colors.accent`) |
+| Save badge bg     | `colors.accentLight` (selected: `colors.accent`) |
+| Save badge text   | 11px, 600, `colors.accent` (selected: #FFFFFF) |
+| Subscribe button  | `colors.accent` bg, 10px radius, 16px vertical padding |
+| Subscribe text    | 16px, 600, #FFFFFF                 |
+| Subscribe disabled | 0.5 opacity                       |
+| Restore text      | 14px, 500, `colors.textMuted`, center |
+| Error text        | 14px, 500, `colors.error`, center  |
+| Restored text     | 14px, 500, `colors.textMuted`, center |
+| Body gap          | `spacing.xxl` (28px)               |
+| Packages gap      | `spacing.md` (12px)                |
+
+**Pattern notes:** Modal overlay for subscription purchase. Uses `pageSheet` presentation for iOS-style bottom sheet. Package cards are selectable TouchableOpacity elements with 1.5px border (thicker than standard 1px to communicate selection state). Selected card switches to accent border + accentLight background. Close button is text-only (not an X icon) in the top-right corner. Subscribe button is full-width, disabled until a plan is selected. "Restore purchases" is a text link below the button. Error/restored messages appear between packages and subscribe button. Fetches offerings from RevenueCat on mount.
+
+---
+
+### SettingsPlusRow (inline pattern)
+
+File: `features/settings/screens/SettingsScreen.tsx` (inline)
+Last updated: 2026-07-22
+
+| Property         | Value                              |
+| ---------------- | ---------------------------------- |
+| Section header   | 13px, 500, `colors.textMuted`, letterSpacing 0.5, uppercase |
+| Container bg     | `colors.surface`                   |
+| Container radius | 14                                 |
+| Row min height   | 48px                               |
+| Row padding      | `spacing.xl` (20px) horizontal, `spacing.md` (12px) vertical |
+| Label            | 15px, 400, `colors.textPrimary`    |
+| Status value     | 15px, 500, `colors.textSecondary` (Plus: `colors.accent`) |
+| Chevron icon     | `ChevronRightIcon`, 18px, `colors.textMuted` |
+| Divider          | 1px, `colors.borderLight`, `marginLeft: spacing.xl` |
+| Loading          | `ActivityIndicator`, `colors.accent` |
+
+**Pattern notes:** Matches `SettingsGroup` pattern exactly. Status row shows "Free" or "Plus" — Plus text uses accent color. Below status: conditional rows for Upgrade/Manage + Restore. Restore shows ActivityIndicator while in progress. Placed between PREFERENCES and APPEARANCE sections. Section header follows standard "YEZZI PLUS" uppercase muted pattern.

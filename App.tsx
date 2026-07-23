@@ -12,6 +12,10 @@ import { RepoProvider, useGlucoseReadings } from "@/features/repos/RepoContext";
 import { createSqliteReminderStorage } from "@/features/reminders/services/reminderStorage";
 import { createNotificationScheduler, createSkipHandler } from "@/features/reminders/services/notificationScheduler";
 import { colors } from "@/theme/tokens";
+import { REVENUECAT_API_KEY } from "@/config";
+import { setSubscriptionService } from "@/features/plus/services/subscription";
+import { createRevenueCatAdapter } from "@/features/plus/services/revenueCatAdapter";
+import { PaywallProvider } from "@/features/plus/components/PaywallProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -58,6 +62,10 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
+        const apiKey = Platform.OS === "ios" ? REVENUECAT_API_KEY.ios : REVENUECAT_API_KEY.android;
+        const adapter = createRevenueCatAdapter(apiKey, __DEV__);
+        setSubscriptionService(adapter);
+
         const prefs = await getPreferences();
         setShowOnboarding(!prefs);
       } catch (err) {
@@ -82,14 +90,16 @@ export default function App() {
     <RepoProvider>
       <NavigationContainer>
         <NotificationInit />
-        <View style={styles.root} onLayout={onLayoutRootView}>
-          <StatusBar style="dark" />
-          {showOnboarding ? (
-            <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-          ) : (
-            <AppNavigator />
-          )}
-        </View>
+        <PaywallProvider>
+          <View style={styles.root} onLayout={onLayoutRootView}>
+            <StatusBar style="dark" />
+            {showOnboarding ? (
+              <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+            ) : (
+              <AppNavigator />
+            )}
+          </View>
+        </PaywallProvider>
       </NavigationContainer>
     </RepoProvider>
   );
