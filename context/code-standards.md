@@ -266,6 +266,7 @@ Approved dependencies for this project:
 - `expo-updates` — App reload after data wipe
 
 - `react-native-purchases` — RevenueCat subscriptions for YeZZi Plus
+- `@aptabase/react-native` — Privacy-first anonymous event analytics
 
 Do not install any other packages without updating this list first.
 

@@ -398,3 +398,16 @@ YeZZi Plus subscription decisions are locked in `CONTEXT.md` and
 - Paywall appears only at natural gated moments: quota exhausted or PDF export
 - Quota exhausted must offer both Upgrade and Enter manually
 - v1 sends client-trusted `is_plus` to the AI proxy; server-side RevenueCat validation is deferred post-launch
+
+---
+
+## @aptabase/react-native (Analytics)
+
+**Check first:** Read the Aptabase React Native SDK documentation before implementation.
+
+Compliance and privacy boundaries are locked in `CONTEXT.md` and `docs/adr/0003-compliance.md`.
+
+**Project rules:**
+- Initialize in the root layout file (e.g. `App.tsx`) with the app key.
+- Track only high-level feature event counts (e.g. `app_first_launch`, `reading_added`, `meal_added`, `backup_created`, `subscription_upgraded`).
+- Never track blood glucose readings, meal descriptions, or any personal health data in event properties.

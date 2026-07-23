@@ -402,6 +402,8 @@ Before implementation, read `CONTEXT.md` and `docs/adr/0002-yezzi-plus-subscript
 
 ### 24 Compliance Pack
 
+Before implementation, read `CONTEXT.md` and `docs/adr/0003-compliance.md`.
+
 **Logic:**
 - Medical disclaimer: shown once at onboarding, always accessible in Settings
 - Privacy policy hosted at public URL (GitHub Pages)

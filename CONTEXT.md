@@ -1,4 +1,4 @@
-﻿# YeZZi Domain Glossary
+# YeZZi Domain Glossary
 
 Use this vocabulary in code, docs, and UI copy. These terms cover the AI proxy,
 scan quota, and YeZZi Plus subscription boundary.
@@ -75,3 +75,13 @@ scan quota, and YeZZi Plus subscription boundary.
 | **Describe meal** | Text AI path on ManualEntryScreen. User types a description and taps Analyze. Uses 1 scan for free users, unlimited for Plus users. |
 | **Skip AI** | Manual log path. User enters nutrition fields without calling the proxy. Free at any quota level. |
 | **PDF doctor report** | Plus-gated formatted PDF export for care-team review. CSV export remains free. |
+
+## Compliance & Legal
+
+| Term | Definition |
+|------|------------|
+| **Medical disclaimer** | Statement shown once as the first step (Step 0) of onboarding, and always accessible via a native Alert in Settings. States that YeZZi is not a medical device and does not give medical advice. |
+| **Privacy policy** | Policy page hosted at a public GitHub Pages URL explaining that health data stays on-device, and meal photos are processed transiently without being stored. |
+| **Data deletion** | Action triggered by "Clear all data" in Settings. Wipes all local SQLite tables, deletes stored SecureStore keys (including device UUID and cached quota), logs out of RevenueCat, and reloads the app via `expo-updates` to show onboarding. |
+| **Aptabase analytics** | Privacy-first, lightweight, open-source analytics platform. Tracks simple event counts (like reading added, screen viewed) without harvesting IP addresses or personal identifiers. GDPR/HIPAA compliant. |
+| **Data safety declaration** | Google Play safety disclosures detailing that photos are processed only (transiently), the device ID is anonymous, and purchase state is handled separately from health records. |

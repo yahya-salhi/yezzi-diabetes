@@ -104,6 +104,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - **2026-07-22** — Subscription Provider Seam introduced: `subscription.ts` defines abstract `SubscriptionService` interface + service locator; `revenueCatAdapter.ts` isolates native SDK inside one adapter; `entitlement.ts` delegates to seam; `dataWipe.ts` uses seam instead of direct RevenueCat import; `App.tsx` configures via adapter; `PaywallScreen.tsx` uses abstract `SubscriptionPackage` type
 - **2026-07-22** — Scanning Access Controller: `scanAccess.ts` consolidates usage limits + subscription into unified `useScanAccess()` hook; `useMealAnalysis.ts` uses `useIsPlusRef` from controller instead of `PlusStore.get()`; `FoodDashboardScreen` and `ManualEntryScreen` replaced `useQuota` + `usePlus` with single `useScanAccess()` call
 - **2026-07-22** — Paywall Seam: `PaywallProvider.tsx` centralizes paywall modal rendering via context + `usePaywall()` hook; `ManualEntryScreen`, `SettingsScreen`, `ExportSection` removed duplicated `<PaywallScreen>` tags and `showPaywall` state; `App.tsx` wraps content with `<PaywallProvider>`
+- **2026-07-23** — ADR 0003 locked Compliance Pack decisions: Step 0 Medical Disclaimer in onboarding, Legal group in Settings (Alert disclaimer + Linking privacy policy), Aptabase chosen for privacy-first anonymous analytics.
 
 ---
 
